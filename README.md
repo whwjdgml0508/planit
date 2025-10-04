@@ -28,7 +28,10 @@
 - **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
 - **Database**: SQLite (개발용), PostgreSQL (배포용)
 - **UI Framework**: Bootstrap 5 + Crispy Forms
-- **배포**: EC2, 도메인 http://planit.boramae.club
+- **웹서버**: Nginx
+- **WSGI**: Gunicorn
+- **배포**: AWS EC2 (Ubuntu 22.04)
+- **도메인**: http://planit.boramae.club ✅ **배포 완료**
 
 ## 설치 및 실행
 
@@ -133,16 +136,52 @@ chmod +x simple-deploy.sh
 ### 수동 배포
 자세한 배포 가이드는 [DEPLOYMENT.md](DEPLOYMENT.md)를 참조하세요.
 
-## 개발 현황
+## 🚀 배포 정보
+
+### 서버 환경
+- **서버**: AWS EC2 (Ubuntu 22.04 LTS)
+- **IP 주소**: 35.163.12.109
+- **도메인**: planit.boramae.club
+- **웹서버**: Nginx
+- **WSGI 서버**: Gunicorn
+- **데이터베이스**: PostgreSQL
+
+### 배포 아키텍처
+```
+Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
+                                                   ↓
+                                              PostgreSQL Database
+```
+
+### 주요 배포 파일
+- `simple-deploy.sh` - 간단 배포 스크립트
+- `deploy.sh` - 완전 자동화 배포 스크립트
+- `nginx.conf` - Nginx 웹서버 설정
+- `planit.service` - systemd 서비스 설정
+- `gunicorn.conf.py` - Gunicorn WSGI 서버 설정
+
+## 🎉 배포 완료!
+
+**PlanIt이 성공적으로 배포되었습니다!**
+
+### 🌐 접속 주소
+- **메인 사이트**: http://planit.boramae.club
+- **IP 직접 접속**: http://35.163.12.109
+- **관리자 페이지**: http://planit.boramae.club/admin/
+
+### 📊 개발 현황
 - [x] 프로젝트 초기 설정
 - [x] 사용자 인증 시스템 (accounts 앱)
 - [x] 시간표 관리 기능 (timetable 앱)
 - [x] 스터디 플래너 기능 (planner 앱)
 - [x] 커뮤니티 기능 (community 앱)
-- [x] 기본 UI/UX 구현
+- [x] 기본 UI/UX 구현 (Bootstrap 5)
 - [x] EC2 배포 설정 완료
+- [x] **실제 EC2 배포 완료** ✅
+- [x] **도메인 연결 완료** ✅
+- [x] **Nginx 웹서버 설정** ✅
+- [x] **PostgreSQL 데이터베이스 연동** ✅
 - [ ] 통합 정보 관리 (E-class, 구글 클래스 연동)
-- [ ] 실제 EC2 배포
 
 ## 라이선스
 이 프로젝트는 교육 목적으로 개발되었습니다.
