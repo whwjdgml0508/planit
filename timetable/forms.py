@@ -24,23 +24,25 @@ class SubjectForm(forms.ModelForm):
         self.helper.layout = Layout(
             Row(
                 Column(
-                    PrependedText('name', '<i class="fas fa-book"></i>', placeholder='과목명'),
+                    Field('name', placeholder='과목명'),
                     css_class='col-md-8'
                 ),
                 Column(
-                    PrependedText('code', '<i class="fas fa-hashtag"></i>', placeholder='과목코드'),
+                    Field('code', placeholder='과목코드'),
                     css_class='col-md-4'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
-                    PrependedText('professor', '<i class="fas fa-user-tie"></i>', placeholder='교수명'),
+                    Field('professor', placeholder='교수명'),
                     css_class='col-md-6'
                 ),
                 Column(
                     Field('credits'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
@@ -51,18 +53,20 @@ class SubjectForm(forms.ModelForm):
                     Field('evaluation_type'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
-                    PrependedText('classroom', '<i class="fas fa-map-marker-alt"></i>', placeholder='강의실'),
+                    Field('classroom', placeholder='강의실'),
                     css_class='col-md-8'
                 ),
                 Column(
                     Field('color'),
                     css_class='col-md-4'
                 ),
+                css_class='mb-3'
             ),
-            Field('note', placeholder='과목에 대한 메모를 입력하세요'),
+            Field('note', placeholder='과목에 대한 메모를 입력하세요', css_class='mb-3'),
             Submit('submit', '저장', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
@@ -98,9 +102,10 @@ class TimeSlotForm(forms.ModelForm):
                     Field('period'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
-            PrependedText('location', '<i class="fas fa-map-marker-alt"></i>', placeholder='장소'),
-            Field('note', placeholder='시간표 슬롯에 대한 메모'),
+            Field('location', placeholder='장소', css_class='mb-3'),
+            Field('note', placeholder='시간표 슬롯에 대한 메모', css_class='mb-3'),
             Submit('submit', '추가', css_class='btn btn-success w-100 mt-3')
         )
         
@@ -158,26 +163,28 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            HTML('<h5 class="mb-3"><i class="fas fa-book me-2"></i>과목 정보</h5>'),
+            HTML('<h5 class="mb-3">📚 과목 정보</h5>'),
             Row(
                 Column(
-                    PrependedText('name', '<i class="fas fa-book"></i>', placeholder='과목명'),
+                    Field('name', placeholder='과목명'),
                     css_class='col-md-8'
                 ),
                 Column(
-                    PrependedText('code', '<i class="fas fa-hashtag"></i>', placeholder='과목코드'),
+                    Field('code', placeholder='과목코드'),
                     css_class='col-md-4'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
-                    PrependedText('professor', '<i class="fas fa-user-tie"></i>', placeholder='교수명'),
+                    Field('professor', placeholder='교수명'),
                     css_class='col-md-6'
                 ),
                 Column(
                     Field('credits'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
@@ -188,21 +195,23 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
                     Field('evaluation_type'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
             Row(
                 Column(
-                    PrependedText('classroom', '<i class="fas fa-map-marker-alt"></i>', placeholder='강의실'),
+                    Field('classroom', placeholder='강의실'),
                     css_class='col-md-8'
                 ),
                 Column(
                     Field('color'),
                     css_class='col-md-4'
                 ),
+                css_class='mb-3'
             ),
-            Field('note', placeholder='과목에 대한 메모를 입력하세요'),
+            Field('note', placeholder='과목에 대한 메모를 입력하세요', css_class='mb-3'),
             
             HTML('<hr class="my-4">'),
-            HTML('<h5 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>시간표 정보</h5>'),
+            HTML('<h5 class="mb-3">📅 시간표 정보</h5>'),
             
             Row(
                 Column(
@@ -213,8 +222,9 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
                     Field('periods'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
             ),
-            PrependedText('location', '<i class="fas fa-map-marker-alt"></i>', placeholder='장소'),
+            Field('location', placeholder='장소', css_class='mb-3'),
             
             Submit('submit', '과목 및 시간표 저장', css_class='btn btn-primary btn-lg w-100 mt-4')
         )

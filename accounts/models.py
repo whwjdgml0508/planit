@@ -6,16 +6,15 @@ class User(AbstractUser):
     """확장된 사용자 모델"""
     
     DEPARTMENT_CHOICES = [
-        ('AERO', '항공우주공학과'),
+        ('INTL', '국제관계학과'),
+        ('DEFENSE', '국방경영학과'),
+        ('AERO_POLICY', '항공우주정책학과'),
+        ('COMP', '컴퓨터과학과'),
+        ('AERO', '항공공학과'),
+        ('SPACE', '우주공학과'),
         ('MECH', '기계공학과'),
-        ('ELEC', '전자공학과'),
-        ('COMP', '컴퓨터공학과'),
-        ('CIVIL', '토목공학과'),
-        ('CHEM', '화학공학과'),
-        ('MATH', '수학과'),
-        ('PHYS', '물리학과'),
-        ('ENG', '영어영문학과'),
-        ('OTHER', '기타'),
+        ('ELEC', '전자통신공학과'),
+        ('SYSTEM', '시스템공학과'),
     ]
     
     GRADE_CHOICES = [
@@ -33,9 +32,9 @@ class User(AbstractUser):
         help_text='7자리 학번을 입력하세요'
     )
     department = models.CharField(
-        max_length=10, 
+        max_length=15, 
         choices=DEPARTMENT_CHOICES,
-        default='OTHER',
+        default='COMP',
         verbose_name='학과'
     )
     grade = models.IntegerField(
@@ -76,15 +75,14 @@ class User(AbstractUser):
     def get_department_display_short(self):
         """학과명 축약형 반환"""
         dept_short = {
+            'INTL': '국관',
+            'DEFENSE': '국경',
+            'AERO_POLICY': '항정',
+            'COMP': '컴과',
             'AERO': '항공',
+            'SPACE': '우주',
             'MECH': '기계',
-            'ELEC': '전자',
-            'COMP': '컴공',
-            'CIVIL': '토목',
-            'CHEM': '화공',
-            'MATH': '수학',
-            'PHYS': '물리',
-            'ENG': '영문',
-            'OTHER': '기타',
+            'ELEC': '전통',
+            'SYSTEM': '시공',
         }
         return dept_short.get(self.department, '기타')

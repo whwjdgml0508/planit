@@ -89,16 +89,14 @@ class TimeSlot(models.Model):
     ]
     
     PERIOD_CHOICES = [
-        (1, '1교시 (09:00-09:50)'),
-        (2, '2교시 (10:00-10:50)'),
-        (3, '3교시 (11:00-11:50)'),
-        (4, '4교시 (12:00-12:50)'),
+        (1, '1교시 (08:10-09:00)'),
+        (2, '2교시 (09:10-10:00)'),
+        (3, '3교시 (10:10-11:00)'),
+        (4, '4교시 (11:10-12:00)'),
         (5, '5교시 (13:00-13:50)'),
         (6, '6교시 (14:00-14:50)'),
-        (7, '7교시 (15:00-15:50)'),
-        (8, '8교시 (16:00-16:50)'),
-        (9, '9교시 (17:00-17:50)'),
-        (10, '10교시 (18:00-18:50)'),
+        (7, '7교시 (15:10-16:00)'),
+        (8, '8교시 (16:10-17:00)'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -106,7 +104,7 @@ class TimeSlot(models.Model):
     day = models.CharField(max_length=3, choices=DAY_CHOICES, verbose_name='요일')
     period = models.IntegerField(
         choices=PERIOD_CHOICES,
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=[MinValueValidator(1), MaxValueValidator(8)],
         verbose_name='교시'
     )
     
@@ -129,16 +127,14 @@ class TimeSlot(models.Model):
     def get_time_range(self):
         """교시에 따른 시간 범위 반환"""
         time_ranges = {
-            1: '09:00-09:50',
-            2: '10:00-10:50',
-            3: '11:00-11:50',
-            4: '12:00-12:50',
+            1: '08:10-09:00',
+            2: '09:10-10:00',
+            3: '10:10-11:00',
+            4: '11:10-12:00',
             5: '13:00-13:50',
             6: '14:00-14:50',
-            7: '15:00-15:50',
-            8: '16:00-16:50',
-            9: '17:00-17:50',
-            10: '18:00-18:50',
+            7: '15:10-16:00',
+            8: '16:10-17:00',
         }
         return time_ranges.get(self.period, '')
 
