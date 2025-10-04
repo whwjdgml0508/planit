@@ -305,17 +305,30 @@ def add_to_timetable(request):
         try:
             subject = Subject.objects.get(id=subject_id, user=request.user)
             
-            # 중복 시간 체크
+            # 중복 시간 체크 (다른 과목과의 충돌만 체크)
             existing_slot = TimeSlot.objects.filter(
                 subject__user=request.user,
                 day=day,
                 period=period
-            ).first()
+            ).exclude(subject=subject).first()
             
             if existing_slot:
                 return JsonResponse({
                     'success': False,
                     'error': f'해당 시간에 이미 "{existing_slot.subject.name}" 과목이 있습니다.'
+                })
+            
+            # 같은 과목이 이미 해당 시간에 있는지 체크
+            same_subject_slot = TimeSlot.objects.filter(
+                subject=subject,
+                day=day,
+                period=period
+            ).first()
+            
+            if same_subject_slot:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'"{subject.name}" 과목이 이미 해당 시간에 배치되어 있습니다.'
                 })
             
             # 시간표 슬롯 생성
