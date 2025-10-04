@@ -62,27 +62,27 @@ class CustomUserCreationForm(UserCreationForm):
         self.helper.layout = Layout(
             Div(
                 Div(
-                    PrependedText('username', '<i class="fas fa-user"></i>', placeholder='사용자명'),
+                    Field('username', placeholder='사용자명'),
                     css_class='col-md-6'
                 ),
                 Div(
-                    PrependedText('student_id', '<i class="fas fa-id-card"></i>', placeholder='학번'),
+                    Field('student_id', placeholder='학번'),
                     css_class='col-md-6'
                 ),
-                css_class='row'
+                css_class='row mb-3'
             ),
             Div(
                 Div(
-                    PrependedText('last_name', '<i class="fas fa-user"></i>', placeholder='성'),
+                    Field('last_name', placeholder='성'),
                     css_class='col-md-6'
                 ),
                 Div(
-                    PrependedText('first_name', '<i class="fas fa-user"></i>', placeholder='이름'),
+                    Field('first_name', placeholder='이름'),
                     css_class='col-md-6'
                 ),
-                css_class='row'
+                css_class='row mb-3'
             ),
-            PrependedText('email', '<i class="fas fa-envelope"></i>', placeholder='이메일'),
+            Field('email', placeholder='이메일', css_class='mb-3'),
             Div(
                 Div(
                     Field('department'),
@@ -92,11 +92,11 @@ class CustomUserCreationForm(UserCreationForm):
                     Field('grade'),
                     css_class='col-md-6'
                 ),
-                css_class='row'
+                css_class='row mb-3'
             ),
-            PrependedText('phone_number', '<i class="fas fa-phone"></i>', placeholder='전화번호 (선택사항)'),
-            PrependedText('password1', '<i class="fas fa-lock"></i>', placeholder='비밀번호'),
-            PrependedText('password2', '<i class="fas fa-lock"></i>', placeholder='비밀번호 확인'),
+            Field('phone_number', placeholder='전화번호 (선택사항)', css_class='mb-3'),
+            Field('password1', placeholder='비밀번호', css_class='mb-3'),
+            Field('password2', placeholder='비밀번호 확인', css_class='mb-3'),
             Submit('submit', '회원가입', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
@@ -127,8 +127,8 @@ class CustomAuthenticationForm(AuthenticationForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            PrependedText('username', '<i class="fas fa-user"></i>', placeholder='사용자명 또는 학번'),
-            PrependedText('password', '<i class="fas fa-lock"></i>', placeholder='비밀번호'),
+            Field('username', placeholder='사용자명 또는 학번', css_class='mb-3'),
+            Field('password', placeholder='비밀번호', css_class='mb-3'),
             Submit('submit', '로그인', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
@@ -152,16 +152,16 @@ class ProfileEditForm(forms.ModelForm):
         self.helper.layout = Layout(
             Div(
                 Div(
-                    PrependedText('last_name', '<i class="fas fa-user"></i>', placeholder='성'),
+                    Field('last_name', placeholder='성'),
                     css_class='col-md-6'
                 ),
                 Div(
-                    PrependedText('first_name', '<i class="fas fa-user"></i>', placeholder='이름'),
+                    Field('first_name', placeholder='이름'),
                     css_class='col-md-6'
                 ),
-                css_class='row'
+                css_class='row mb-3'
             ),
-            PrependedText('email', '<i class="fas fa-envelope"></i>', placeholder='이메일'),
+            Field('email', placeholder='이메일', css_class='mb-3'),
             Div(
                 Div(
                     Field('department'),
@@ -171,11 +171,11 @@ class ProfileEditForm(forms.ModelForm):
                     Field('grade'),
                     css_class='col-md-6'
                 ),
-                css_class='row'
+                css_class='row mb-3'
             ),
-            PrependedText('phone_number', '<i class="fas fa-phone"></i>', placeholder='전화번호'),
-            Field('profile_image'),
-            Field('bio', rows=4, placeholder='자기소개를 입력하세요'),
+            Field('phone_number', placeholder='전화번호', css_class='mb-3'),
+            Field('profile_image', css_class='mb-3'),
+            Field('bio', rows=4, placeholder='자기소개를 입력하세요', css_class='mb-3'),
             Submit('submit', '프로필 업데이트', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
