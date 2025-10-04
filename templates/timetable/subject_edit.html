@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}과목 수정 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-edit fa-2x"></i>
+                        </div>
+                        <h2 class="fw-bold">과목 수정</h2>
+                        <p class="text-muted">과목 정보를 수정하세요</p>
+                    </div>
+                    
+                    <!-- 과목 기본 정보 수정 -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">📚 과목 기본 정보</h5>
+                        </div>
+                        <div class="card-body">
+                            {% crispy form %}
+                        </div>
+                    </div>
+                    
+                    <!-- 시간표 정보 수정 -->
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h5 class="mb-0">📅 시간표 정보</h5>
+                            <small class="text-muted">현재 배치된 시간표를 수정할 수 있습니다</small>
+                        </div>
+                        <div class="card-body">
+                            {% if timeslot_formset %}
+                            <form method="post" id="timeslot-form">
+                                {% csrf_token %}
+                                {{ timeslot_formset.management_form }}
+                                
+                                <div id="timeslot-forms">
+                                    {% for form in timeslot_formset %}
+                                    <div class="timeslot-form border rounded p-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">시간표 슬롯 {{ forloop.counter }}</h6>
+                                            {% if not form.instance.pk %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-timeslot">
+                                                <i class="fas fa-times"></i> 제거
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {% if form.non_field_errors %}
+                                        <div class="alert alert-danger">
+                                            {{ form.non_field_errors }}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label class="form-label">요일</label>
+                                                {{ form.day }}
+                                                {% if form.day.errors %}
+                                                <div class="text-danger small">{{ form.day.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">교시</label>
+                                                {{ form.period }}
+                                                {% if form.period.errors %}
+                                                <div class="text-danger small">{{ form.period.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">장소</label>
+                                                {{ form.location }}
+                                                {% if form.location.errors %}
+                                                <div class="text-danger small">{{ form.location.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {% if form.instance.pk %}
+                                                <label class="form-label">삭제</label>
+                                                {{ form.DELETE }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if form.note %}
+                                        <div class="mt-2">
+                                            <label class="form-label">메모</label>
+                                            {{ form.note }}
+                                            {% if form.note.errors %}
+                                            <div class="text-danger small">{{ form.note.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Hidden fields -->
+                                        {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="text-center mb-3">
+                                    <button type="button" class="btn btn-outline-primary" id="add-timeslot">
+                                        <i class="fas fa-plus"></i> 시간표 슬롯 추가
+                                    </button>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-warning btn-lg">
+                                        <i class="fas fa-save me-2"></i>수정 완료
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">시간표 정보가 없습니다.</p>
+                                <a href="{% url 'timetable:timetable_manage' %}" class="btn btn-primary">
+                                    시간표 관리에서 추가하기
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'timetable:subject_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> 목록으로
+                        </a>
+                        <a href="{% url 'timetable:subject_detail' subject.pk %}" class="btn btn-outline-info">
+                            <i class="fas fa-eye"></i> 상세보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addButton = document.getElementById('add-timeslot');
+    const formsContainer = document.getElementById('timeslot-forms');
+    const totalForms = document.querySelector('#id_time_slots-TOTAL_FORMS');
+    
+    if (addButton && formsContainer && totalForms) {
+        addButton.addEventListener('click', function() {
+            const formCount = parseInt(totalForms.value);
+            const newForm = document.querySelector('.timeslot-form').cloneNode(true);
+            
+            // Update form indices
+            const formRegex = /time_slots-\d+-/g;
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `time_slots-${formCount}-`);
+            
+            // Clear values
+            newForm.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type !== 'hidden') {
+                    field.value = '';
+                }
+            });
+            
+            // Add remove button functionality
+            const removeBtn = newForm.querySelector('.remove-timeslot');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    newForm.remove();
+                    updateFormCount();
+                });
+            }
+            
+            formsContainer.appendChild(newForm);
+            totalForms.value = formCount + 1;
+        });
+    }
+    
+    // Remove timeslot functionality
+    document.querySelectorAll('.remove-timeslot').forEach(btn => {
+        btn.addEventListener('click', function() {
+            btn.closest('.timeslot-form').remove();
+            updateFormCount();
+        });
+    });
+    
+    function updateFormCount() {
+        const forms = document.querySelectorAll('.timeslot-form');
+        totalForms.value = forms.length;
+        
+        forms.forEach((form, index) => {
+            const formRegex = /time_slots-\d+-/g;
+            form.innerHTML = form.innerHTML.replace(formRegex, `time_slots-${index}-`);
+        });
+    }
+});
+</script>
+
+<style>
+.timeslot-form {
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.timeslot-form:hover {
+    background-color: #e9ecef;
+}
+
+.form-control, .form-select {
+    border-radius: 0.375rem;
+}
+</style>
+{% endblock %}
