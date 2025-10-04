@@ -17,16 +17,15 @@ urlpatterns = [
     
     # 학습 세션 관련 URL
     path('sessions/', views.StudySessionListView.as_view(), name='study_session_list'),
-    path('sessions/create/', views.StudySessionCreateView.as_view(), name='study_session_create'),
     
     # 목표 관련 URL
     path('goals/', views.GoalListView.as_view(), name='goal_list'),
     path('goals/create/', views.GoalCreateView.as_view(), name='goal_create'),
     
-    # 일일 플래너 관련 URL
+    # 일일 플래너
     path('daily/', views.DailyPlannerView.as_view(), name='daily_planner'),
     
-    # AJAX URL들
+    # AJAX 뷰들
     path('ajax/add-todo/', views.add_todo_item, name='add_todo_item'),
     path('ajax/toggle-todo/<uuid:todo_id>/', views.toggle_todo_item, name='toggle_todo_item'),
     path('ajax/delete-todo/<uuid:todo_id>/', views.delete_todo_item, name='delete_todo_item'),

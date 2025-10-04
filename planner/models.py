@@ -433,55 +433,40 @@ class TimeBlock(models.Model):
 
 
 class TodoItem(models.Model):
-    """할 일 아이템 모델"""
-    
-    PRIORITY_CHOICES = [
-        ('LOW', '낮음'),
-        ('MEDIUM', '보통'),
-        ('HIGH', '높음'),
+    """일일 할 일 아이템"""
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('in_progress', '진행중'),
+        ('completed', '완료'),
     ]
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    daily_planner = models.ForeignKey(
-        DailyPlanner, 
-        on_delete=models.CASCADE, 
-        related_name='todo_items'
-    )
+    PRIORITY_CHOICES = [
+        ('low', '낮음'),
+        ('medium', '보통'),
+        ('high', '높음'),
+    ]
     
+    SUBJECT_CHOICES = [
+        ('math', '수학'),
+        ('korean', '국어'),
+        ('english', '영어'),
+        ('history', '역사'),
+        ('science', '과학'),
+        ('military', '군사학'),
+        ('physical', '체육'),
+        ('other', '기타'),
+    ]
+    
+    daily_planner = models.ForeignKey(DailyPlanner, on_delete=models.CASCADE, related_name='todo_items')
     title = models.CharField(max_length=200, verbose_name='할 일')
-    description = models.TextField(blank=True, verbose_name='설명')
-    
-    priority = models.CharField(
-        max_length=10,
-        choices=PRIORITY_CHOICES,
-        default='MEDIUM',
-        verbose_name='우선순위'
-    )
-    
+    subject = models.CharField(max_length=20, choices=SUBJECT_CHOICES, default='other', verbose_name='과목')
+    description = models.TextField(blank=True, verbose_name='상세 설명')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='상태')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium', verbose_name='우선순위')
+    estimated_time = models.PositiveIntegerField(null=True, blank=True, verbose_name='예상 소요시간(분)')
+    order = models.PositiveIntegerField(default=0, verbose_name='순서')
     is_completed = models.BooleanField(default=False, verbose_name='완료 여부')
     completed_at = models.DateTimeField(null=True, blank=True, verbose_name='완료 시간')
-    
-    # 연관 정보
-    subject = models.ForeignKey(
-        'timetable.Subject',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='todo_items',
-        verbose_name='관련 과목'
-    )
-    
-    task = models.ForeignKey(
-        Task,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='todo_items',
-        verbose_name='관련 과제'
-    )
-    
-    # 순서
-    order = models.IntegerField(default=0, verbose_name='순서')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

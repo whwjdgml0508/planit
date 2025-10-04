@@ -312,79 +312,59 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         date_str = self.request.GET.get('date')
         if date_str:
             try:
-                selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                selected_date = timezone.now().date()
+                target_date = timezone.now().date()
         else:
-            selected_date = timezone.now().date()
+            target_date = timezone.now().date()
         
-        # 일일 플래너 가져오기 또는 생성
+        # 해당 날짜의 플래너 가져오기 또는 생성
         daily_planner, created = DailyPlanner.objects.get_or_create(
             user=user,
-            date=selected_date,
-            defaults={'daily_goal': ''}
+            date=target_date,
+            defaults={'target_study_hours': 8.0}
         )
         
-        # 시간 블록 데이터 구성 (6시~23시, 10분 단위)
+        # 시간 블록 데이터 생성 (6시~23시, 10분 단위)
         time_blocks = {}
-        existing_blocks = TimeBlock.objects.filter(daily_planner=daily_planner)
-        
-        for block in existing_blocks:
-            if block.hour not in time_blocks:
-                time_blocks[block.hour] = {}
-            time_blocks[block.hour][block.minute_block] = block
-        
-        # 시간표 데이터 구성
-        timetable_data = []
-        for hour in range(6, 24):  # 6시부터 23시까지
-            hour_data = {
-                'hour': hour,
-                'blocks': []
-            }
+        for hour in range(6, 24):
+            time_blocks[hour] = {}
             for minute_block in range(6):  # 0-5 (00, 10, 20, 30, 40, 50분)
-                block_data = {
-                    'minute_block': minute_block,
-                    'time_display': f"{hour:02d}:{minute_block*10:02d}",
-                    'block': time_blocks.get(hour, {}).get(minute_block, None)
-                }
-                hour_data['blocks'].append(block_data)
-            timetable_data.append(hour_data)
+                try:
+                    block = TimeBlock.objects.get(
+                        daily_planner=daily_planner,
+                        hour=hour,
+                        minute_block=minute_block
+                    )
+                    time_blocks[hour][minute_block] = block
+                except TimeBlock.DoesNotExist:
+                    time_blocks[hour][minute_block] = None
         
         # 할 일 목록
-        todo_items = TodoItem.objects.filter(daily_planner=daily_planner)
+        todo_items = daily_planner.todo_items.all()
         
-        # 과목 목록 (시간 블록에서 선택할 수 있도록)
+        # 과목 목록
         from timetable.models import Subject
         subjects = Subject.objects.filter(user=user)
         
-        # 오늘의 학습 세션
-        study_sessions = StudySession.objects.filter(
-            user=user,
-            start_time__date=selected_date,
-            end_time__isnull=False
-        ).select_related('subject')
-        
-        # 오늘의 통계
-        completed_todos = todo_items.filter(is_completed=True).count()
-        total_todos = todo_items.count()
-        study_blocks = existing_blocks.filter(block_type='STUDY').count()
-        total_study_minutes = study_blocks * 10
+        # 총 학습시간 계산
+        total_study_minutes = TimeBlock.objects.filter(
+            daily_planner=daily_planner,
+            block_type='STUDY'
+        ).count() * 10
         
         context.update({
             'daily_planner': daily_planner,
-            'selected_date': selected_date,
-            'timetable_data': timetable_data,
+            'target_date': target_date,
+            'today': timezone.now().date(),
+            'time_blocks': time_blocks,
             'todo_items': todo_items,
             'subjects': subjects,
-            'study_sessions': study_sessions,
-            'stats': {
-                'completed_todos': completed_todos,
-                'total_todos': total_todos,
-                'completion_rate': (completed_todos / total_todos * 100) if total_todos > 0 else 0,
-                'study_hours': total_study_minutes / 60,
-                'study_minutes': total_study_minutes % 60,
-            }
+            'total_study_hours': total_study_minutes / 60,
+            'hours_range': range(6, 24),
+            'minute_blocks_range': range(6),
         })
+        
         return context
 
 
