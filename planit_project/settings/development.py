@@ -10,7 +10,15 @@ SECRET_KEY = 'django-insecure-%or=3m-gp%c^9+26l71-i6^(r#&#5s*x7%wdf!^n)1swk$&l8$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1',
+    'planit.boramae.club',
+    'www.planit.boramae.club',
+    '35.163.12.109',
+    '*.amazonaws.com',
+    '*.compute.amazonaws.com',
+]
 
 # Database
 DATABASES = {
