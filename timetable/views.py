@@ -25,7 +25,7 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         # 시간표 데이터 구성
         timetable_data = {}
         days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
-        periods = range(1, 11)  # 1교시부터 10교시까지
+        periods = range(1, 9)  # 1교시부터 8교시까지
         
         # 빈 시간표 초기화
         for day in days:
@@ -215,3 +215,156 @@ class TimeSlotCreateView(LoginRequiredMixin, CreateView):
             'success': False,
             'error': '입력 정보를 확인해주세요.'
         })
+
+class SubjectListView(LoginRequiredMixin, ListView):
+    """과목 목록 뷰"""
+    model = Subject
+    template_name = 'timetable/subject_list.html'
+    context_object_name = 'subjects'
+    
+    def get_queryset(self):
+        return Subject.objects.filter(user=self.request.user).prefetch_related('time_slots')
+
+class SubjectOnlyCreateView(LoginRequiredMixin, CreateView):
+    """과목만 생성하는 뷰 (시간표 없이)"""
+    model = Subject
+    form_class = SubjectForm
+    template_name = 'timetable/subject_only_create.html'
+    success_url = reverse_lazy('timetable:subject_list')
+    
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
+        return super().form_valid(form)
+
+class TimetableManageView(LoginRequiredMixin, TemplateView):
+    """시간표 관리 뷰 (과목을 시간표에 추가/제거)"""
+    template_name = 'timetable/timetable_manage.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # 사용자의 모든 과목
+        subjects = Subject.objects.filter(user=user).prefetch_related('time_slots')
+        
+        # 시간표 데이터 구성
+        timetable_data = {}
+        days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        periods = range(1, 9)
+        
+        # 빈 시간표 초기화
+        for day in days:
+            timetable_data[day] = {}
+            for period in periods:
+                timetable_data[day][period] = None
+        
+        # 시간표에 과목 배치
+        for subject in subjects:
+            for time_slot in subject.time_slots.all():
+                if time_slot.day in timetable_data and time_slot.period in periods:
+                    timetable_data[time_slot.day][time_slot.period] = {
+                        'subject': subject,
+                        'time_slot': time_slot
+                    }
+        
+        context.update({
+            'subjects': subjects,
+            'timetable_data': timetable_data,
+            'days': days,
+            'periods': periods,
+            'day_names': {
+                'MON': '월',
+                'TUE': '화', 
+                'WED': '수',
+                'THU': '목',
+                'FRI': '금',
+                'SAT': '토'
+            },
+            'period_times': {
+                1: '08:10-09:00',
+                2: '09:10-10:00',
+                3: '10:10-11:00',
+                4: '11:10-12:00',
+                5: '13:00-13:50',
+                6: '14:00-14:50',
+                7: '15:10-16:00',
+                8: '16:10-17:00',
+            }
+        })
+        return context
+
+def add_to_timetable(request):
+    """AJAX: 과목을 시간표에 추가"""
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject_id')
+        day = request.POST.get('day')
+        period = int(request.POST.get('period'))
+        location = request.POST.get('location', '')
+        
+        try:
+            subject = Subject.objects.get(id=subject_id, user=request.user)
+            
+            # 중복 시간 체크
+            existing_slot = TimeSlot.objects.filter(
+                subject__user=request.user,
+                day=day,
+                period=period
+            ).first()
+            
+            if existing_slot:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'해당 시간에 이미 "{existing_slot.subject.name}" 과목이 있습니다.'
+                })
+            
+            # 시간표 슬롯 생성
+            TimeSlot.objects.create(
+                subject=subject,
+                day=day,
+                period=period,
+                location=location
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'"{subject.name}" 과목이 시간표에 추가되었습니다.',
+                'subject_name': subject.name,
+                'subject_color': subject.color
+            })
+            
+        except Subject.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': '과목을 찾을 수 없습니다.'
+            })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+def remove_from_timetable(request):
+    """AJAX: 시간표에서 과목 제거"""
+    if request.method == 'POST':
+        day = request.POST.get('day')
+        period = int(request.POST.get('period'))
+        
+        try:
+            time_slot = TimeSlot.objects.get(
+                subject__user=request.user,
+                day=day,
+                period=period
+            )
+            subject_name = time_slot.subject.name
+            time_slot.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'"{subject_name}" 과목이 시간표에서 제거되었습니다.'
+            })
+            
+        except TimeSlot.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': '해당 시간표 슬롯을 찾을 수 없습니다.'
+            })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
