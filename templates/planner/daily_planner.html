@@ -242,6 +242,94 @@
     opacity: 0.5;
 }
 
+/* 시간표 그리드 스타일 */
+.timetable-header {
+    display: grid;
+    grid-template-columns: 60px repeat(6, 1fr);
+    gap: 1px;
+    background: #495057;
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+}
+
+.timetable-header .time-label,
+.timetable-header .minute-label {
+    color: white;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.timetable-grid {
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.timetable-row {
+    display: grid;
+    grid-template-columns: 60px repeat(6, 1fr);
+    gap: 1px;
+    background: #dee2e6;
+}
+
+.hour-label {
+    background: #6c757d;
+    color: white;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-cell {
+    background: white;
+    height: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.time-cell:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+}
+
+.time-cell.filled {
+    background: #28a745;
+    opacity: 0.8;
+}
+
+.time-cell.filled:hover {
+    opacity: 1;
+}
+
+.study-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #495057;
+}
+
 @media (max-width: 768px) {
     .stats-cards {
         grid-template-columns: repeat(2, 1fr);
@@ -250,6 +338,11 @@
     .main-content {
         grid-template-columns: 1fr;
         gap: 15px;
+    }
+    
+    .timetable-header,
+    .timetable-row {
+        grid-template-columns: 50px repeat(6, 1fr);
     }
 }
 </style>
@@ -342,42 +435,48 @@
                 </div>
             </div>
 
-            <!-- 우측: 타이머 및 학습 기록 -->
+            <!-- 우측: 시간표 그리드 -->
             <div class="timer-section">
                 <div class="section-title">
-                    <span>⏱️</span>
-                    <span>학습 타이머</span>
+                    <span>⏰</span>
+                    <span>10분 단위 시간표</span>
                 </div>
                 
-                <div class="timer-display">
-                    <div class="timer-time" id="timer-display">00:00:00</div>
-                    <div class="timer-controls">
-                        <button class="timer-btn start" id="start-btn">시작</button>
-                        <button class="timer-btn pause" id="pause-btn">일시정지</button>
-                        <button class="timer-btn reset" id="reset-btn">리셋</button>
-                    </div>
+                <!-- 시간표 헤더 -->
+                <div class="timetable-header">
+                    <div class="time-label">시간</div>
+                    <div class="minute-label">00</div>
+                    <div class="minute-label">10</div>
+                    <div class="minute-label">20</div>
+                    <div class="minute-label">30</div>
+                    <div class="minute-label">40</div>
+                    <div class="minute-label">50</div>
                 </div>
 
-                <div class="study-log">
-                    <div class="section-title">
-                        <span>📊</span>
-                        <span>오늘의 학습 기록</span>
-                    </div>
-                    
-                    <div id="study-log-list">
-                        {% if study_sessions %}
-                            {% for session in study_sessions %}
-                            <div class="log-entry">
-                                <span>{{ session.subject.name|default:"학습" }}</span>
-                                <span>{{ session.duration_minutes }}분</span>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-clock"></i>
-                            <p>아직 학습 기록이 없습니다.<br>타이머를 시작해보세요!</p>
+                <!-- 시간표 그리드 -->
+                <div class="timetable-grid">
+                    {% for hour in hours_range %}
+                    <div class="timetable-row">
+                        <div class="hour-label">{{ hour }}시</div>
+                        {% for minute_block in minute_blocks_range %}
+                        <div class="time-cell" 
+                             data-hour="{{ hour }}" 
+                             data-minute="{{ minute_block }}">
                         </div>
-                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- 학습 통계 -->
+                <div class="study-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">목표시간:</span>
+                        <span class="stat-value">{{ daily_planner.target_study_hours }}시간</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">달성시간:</span>
+                        <span class="stat-value">{{ total_study_hours|floatformat:1 }}시간</span>
                     </div>
                 </div>
             </div>
@@ -519,6 +618,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // 시간 블록 클릭 이벤트
+    document.querySelectorAll('.time-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const hour = this.dataset.hour;
+            const minute = this.dataset.minute;
+            toggleTimeBlock(hour, minute);
+        });
+    });
+    
     // 일일 목표 업데이트
     document.getElementById('daily-goal').addEventListener('blur', function() {
         const goal = this.value;
@@ -533,5 +641,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// 시간 블록 토글 함수
+function toggleTimeBlock(hour, minute) {
+    const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
+    
+    if (cell.classList.contains('filled')) {
+        // 제거
+        cell.classList.remove('filled');
+        // TODO: 서버에 제거 요청 보내기
+    } else {
+        // 추가
+        cell.classList.add('filled');
+        // TODO: 서버에 추가 요청 보내기
+    }
+    
+    // 통계 업데이트
+    updateStudyStats();
+}
+
+// 학습 통계 업데이트
+function updateStudyStats() {
+    const filledCells = document.querySelectorAll('.time-cell.filled');
+    const studyMinutes = filledCells.length * 10;
+    const studyHours = (studyMinutes / 60).toFixed(1);
+    
+    // 달성시간 업데이트
+    const statValue = document.querySelector('.stat-value');
+    if (statValue) {
+        statValue.textContent = `${studyHours}시간`;
+    }
+}
 </script>
 {% endblock %}
