@@ -94,14 +94,41 @@ planit/
 
 ## 배포
 
-### 자동 배포 (권장)
+### EC2 배포 (교수님 예시 기반)
+
+**1. Cursor/VSCode로 EC2 접속**
 ```bash
-# EC2 인스턴스에서 실행
-git clone https://github.com/whwjdgml0508/cadet-learning-platform.git
-cd planit
-chmod +x deploy.sh
-./deploy.sh
+# SSH 설정
+Host planit-ec2
+    HostName 35.163.12.109
+    User ubuntu
+    IdentityFile /path/to/ec2-kafa-2-key.pem
 ```
+
+**2. EC2에서 프로젝트 클론**
+```bash
+# 현재 폴더 확인
+ll
+
+# Git 저장소 클론
+git clone https://github.com/whwjdgml0508/planit.git
+cd planit
+
+# Git 설정
+git config user.name "ec2-planit"
+git config user.email "ec2-planit@test.com"
+```
+
+**3. 간단 배포 실행**
+```bash
+chmod +x simple-deploy.sh
+./simple-deploy.sh
+```
+
+**4. 접속 확인**
+- http://planit.boramae.club
+- http://35.163.12.109
+- 관리자: http://planit.boramae.club/admin/
 
 ### 수동 배포
 자세한 배포 가이드는 [DEPLOYMENT.md](DEPLOYMENT.md)를 참조하세요.

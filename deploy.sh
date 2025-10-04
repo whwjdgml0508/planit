@@ -17,6 +17,7 @@ PROJECT_NAME="planit"
 PROJECT_DIR="/var/www/$PROJECT_NAME"
 REPO_URL="https://github.com/whwjdgml0508/planit.git"
 DOMAIN="planit.boramae.club"
+EC2_IP="35.163.12.109"
 DB_NAME="planit_db"
 DB_USER="planit_user"
 
