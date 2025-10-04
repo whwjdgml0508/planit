@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}과목 추가 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>새 과목 추가
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {% crispy form %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'timetable:index' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>취소
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 도움말 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-lightbulb me-2"></i>과목 추가 도움말
+                    </h6>
+                    <ul class="card-text small mb-0">
+                        <li>과목명과 교수명은 필수 입력 사항입니다</li>
+                        <li>요일과 교시를 여러 개 선택하면 해당하는 모든 시간에 과목이 배치됩니다</li>
+                        <li>색상은 시간표에서 과목을 구분하는 데 사용됩니다</li>
+                        <li>같은 시간에 다른 과목이 있으면 충돌 알림이 표시됩니다</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // URL 파라미터에서 day, period 정보 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedDay = urlParams.get('day');
+    const preselectedPeriod = urlParams.get('period');
+    
+    // 미리 선택된 요일과 교시가 있으면 체크
+    if (preselectedDay) {
+        const dayCheckbox = document.querySelector(`input[name="days"][value="${preselectedDay}"]`);
+        if (dayCheckbox) {
+            dayCheckbox.checked = true;
+        }
+    }
+    
+    if (preselectedPeriod) {
+        const periodCheckbox = document.querySelector(`input[name="periods"][value="${preselectedPeriod}"]`);
+        if (periodCheckbox) {
+            periodCheckbox.checked = true;
+        }
+    }
+    
+    // 색상 랜덤 생성
+    const colorInput = document.querySelector('input[name="color"]');
+    if (colorInput && !colorInput.value) {
+        const colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        colorInput.value = randomColor;
+    }
+});
+</script>
+{% endblock %}

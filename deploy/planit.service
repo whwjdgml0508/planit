@@ -1,0 +1,21 @@
+[Unit]
+Description=PlanIt Django Application
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/planit
+Environment=DJANGO_SETTINGS_MODULE=planit_project.settings.production
+EnvironmentFile=/var/www/planit/.env
+ExecStart=/var/www/planit/venv/bin/gunicorn --config /var/www/planit/gunicorn.conf.py planit_project.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=10
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
