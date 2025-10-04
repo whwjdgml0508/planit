@@ -40,10 +40,25 @@
                             <i class="fas fa-calendar-alt me-1"></i>시간표
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'planner:index' %}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="plannerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-tasks me-1"></i>플래너
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'planner:index' %}">
+                                <i class="fas fa-tachometer-alt me-2"></i>대시보드
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'planner:daily_planner' %}">
+                                <i class="fas fa-calendar-day me-2"></i>일일 플래너
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'planner:task_list' %}">
+                                <i class="fas fa-list-check me-2"></i>과제 목록
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'planner:goal_list' %}">
+                                <i class="fas fa-bullseye me-2"></i>목표 관리
+                            </a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'community:index' %}">

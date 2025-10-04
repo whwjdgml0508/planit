@@ -2,7 +2,6 @@ from django import forms
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div, Submit, HTML, Row, Column
-from crispy_forms.bootstrap import PrependedText
 from .models import Task, StudySession, Goal
 from timetable.models import Subject
 
@@ -29,7 +28,7 @@ class TaskForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            PrependedText('title', '<i class="fas fa-tasks"></i>', placeholder='과제 제목'),
+            Field('title', placeholder='과제 제목'),
             Field('description', placeholder='과제에 대한 상세 설명을 입력하세요'),
             Row(
                 Column(
@@ -111,7 +110,7 @@ class StudySessionForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            PrependedText('title', '<i class="fas fa-clock"></i>', placeholder='학습 세션 제목'),
+            Field('title', placeholder='학습 세션 제목'),
             Field('description', placeholder='학습 내용을 간단히 설명하세요'),
             Row(
                 Column(
@@ -191,7 +190,7 @@ class GoalForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            PrependedText('title', '<i class="fas fa-bullseye"></i>', placeholder='목표 제목'),
+            Field('title', placeholder='목표 제목'),
             Field('description', placeholder='목표에 대한 상세 설명을 입력하세요'),
             Field('goal_type'),
             Row(

@@ -10,11 +10,12 @@ class SubjectForm(forms.ModelForm):
     
     class Meta:
         model = Subject
-        fields = ['name', 'code', 'professor', 'credits', 'subject_type', 
-                 'evaluation_type', 'classroom', 'note', 'color']
+        fields = ['name', 'professor', 'credits', 'subject_type', 
+                 'evaluation_method', 'classroom', 'note', 'color']
         widgets = {
             'color': forms.TextInput(attrs={'type': 'color'}),
             'note': forms.Textarea(attrs={'rows': 3}),
+            'evaluation_method': forms.Textarea(attrs={'rows': 2}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -22,17 +23,7 @@ class SubjectForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            Row(
-                Column(
-                    Field('name', placeholder='과목명'),
-                    css_class='col-md-8'
-                ),
-                Column(
-                    Field('code', placeholder='과목코드'),
-                    css_class='col-md-4'
-                ),
-                css_class='mb-3'
-            ),
+            Field('name', placeholder='과목명', css_class='mb-3'),
             Row(
                 Column(
                     Field('professor', placeholder='교수명'),
@@ -50,7 +41,7 @@ class SubjectForm(forms.ModelForm):
                     css_class='col-md-6'
                 ),
                 Column(
-                    Field('evaluation_type'),
+                    Field('evaluation_method', placeholder='예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%'),
                     css_class='col-md-6'
                 ),
                 css_class='mb-3'
@@ -72,11 +63,10 @@ class SubjectForm(forms.ModelForm):
         
         # 필드 라벨 설정
         self.fields['name'].label = '과목명'
-        self.fields['code'].label = '과목코드'
         self.fields['professor'].label = '교수명'
         self.fields['credits'].label = '학점'
         self.fields['subject_type'].label = '과목 구분'
-        self.fields['evaluation_type'].label = '평가 방식'
+        self.fields['evaluation_method'].label = '평가 방식'
         self.fields['classroom'].label = '강의실'
         self.fields['note'].label = '메모'
         self.fields['color'].label = '색상'
@@ -151,11 +141,12 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
     
     class Meta:
         model = Subject
-        fields = ['name', 'code', 'professor', 'credits', 'subject_type', 
-                 'evaluation_type', 'classroom', 'note', 'color']
+        fields = ['name', 'professor', 'credits', 'subject_type', 
+                 'evaluation_method', 'classroom', 'note', 'color']
         widgets = {
             'color': forms.TextInput(attrs={'type': 'color'}),
             'note': forms.Textarea(attrs={'rows': 3}),
+            'evaluation_method': forms.Textarea(attrs={'rows': 2}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -164,17 +155,7 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
             HTML('<h5 class="mb-3">📚 과목 정보</h5>'),
-            Row(
-                Column(
-                    Field('name', placeholder='과목명'),
-                    css_class='col-md-8'
-                ),
-                Column(
-                    Field('code', placeholder='과목코드'),
-                    css_class='col-md-4'
-                ),
-                css_class='mb-3'
-            ),
+            Field('name', placeholder='과목명', css_class='mb-3'),
             Row(
                 Column(
                     Field('professor', placeholder='교수명'),
@@ -186,17 +167,8 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
                 ),
                 css_class='mb-3'
             ),
-            Row(
-                Column(
-                    Field('subject_type'),
-                    css_class='col-md-6'
-                ),
-                Column(
-                    Field('evaluation_type'),
-                    css_class='col-md-6'
-                ),
-                css_class='mb-3'
-            ),
+            Field('subject_type', css_class='mb-3'),
+            Field('evaluation_method', placeholder='예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%', css_class='mb-3'),
             Row(
                 Column(
                     Field('classroom', placeholder='강의실'),

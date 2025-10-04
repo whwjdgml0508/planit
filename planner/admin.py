@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Task, StudySession, Goal
+from .models import Task, StudySession, Goal, DailyPlanner, TimeBlock, TodoItem
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
@@ -113,3 +113,95 @@ class GoalAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')
+
+
+@admin.register(DailyPlanner)
+class DailyPlannerAdmin(admin.ModelAdmin):
+    list_display = ['user', 'date', 'get_todo_count', 'get_study_blocks', 'target_study_hours']
+    list_filter = ['date', 'target_study_hours']
+    search_fields = ['user__username', 'daily_goal']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+    date_hierarchy = 'date'
+    
+    fieldsets = (
+        ('기본 정보', {
+            'fields': ('user', 'date', 'daily_goal')
+        }),
+        ('목표', {
+            'fields': ('target_study_hours',)
+        }),
+        ('메타데이터', {
+            'fields': ('id', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_todo_count(self, obj):
+        return obj.todo_items.count()
+    get_todo_count.short_description = '할 일 수'
+    
+    def get_study_blocks(self, obj):
+        return obj.time_blocks.filter(block_type='STUDY').count()
+    get_study_blocks.short_description = '학습 블록 수'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user').prefetch_related('todo_items', 'time_blocks')
+
+
+@admin.register(TimeBlock)
+class TimeBlockAdmin(admin.ModelAdmin):
+    list_display = ['daily_planner', 'get_time_display', 'block_type', 'get_subject_name', 'memo']
+    list_filter = ['block_type', 'daily_planner__date', 'hour']
+    search_fields = ['daily_planner__user__username', 'memo', 'subject__name']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('시간 정보', {
+            'fields': ('daily_planner', 'hour', 'minute_block')
+        }),
+        ('블록 정보', {
+            'fields': ('block_type', 'subject', 'task', 'color', 'memo')
+        }),
+        ('메타데이터', {
+            'fields': ('id', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_subject_name(self, obj):
+        return obj.subject.name if obj.subject else '-'
+    get_subject_name.short_description = '과목'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('daily_planner__user', 'subject', 'task')
+
+
+@admin.register(TodoItem)
+class TodoItemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'daily_planner', 'priority', 'is_completed', 'get_subject_name', 'completed_at']
+    list_filter = ['priority', 'is_completed', 'daily_planner__date']
+    search_fields = ['title', 'description', 'daily_planner__user__username']
+    readonly_fields = ['id', 'created_at', 'updated_at', 'completed_at']
+    
+    fieldsets = (
+        ('기본 정보', {
+            'fields': ('daily_planner', 'title', 'description', 'priority')
+        }),
+        ('상태', {
+            'fields': ('is_completed', 'completed_at', 'order')
+        }),
+        ('연관 정보', {
+            'fields': ('subject', 'task')
+        }),
+        ('메타데이터', {
+            'fields': ('id', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_subject_name(self, obj):
+        return obj.subject.name if obj.subject else '-'
+    get_subject_name.short_description = '관련 과목'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('daily_planner__user', 'subject', 'task')

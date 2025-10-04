@@ -310,3 +310,194 @@ class Goal(models.Model):
             total_weight += 1
         
         return int(progress / total_weight) if total_weight > 0 else 0
+
+
+class DailyPlanner(models.Model):
+    """일일 플래너 모델"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_planners')
+    date = models.DateField(verbose_name='날짜')
+    
+    # 하루 목표
+    daily_goal = models.TextField(blank=True, verbose_name='오늘의 목표')
+    
+    # 총 학습시간 목표
+    target_study_hours = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=8.0,
+        validators=[MinValueValidator(0.1), MaxValueValidator(24.0)],
+        verbose_name='목표 학습시간(시간)'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = '일일 플래너'
+        verbose_name_plural = '일일 플래너들'
+        unique_together = ['user', 'date']
+        ordering = ['-date']
+        
+    def __str__(self):
+        return f"{self.user.username}의 {self.date} 플래너"
+
+
+class TimeBlock(models.Model):
+    """시간 블록 모델 (10분 단위)"""
+    
+    BLOCK_TYPE_CHOICES = [
+        ('STUDY', '학습'),
+        ('BREAK', '휴식'),
+        ('MEAL', '식사'),
+        ('EXERCISE', '운동'),
+        ('OTHER', '기타'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    daily_planner = models.ForeignKey(
+        DailyPlanner, 
+        on_delete=models.CASCADE, 
+        related_name='time_blocks'
+    )
+    
+    # 시간 정보 (10분 단위)
+    hour = models.IntegerField(
+        validators=[MinValueValidator(6), MaxValueValidator(23)],
+        verbose_name='시간 (6-23)'
+    )
+    minute_block = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+        verbose_name='10분 블록 (0-5: 00,10,20,30,40,50분)'
+    )
+    
+    # 블록 정보
+    block_type = models.CharField(
+        max_length=10,
+        choices=BLOCK_TYPE_CHOICES,
+        default='STUDY',
+        verbose_name='블록 유형'
+    )
+    
+    subject = models.ForeignKey(
+        'timetable.Subject',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='time_blocks',
+        verbose_name='관련 과목'
+    )
+    
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='time_blocks',
+        verbose_name='관련 과제'
+    )
+    
+    # 색상 (과목 색상 또는 사용자 지정)
+    color = models.CharField(
+        max_length=7,
+        default='#3498db',
+        verbose_name='색상'
+    )
+    
+    # 메모
+    memo = models.CharField(max_length=100, blank=True, verbose_name='메모')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = '시간 블록'
+        verbose_name_plural = '시간 블록들'
+        unique_together = ['daily_planner', 'hour', 'minute_block']
+        ordering = ['hour', 'minute_block']
+        
+    def __str__(self):
+        return f"{self.hour:02d}:{self.minute_block*10:02d} - {self.get_block_type_display()}"
+    
+    def get_time_display(self):
+        """시간을 HH:MM 형식으로 반환"""
+        return f"{self.hour:02d}:{self.minute_block*10:02d}"
+    
+    def get_end_time_display(self):
+        """종료 시간을 HH:MM 형식으로 반환"""
+        end_minute = (self.minute_block * 10) + 10
+        if end_minute >= 60:
+            return f"{self.hour+1:02d}:00"
+        return f"{self.hour:02d}:{end_minute:02d}"
+
+
+class TodoItem(models.Model):
+    """할 일 아이템 모델"""
+    
+    PRIORITY_CHOICES = [
+        ('LOW', '낮음'),
+        ('MEDIUM', '보통'),
+        ('HIGH', '높음'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    daily_planner = models.ForeignKey(
+        DailyPlanner, 
+        on_delete=models.CASCADE, 
+        related_name='todo_items'
+    )
+    
+    title = models.CharField(max_length=200, verbose_name='할 일')
+    description = models.TextField(blank=True, verbose_name='설명')
+    
+    priority = models.CharField(
+        max_length=10,
+        choices=PRIORITY_CHOICES,
+        default='MEDIUM',
+        verbose_name='우선순위'
+    )
+    
+    is_completed = models.BooleanField(default=False, verbose_name='완료 여부')
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='완료 시간')
+    
+    # 연관 정보
+    subject = models.ForeignKey(
+        'timetable.Subject',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='todo_items',
+        verbose_name='관련 과목'
+    )
+    
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='todo_items',
+        verbose_name='관련 과제'
+    )
+    
+    # 순서
+    order = models.IntegerField(default=0, verbose_name='순서')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = '할 일'
+        verbose_name_plural = '할 일들'
+        ordering = ['order', '-priority', 'created_at']
+        
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        # 완료 상태로 변경될 때 완료시간 설정
+        if self.is_completed and not self.completed_at:
+            self.completed_at = timezone.now()
+        elif not self.is_completed:
+            self.completed_at = None
+        super().save(*args, **kwargs)

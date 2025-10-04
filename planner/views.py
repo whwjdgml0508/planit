@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
 from datetime import datetime, timedelta
-from .models import Task, StudySession, Goal
+from .models import Task, StudySession, Goal, DailyPlanner, TimeBlock, TodoItem
 from .forms import TaskForm, StudySessionForm, GoalForm, TaskQuickAddForm, TaskFilterForm
 
 class PlannerView(LoginRequiredMixin, TemplateView):
@@ -298,3 +298,261 @@ class GoalCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
         return super().form_valid(form)
+
+
+class DailyPlannerView(LoginRequiredMixin, TemplateView):
+    """일일 플래너 뷰"""
+    template_name = 'planner/daily_planner.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # 날짜 파라미터 처리
+        date_str = self.request.GET.get('date')
+        if date_str:
+            try:
+                selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                selected_date = timezone.now().date()
+        else:
+            selected_date = timezone.now().date()
+        
+        # 일일 플래너 가져오기 또는 생성
+        daily_planner, created = DailyPlanner.objects.get_or_create(
+            user=user,
+            date=selected_date,
+            defaults={'daily_goal': ''}
+        )
+        
+        # 시간 블록 데이터 구성 (6시~23시, 10분 단위)
+        time_blocks = {}
+        existing_blocks = TimeBlock.objects.filter(daily_planner=daily_planner)
+        
+        for block in existing_blocks:
+            if block.hour not in time_blocks:
+                time_blocks[block.hour] = {}
+            time_blocks[block.hour][block.minute_block] = block
+        
+        # 시간표 데이터 구성
+        timetable_data = []
+        for hour in range(6, 24):  # 6시부터 23시까지
+            hour_data = {
+                'hour': hour,
+                'blocks': []
+            }
+            for minute_block in range(6):  # 0-5 (00, 10, 20, 30, 40, 50분)
+                block_data = {
+                    'minute_block': minute_block,
+                    'time_display': f"{hour:02d}:{minute_block*10:02d}",
+                    'block': time_blocks.get(hour, {}).get(minute_block, None)
+                }
+                hour_data['blocks'].append(block_data)
+            timetable_data.append(hour_data)
+        
+        # 할 일 목록
+        todo_items = TodoItem.objects.filter(daily_planner=daily_planner)
+        
+        # 과목 목록 (시간 블록에서 선택할 수 있도록)
+        from timetable.models import Subject
+        subjects = Subject.objects.filter(user=user)
+        
+        # 오늘의 학습 세션
+        study_sessions = StudySession.objects.filter(
+            user=user,
+            start_time__date=selected_date,
+            end_time__isnull=False
+        ).select_related('subject')
+        
+        # 오늘의 통계
+        completed_todos = todo_items.filter(is_completed=True).count()
+        total_todos = todo_items.count()
+        study_blocks = existing_blocks.filter(block_type='STUDY').count()
+        total_study_minutes = study_blocks * 10
+        
+        context.update({
+            'daily_planner': daily_planner,
+            'selected_date': selected_date,
+            'timetable_data': timetable_data,
+            'todo_items': todo_items,
+            'subjects': subjects,
+            'study_sessions': study_sessions,
+            'stats': {
+                'completed_todos': completed_todos,
+                'total_todos': total_todos,
+                'completion_rate': (completed_todos / total_todos * 100) if total_todos > 0 else 0,
+                'study_hours': total_study_minutes / 60,
+                'study_minutes': total_study_minutes % 60,
+            }
+        })
+        return context
+
+
+def add_todo_item(request):
+    """할 일 추가 (AJAX)"""
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        title = request.POST.get('title', '').strip()
+        priority = request.POST.get('priority', 'MEDIUM')
+        
+        if not title:
+            return JsonResponse({'success': False, 'error': '할 일을 입력해주세요.'})
+        
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            date = timezone.now().date()
+        
+        # 일일 플래너 가져오기 또는 생성
+        daily_planner, created = DailyPlanner.objects.get_or_create(
+            user=request.user,
+            date=date
+        )
+        
+        # 할 일 추가
+        todo_item = TodoItem.objects.create(
+            daily_planner=daily_planner,
+            title=title,
+            priority=priority,
+            order=TodoItem.objects.filter(daily_planner=daily_planner).count()
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'todo_id': str(todo_item.id),
+            'title': todo_item.title,
+            'priority': todo_item.get_priority_display()
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def toggle_todo_item(request, todo_id):
+    """할 일 완료 토글 (AJAX)"""
+    if request.method == 'POST':
+        todo_item = get_object_or_404(TodoItem, id=todo_id, daily_planner__user=request.user)
+        
+        todo_item.is_completed = not todo_item.is_completed
+        todo_item.save()
+        
+        return JsonResponse({
+            'success': True,
+            'is_completed': todo_item.is_completed,
+            'completed_at': todo_item.completed_at.strftime('%H:%M') if todo_item.completed_at else None
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def delete_todo_item(request, todo_id):
+    """할 일 삭제 (AJAX)"""
+    if request.method == 'POST':
+        todo_item = get_object_or_404(TodoItem, id=todo_id, daily_planner__user=request.user)
+        todo_item.delete()
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def add_time_block(request):
+    """시간 블록 추가/수정 (AJAX)"""
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        hour = int(request.POST.get('hour'))
+        minute_block = int(request.POST.get('minute_block'))
+        block_type = request.POST.get('block_type', 'STUDY')
+        subject_id = request.POST.get('subject_id')
+        color = request.POST.get('color', '#3498db')
+        memo = request.POST.get('memo', '')
+        
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            date = timezone.now().date()
+        
+        # 일일 플래너 가져오기 또는 생성
+        daily_planner, created = DailyPlanner.objects.get_or_create(
+            user=request.user,
+            date=date
+        )
+        
+        # 시간 블록 생성 또는 업데이트
+        time_block, created = TimeBlock.objects.update_or_create(
+            daily_planner=daily_planner,
+            hour=hour,
+            minute_block=minute_block,
+            defaults={
+                'block_type': block_type,
+                'subject_id': subject_id if subject_id else None,
+                'color': color,
+                'memo': memo
+            }
+        )
+        
+        subject_name = time_block.subject.name if time_block.subject else ''
+        
+        return JsonResponse({
+            'success': True,
+            'block_id': str(time_block.id),
+            'subject_name': subject_name,
+            'color': time_block.color,
+            'memo': time_block.memo
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def remove_time_block(request):
+    """시간 블록 제거 (AJAX)"""
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        hour = int(request.POST.get('hour'))
+        minute_block = int(request.POST.get('minute_block'))
+        
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            date = timezone.now().date()
+        
+        # 시간 블록 찾아서 삭제
+        try:
+            time_block = TimeBlock.objects.get(
+                daily_planner__user=request.user,
+                daily_planner__date=date,
+                hour=hour,
+                minute_block=minute_block
+            )
+            time_block.delete()
+            return JsonResponse({'success': True})
+        except TimeBlock.DoesNotExist:
+            return JsonResponse({'success': False, 'error': '시간 블록을 찾을 수 없습니다.'})
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def update_daily_goal(request):
+    """일일 목표 업데이트 (AJAX)"""
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        goal = request.POST.get('goal', '')
+        
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            date = timezone.now().date()
+        
+        # 일일 플래너 업데이트
+        daily_planner, created = DailyPlanner.objects.get_or_create(
+            user=request.user,
+            date=date,
+            defaults={'daily_goal': goal}
+        )
+        
+        if not created:
+            daily_planner.daily_goal = goal
+            daily_planner.save()
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})

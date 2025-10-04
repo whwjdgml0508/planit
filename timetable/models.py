@@ -16,20 +16,11 @@ class Subject(models.Model):
         ('OTHER', '기타'),
     ]
     
-    EVALUATION_TYPE_CHOICES = [
-        ('EXAM', '시험'),
-        ('REPORT', '보고서'),
-        ('PRESENTATION', '발표'),
-        ('PROJECT', '프로젝트'),
-        ('PARTICIPATION', '참여도'),
-        ('MIXED', '혼합'),
-    ]
     
     # 기본 정보
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subjects')
     name = models.CharField(max_length=100, verbose_name='과목명')
-    code = models.CharField(max_length=20, blank=True, verbose_name='과목코드')
     professor = models.CharField(max_length=50, blank=True, verbose_name='교수명')
     credits = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(6)],
@@ -46,11 +37,11 @@ class Subject(models.Model):
     )
     
     # 평가 방식
-    evaluation_type = models.CharField(
-        max_length=15,
-        choices=EVALUATION_TYPE_CHOICES,
-        default='EXAM',
-        verbose_name='평가 방식'
+    evaluation_method = models.TextField(
+        max_length=200,
+        blank=True,
+        verbose_name='평가 방식',
+        help_text='예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%'
     )
     
     # 추가 정보
@@ -84,8 +75,6 @@ class TimeSlot(models.Model):
         ('WED', '수요일'),
         ('THU', '목요일'),
         ('FRI', '금요일'),
-        ('SAT', '토요일'),
-        ('SUN', '일요일'),
     ]
     
     PERIOD_CHOICES = [

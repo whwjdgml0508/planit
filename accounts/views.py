@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.views import View
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 
 User = get_user_model()
@@ -23,14 +24,12 @@ class LoginView(BaseLoginView):
         messages.success(self.request, f'{form.get_user().get_full_name()}님, 환영합니다!')
         return super().form_valid(form)
 
-class LogoutView(BaseLogoutView):
-    """로그아웃 뷰"""
-    next_page = reverse_lazy('home')
-    
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            messages.info(request, '성공적으로 로그아웃되었습니다.')
-        return super().dispatch(request, *args, **kwargs)
+def logout_view(request):
+    """로그아웃 뷰 (함수형)"""
+    if request.user.is_authenticated:
+        messages.info(request, '성공적으로 로그아웃되었습니다.')
+        logout(request)
+    return redirect('home')
 
 class RegisterView(CreateView):
     """회원가입 뷰"""

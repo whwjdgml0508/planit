@@ -75,6 +75,15 @@
     border-color: #007bff;
 }
 
+.empty-slot i {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.empty-slot:hover i {
+    color: #007bff;
+}
+
 .semester-info {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
@@ -171,9 +180,10 @@
                                     </div>
                                 {% else %}
                                     <div class="empty-slot h-100 d-flex align-items-center justify-content-center"
-                                         onclick="showAddSubjectModal('{{ day }}', {{ period }})"
+                                         onclick="goToTimetableManage()"
+                                         style="cursor: pointer;"
                                          data-bs-toggle="tooltip"
-                                         title="과목 추가하기">
+                                         title="시간표 관리로 이동">
                                         <i class="fas fa-plus text-muted"></i>
                                     </div>
                                 {% endif %}
@@ -259,10 +269,12 @@
     </div>
     {% endif %}
 </div>
+
+{% csrf_token %}
 {% endblock %}
 
 {% block extra_js %}
-<script>
+{{ ... }}
 // 템플릿 필터 대신 사용할 JavaScript 함수
 function lookup(obj, key) {
     return obj[key];
@@ -273,14 +285,13 @@ function showSubjectDetail(subjectId) {
     window.location.href = `/timetable/subject/${subjectId}/`;
 }
 
-// 과목 추가 모달 표시
-function showAddSubjectModal(day, period) {
-    // 과목 추가 페이지로 이동하면서 시간 정보 전달
-    const url = new URL('{% url "timetable:subject_create" %}', window.location.origin);
-    url.searchParams.set('day', day);
-    url.searchParams.set('period', period);
-    window.location.href = url.toString();
+// 시간표 관리 페이지로 이동
+function goToTimetableManage() {
+    console.log('시간표 관리 페이지로 이동 중...');
+    window.location.href = '/timetable/manage/';
 }
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // 툴팁 초기화

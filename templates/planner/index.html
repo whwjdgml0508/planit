@@ -66,6 +66,9 @@
             <p class="text-muted mb-0">오늘도 목표를 향해 한 걸음 더!</p>
         </div>
         <div class="btn-group">
+            <a href="{% url 'planner:daily_planner' %}" class="btn btn-info">
+                <i class="fas fa-calendar-day me-2"></i>일일 플래너
+            </a>
             <a href="{% url 'planner:task_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>과제 추가
             </a>
@@ -353,18 +356,18 @@ function toggleTask(taskId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            PlanIt.showToast(data.message, 'success');
+            alert(data.message);
             // 페이지 새로고침
             setTimeout(() => {
                 location.reload();
             }, 1000);
         } else {
-            PlanIt.showToast('오류가 발생했습니다.', 'error');
+            alert('오류가 발생했습니다.');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        PlanIt.showToast('네트워크 오류가 발생했습니다.', 'error');
+        alert('네트워크 오류가 발생했습니다.');
     });
 }
 
@@ -384,19 +387,19 @@ document.getElementById('quick-add-form').addEventListener('submit', function(e)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            PlanIt.showToast(data.message, 'success');
+            alert(data.message);
             this.reset();
             // 페이지 새로고침
             setTimeout(() => {
                 location.reload();
             }, 1000);
         } else {
-            PlanIt.showToast('입력 정보를 확인해주세요.', 'error');
+            alert('입력 정보를 확인해주세요.');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        PlanIt.showToast('네트워크 오류가 발생했습니다.', 'error');
+        alert('네트워크 오류가 발생했습니다.');
     });
 });
 </script>

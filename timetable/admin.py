@@ -8,18 +8,18 @@ class TimeSlotInline(admin.TabularInline):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code', 'professor', 'credits', 'subject_type', 'user', 'created_at']
-    list_filter = ['subject_type', 'evaluation_type', 'credits', 'created_at']
-    search_fields = ['name', 'code', 'professor', 'user__username']
+    list_display = ['name', 'professor', 'credits', 'subject_type', 'user', 'created_at']
+    list_filter = ['subject_type', 'credits', 'created_at']
+    search_fields = ['name', 'professor', 'user__username']
     readonly_fields = ['id', 'created_at', 'updated_at']
     inlines = [TimeSlotInline]
     
     fieldsets = (
         ('기본 정보', {
-            'fields': ('user', 'name', 'code', 'professor', 'credits')
+            'fields': ('user', 'name', 'professor', 'credits')
         }),
         ('분류 및 평가', {
-            'fields': ('subject_type', 'evaluation_type')
+            'fields': ('subject_type', 'evaluation_method')
         }),
         ('추가 정보', {
             'fields': ('classroom', 'note', 'color')

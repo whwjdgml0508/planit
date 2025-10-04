@@ -24,7 +24,7 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         
         # 시간표 데이터 구성
         timetable_data = {}
-        days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        days = ['MON', 'TUE', 'WED', 'THU', 'FRI']
         periods = range(1, 9)  # 1교시부터 8교시까지
         
         # 빈 시간표 초기화
@@ -44,17 +44,15 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         
         context.update({
             'current_semester': current_semester,
-            'subjects': subjects,
             'timetable_data': timetable_data,
             'days': days,
             'periods': periods,
             'day_names': {
-                'MON': '월',
-                'TUE': '화',
-                'WED': '수',
-                'THU': '목',
-                'FRI': '금',
-                'SAT': '토'
+                'MON': '  ', 
+                'TUE': '  ', 
+                'WED': '  ', 
+                'THU': '  ', 
+                'FRI': '  '
             }
         })
         return context
@@ -250,7 +248,7 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
         
         # 시간표 데이터 구성
         timetable_data = {}
-        days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        days = ['MON', 'TUE', 'WED', 'THU', 'FRI']
         periods = range(1, 9)
         
         # 빈 시간표 초기화
@@ -278,8 +276,7 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
                 'TUE': '화', 
                 'WED': '수',
                 'THU': '목',
-                'FRI': '금',
-                'SAT': '토'
+                'FRI': '금'
             },
             'period_times': {
                 1: '08:10-09:00',
@@ -297,13 +294,47 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
 def add_to_timetable(request):
     """AJAX: 과목을 시간표에 추가"""
     if request.method == 'POST':
-        subject_id = request.POST.get('subject_id')
-        day = request.POST.get('day')
-        period = int(request.POST.get('period'))
-        location = request.POST.get('location', '')
-        
         try:
-            subject = Subject.objects.get(id=subject_id, user=request.user)
+            subject_id = request.POST.get('subject_id')
+            day = request.POST.get('day')
+            period_str = request.POST.get('period')
+            location = request.POST.get('location', '')
+            
+            # 입력값 검증
+            if not subject_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': '과목을 선택해주세요.'
+                })
+            
+            if not day:
+                return JsonResponse({
+                    'success': False,
+                    'error': '요일을 선택해주세요.'
+                })
+            
+            if not period_str:
+                return JsonResponse({
+                    'success': False,
+                    'error': '교시를 선택해주세요.'
+                })
+            
+            try:
+                period = int(period_str)
+            except ValueError:
+                return JsonResponse({
+                    'success': False,
+                    'error': '올바른 교시를 선택해주세요.'
+                })
+            
+            # 과목 조회
+            try:
+                subject = Subject.objects.get(id=subject_id, user=request.user)
+            except Subject.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': '선택한 과목을 찾을 수 없습니다.'
+                })
             
             # 중복 시간 체크 (다른 과목과의 충돌만 체크)
             existing_slot = TimeSlot.objects.filter(
@@ -341,18 +372,18 @@ def add_to_timetable(request):
             
             return JsonResponse({
                 'success': True,
-                'message': f'"{subject.name}" 과목이 시간표에 추가되었습니다.',
+                'message': f'"{subject.name}" 과목이 {day} {period}교시에 추가되었습니다.',
                 'subject_name': subject.name,
                 'subject_color': subject.color
             })
             
-        except Subject.DoesNotExist:
+        except Exception as e:
             return JsonResponse({
                 'success': False,
-                'error': '과목을 찾을 수 없습니다.'
+                'error': f'서버 오류가 발생했습니다: {str(e)}'
             })
     
-    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+    return JsonResponse({'success': False, 'error': '잘못된 요청 방식입니다.'})
 
 def remove_from_timetable(request):
     """AJAX: 시간표에서 과목 제거"""
