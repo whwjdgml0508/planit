@@ -13,8 +13,12 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     'planit.boramae.club',
+    'www.planit.boramae.club',
+    '35.163.12.109',
     '*.amazonaws.com',
     '*.compute.amazonaws.com',
+    'localhost',
+    '127.0.0.1',
     os.environ.get('ALLOWED_HOST', 'localhost'),
 ]
 
