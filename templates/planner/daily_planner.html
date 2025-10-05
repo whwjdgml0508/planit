@@ -307,7 +307,7 @@
 
 .time-cell.filled {
     opacity: 0.8;
-    border-color: #0056b3;
+    border-color: #0056b3 !important;
     box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
 }
 
@@ -696,7 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (cell) {
                         const blockData = data.timeBlocks[key];
                         cell.classList.add('filled');
-                        cell.style.backgroundColor = blockData.color;
+                        cell.style.setProperty('background-color', blockData.color, 'important');
                         cell.title = `${hour}:${minute}0 - ${blockData.subject}`;
                     }
                 });
@@ -888,14 +888,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     
     // 간단한 클릭 방식 시간표 기록
-    document.querySelectorAll('.time-cell').forEach(cell => {
-        cell.addEventListener('click', function(e) {
-            e.preventDefault();
-            const hour = this.dataset.hour;
-            const minute = this.dataset.minute;
-            toggleTimeBlock(hour, minute);
+    function attachTimeTableEvents() {
+        document.querySelectorAll('.time-cell').forEach(cell => {
+            cell.addEventListener('click', function(e) {
+                e.preventDefault();
+                const hour = this.dataset.hour;
+                const minute = this.dataset.minute;
+                console.log(`클릭된 시간: ${hour}:${minute}`); // 디버깅용
+                toggleTimeBlock(hour, minute);
+            });
         });
-    });
+    }
+    
+    // 이벤트 리스너 등록
+    attachTimeTableEvents();
     
     // 일일 목표 업데이트
     const dailyGoalElement = document.getElementById('daily-goal');
@@ -954,9 +960,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 시간 블록 토글 함수
 function toggleTimeBlock(hour, minute) {
+    console.log(`toggleTimeBlock 호출: ${hour}:${minute}`); // 디버깅용
+    
     const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
+    console.log('찾은 셀:', cell); // 디버깅용
+    
     const subjectSelect = document.getElementById('subject-select');
     const selectedSubject = subjectSelect.value;
+    console.log('선택된 과목:', selectedSubject); // 디버깅용
     
     if (!selectedSubject) {
         alert('먼저 과목을 선택해주세요!');
@@ -966,16 +977,19 @@ function toggleTimeBlock(hour, minute) {
     const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
     const subjectColor = selectedOption.dataset.color;
     const subjectName = selectedOption.text;
+    console.log('과목 색상:', subjectColor, '과목명:', subjectName); // 디버깅용
     
     if (cell.classList.contains('filled')) {
         // 제거
+        console.log('셀 제거 중...'); // 디버깅용
         cell.classList.remove('filled');
         cell.style.backgroundColor = '';
         cell.title = '';
     } else {
         // 추가
+        console.log('셀 추가 중...', subjectColor); // 디버깅용
         cell.classList.add('filled');
-        cell.style.backgroundColor = subjectColor;
+        cell.style.setProperty('background-color', subjectColor, 'important');
         cell.title = `${hour}:${minute}0 - ${subjectName}`;
     }
     
