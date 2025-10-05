@@ -480,17 +480,33 @@
 
                 <!-- 시간표 그리드 -->
                 <div class="timetable-grid">
-                    {% for hour in "6789101112131415161718192021222324"|make_list %}
-                    <div class="timetable-row">
-                        <div class="hour-label">{{ hour }}시</div>
-                        {% for minute_block in "0102030405"|make_list %}
-                        <div class="time-cell" 
-                             data-hour="{{ hour }}" 
-                             data-minute="{{ minute_block }}">
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
+                    <!-- 06:00 ~ 23:00 -->
+                    <div class="timetable-row"><div class="hour-label">06:00</div><div class="time-cell" data-hour="06" data-minute="0"></div><div class="time-cell" data-hour="06" data-minute="1"></div><div class="time-cell" data-hour="06" data-minute="2"></div><div class="time-cell" data-hour="06" data-minute="3"></div><div class="time-cell" data-hour="06" data-minute="4"></div><div class="time-cell" data-hour="06" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">07:00</div><div class="time-cell" data-hour="07" data-minute="0"></div><div class="time-cell" data-hour="07" data-minute="1"></div><div class="time-cell" data-hour="07" data-minute="2"></div><div class="time-cell" data-hour="07" data-minute="3"></div><div class="time-cell" data-hour="07" data-minute="4"></div><div class="time-cell" data-hour="07" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">08:00</div><div class="time-cell" data-hour="08" data-minute="0"></div><div class="time-cell" data-hour="08" data-minute="1"></div><div class="time-cell" data-hour="08" data-minute="2"></div><div class="time-cell" data-hour="08" data-minute="3"></div><div class="time-cell" data-hour="08" data-minute="4"></div><div class="time-cell" data-hour="08" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">09:00</div><div class="time-cell" data-hour="09" data-minute="0"></div><div class="time-cell" data-hour="09" data-minute="1"></div><div class="time-cell" data-hour="09" data-minute="2"></div><div class="time-cell" data-hour="09" data-minute="3"></div><div class="time-cell" data-hour="09" data-minute="4"></div><div class="time-cell" data-hour="09" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">10:00</div><div class="time-cell" data-hour="10" data-minute="0"></div><div class="time-cell" data-hour="10" data-minute="1"></div><div class="time-cell" data-hour="10" data-minute="2"></div><div class="time-cell" data-hour="10" data-minute="3"></div><div class="time-cell" data-hour="10" data-minute="4"></div><div class="time-cell" data-hour="10" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">11:00</div><div class="time-cell" data-hour="11" data-minute="0"></div><div class="time-cell" data-hour="11" data-minute="1"></div><div class="time-cell" data-hour="11" data-minute="2"></div><div class="time-cell" data-hour="11" data-minute="3"></div><div class="time-cell" data-hour="11" data-minute="4"></div><div class="time-cell" data-hour="11" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">12:00</div><div class="time-cell" data-hour="12" data-minute="0"></div><div class="time-cell" data-hour="12" data-minute="1"></div><div class="time-cell" data-hour="12" data-minute="2"></div><div class="time-cell" data-hour="12" data-minute="3"></div><div class="time-cell" data-hour="12" data-minute="4"></div><div class="time-cell" data-hour="12" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">13:00</div><div class="time-cell" data-hour="13" data-minute="0"></div><div class="time-cell" data-hour="13" data-minute="1"></div><div class="time-cell" data-hour="13" data-minute="2"></div><div class="time-cell" data-hour="13" data-minute="3"></div><div class="time-cell" data-hour="13" data-minute="4"></div><div class="time-cell" data-hour="13" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">14:00</div><div class="time-cell" data-hour="14" data-minute="0"></div><div class="time-cell" data-hour="14" data-minute="1"></div><div class="time-cell" data-hour="14" data-minute="2"></div><div class="time-cell" data-hour="14" data-minute="3"></div><div class="time-cell" data-hour="14" data-minute="4"></div><div class="time-cell" data-hour="14" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">15:00</div><div class="time-cell" data-hour="15" data-minute="0"></div><div class="time-cell" data-hour="15" data-minute="1"></div><div class="time-cell" data-hour="15" data-minute="2"></div><div class="time-cell" data-hour="15" data-minute="3"></div><div class="time-cell" data-hour="15" data-minute="4"></div><div class="time-cell" data-hour="15" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">16:00</div><div class="time-cell" data-hour="16" data-minute="0"></div><div class="time-cell" data-hour="16" data-minute="1"></div><div class="time-cell" data-hour="16" data-minute="2"></div><div class="time-cell" data-hour="16" data-minute="3"></div><div class="time-cell" data-hour="16" data-minute="4"></div><div class="time-cell" data-hour="16" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">17:00</div><div class="time-cell" data-hour="17" data-minute="0"></div><div class="time-cell" data-hour="17" data-minute="1"></div><div class="time-cell" data-hour="17" data-minute="2"></div><div class="time-cell" data-hour="17" data-minute="3"></div><div class="time-cell" data-hour="17" data-minute="4"></div><div class="time-cell" data-hour="17" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">18:00</div><div class="time-cell" data-hour="18" data-minute="0"></div><div class="time-cell" data-hour="18" data-minute="1"></div><div class="time-cell" data-hour="18" data-minute="2"></div><div class="time-cell" data-hour="18" data-minute="3"></div><div class="time-cell" data-hour="18" data-minute="4"></div><div class="time-cell" data-hour="18" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">19:00</div><div class="time-cell" data-hour="19" data-minute="0"></div><div class="time-cell" data-hour="19" data-minute="1"></div><div class="time-cell" data-hour="19" data-minute="2"></div><div class="time-cell" data-hour="19" data-minute="3"></div><div class="time-cell" data-hour="19" data-minute="4"></div><div class="time-cell" data-hour="19" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">20:00</div><div class="time-cell" data-hour="20" data-minute="0"></div><div class="time-cell" data-hour="20" data-minute="1"></div><div class="time-cell" data-hour="20" data-minute="2"></div><div class="time-cell" data-hour="20" data-minute="3"></div><div class="time-cell" data-hour="20" data-minute="4"></div><div class="time-cell" data-hour="20" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">21:00</div><div class="time-cell" data-hour="21" data-minute="0"></div><div class="time-cell" data-hour="21" data-minute="1"></div><div class="time-cell" data-hour="21" data-minute="2"></div><div class="time-cell" data-hour="21" data-minute="3"></div><div class="time-cell" data-hour="21" data-minute="4"></div><div class="time-cell" data-hour="21" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">22:00</div><div class="time-cell" data-hour="22" data-minute="0"></div><div class="time-cell" data-hour="22" data-minute="1"></div><div class="time-cell" data-hour="22" data-minute="2"></div><div class="time-cell" data-hour="22" data-minute="3"></div><div class="time-cell" data-hour="22" data-minute="4"></div><div class="time-cell" data-hour="22" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">23:00</div><div class="time-cell" data-hour="23" data-minute="0"></div><div class="time-cell" data-hour="23" data-minute="1"></div><div class="time-cell" data-hour="23" data-minute="2"></div><div class="time-cell" data-hour="23" data-minute="3"></div><div class="time-cell" data-hour="23" data-minute="4"></div><div class="time-cell" data-hour="23" data-minute="5"></div></div>
+                    
+                    <!-- 00:00 ~ 05:00 (다음날) -->
+                    <div class="timetable-row"><div class="hour-label">00:00</div><div class="time-cell" data-hour="00" data-minute="0"></div><div class="time-cell" data-hour="00" data-minute="1"></div><div class="time-cell" data-hour="00" data-minute="2"></div><div class="time-cell" data-hour="00" data-minute="3"></div><div class="time-cell" data-hour="00" data-minute="4"></div><div class="time-cell" data-hour="00" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">01:00</div><div class="time-cell" data-hour="01" data-minute="0"></div><div class="time-cell" data-hour="01" data-minute="1"></div><div class="time-cell" data-hour="01" data-minute="2"></div><div class="time-cell" data-hour="01" data-minute="3"></div><div class="time-cell" data-hour="01" data-minute="4"></div><div class="time-cell" data-hour="01" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">02:00</div><div class="time-cell" data-hour="02" data-minute="0"></div><div class="time-cell" data-hour="02" data-minute="1"></div><div class="time-cell" data-hour="02" data-minute="2"></div><div class="time-cell" data-hour="02" data-minute="3"></div><div class="time-cell" data-hour="02" data-minute="4"></div><div class="time-cell" data-hour="02" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">03:00</div><div class="time-cell" data-hour="03" data-minute="0"></div><div class="time-cell" data-hour="03" data-minute="1"></div><div class="time-cell" data-hour="03" data-minute="2"></div><div class="time-cell" data-hour="03" data-minute="3"></div><div class="time-cell" data-hour="03" data-minute="4"></div><div class="time-cell" data-hour="03" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">04:00</div><div class="time-cell" data-hour="04" data-minute="0"></div><div class="time-cell" data-hour="04" data-minute="1"></div><div class="time-cell" data-hour="04" data-minute="2"></div><div class="time-cell" data-hour="04" data-minute="3"></div><div class="time-cell" data-hour="04" data-minute="4"></div><div class="time-cell" data-hour="04" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">05:00</div><div class="time-cell" data-hour="05" data-minute="0"></div><div class="time-cell" data-hour="05" data-minute="1"></div><div class="time-cell" data-hour="05" data-minute="2"></div><div class="time-cell" data-hour="05" data-minute="3"></div><div class="time-cell" data-hour="05" data-minute="4"></div><div class="time-cell" data-hour="05" data-minute="5"></div></div>
                 </div>
 
                 <!-- 학습 통계 -->
@@ -766,8 +782,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 할 일 추가
-    document.getElementById('add-todo-btn').addEventListener('click', function() {
-        const title = document.getElementById('new-todo-title').value.trim();
+    const addTodoBtn = document.getElementById('add-todo-btn');
+    if (addTodoBtn) {
+        addTodoBtn.addEventListener('click', function() {
+            const title = document.getElementById('new-todo-title').value.trim();
         
         if (!title) {
             alert('할 일을 입력해주세요.');
@@ -797,9 +815,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 이벤트 리스너 재등록
         attachTodoEventListeners();
         
-        // 데이터 저장
-        saveData();
-    });
+            // 데이터 저장
+            saveData();
+        });
+    }
     
     // Enter 키로 할 일 추가
     document.getElementById('new-todo-title').addEventListener('keypress', function(e) {
@@ -831,6 +850,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 초기 이벤트 리스너 등록
     attachTodoEventListeners();
+    
+    // 페이지 종료 시 데이터 자동 저장
+    window.addEventListener('beforeunload', function(e) {
+        saveData();
+        // 모바일에서도 작동하도록 추가 저장
+        setTimeout(() => saveData(), 100);
+    });
+    
+    // 페이지 숨김/표시 시에도 저장 (모바일 대응)
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            saveData();
+        }
+    });
+    
+    // 주기적 자동 저장 (30초마다)
+    setInterval(function() {
+        saveData();
+        console.log('자동 저장 완료');
+    }, 30000);
 });
 
 // 시간 블록 토글 함수
