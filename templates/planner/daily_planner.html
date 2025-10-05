@@ -893,18 +893,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 시간 블록 이벤트 (클릭, 드래그, 우클릭)
     document.querySelectorAll('.time-cell').forEach(cell => {
-        // 클릭 이벤트
-        cell.addEventListener('click', function(e) {
-            e.preventDefault();
-            const hour = this.dataset.hour;
-            const minute = this.dataset.minute;
-            toggleTimeBlock(hour, minute);
-        });
+        let mouseDownTime = 0;
+        let hasMoved = false;
         
         // 마우스 다운 (드래그 시작)
         cell.addEventListener('mousedown', function(e) {
             if (e.button === 0) { // 왼쪽 클릭만
                 e.preventDefault();
+                mouseDownTime = Date.now();
+                hasMoved = false;
                 isDragging = true;
                 
                 // 현재 셀 상태에 따라 드래그 모드 결정
@@ -922,7 +919,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // 마우스 엔터 (드래그 중)
         cell.addEventListener('mouseenter', function(e) {
             if (isDragging) {
+                hasMoved = true;
                 handleDragCell(this);
+            }
+        });
+        
+        // 마우스 업 (클릭 또는 드래그 종료)
+        cell.addEventListener('mouseup', function(e) {
+            if (e.button === 0 && isDragging) {
+                const clickDuration = Date.now() - mouseDownTime;
+                
+                // 짧은 시간이고 움직이지 않았으면 클릭으로 처리
+                if (clickDuration < 200 && !hasMoved) {
+                    const hour = this.dataset.hour;
+                    const minute = this.dataset.minute;
+                    toggleTimeBlock(hour, minute);
+                }
             }
         });
         
