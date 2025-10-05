@@ -293,20 +293,28 @@
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .time-cell:hover {
     background: #e9ecef;
     border-color: #007bff;
+    transform: scale(1.05);
 }
 
 .time-cell.filled {
-    background: #28a745;
     opacity: 0.8;
+    border-color: #0056b3;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
 }
 
 .time-cell.filled:hover {
     opacity: 1;
+    transform: scale(1.05);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 }
 
 .study-stats {
@@ -468,6 +476,15 @@
                         </a>
                     </small>
                     {% endif %}
+                    
+                    <!-- 사용법 안내 -->
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>사용법:</strong> 
+                            드래그로 여러 칸 칠하기 | 우클릭으로 삭제
+                        </small>
+                    </div>
                 </div>
                 
                 <!-- 시간표 헤더 -->
@@ -870,14 +887,101 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     
-    // 시간 블록 클릭 이벤트
+    // 드래그 관련 변수
+    let isDragging = false;
+    let dragMode = null; // 'fill' 또는 'clear'
+    
+    // 시간 블록 이벤트 (클릭, 드래그, 우클릭)
     document.querySelectorAll('.time-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
+        // 클릭 이벤트
+        cell.addEventListener('click', function(e) {
+            e.preventDefault();
             const hour = this.dataset.hour;
             const minute = this.dataset.minute;
             toggleTimeBlock(hour, minute);
         });
+        
+        // 마우스 다운 (드래그 시작)
+        cell.addEventListener('mousedown', function(e) {
+            if (e.button === 0) { // 왼쪽 클릭만
+                e.preventDefault();
+                isDragging = true;
+                
+                // 현재 셀 상태에 따라 드래그 모드 결정
+                if (this.classList.contains('filled')) {
+                    dragMode = 'clear';
+                } else {
+                    dragMode = 'fill';
+                }
+                
+                // 첫 번째 셀 처리
+                handleDragCell(this);
+            }
+        });
+        
+        // 마우스 엔터 (드래그 중)
+        cell.addEventListener('mouseenter', function(e) {
+            if (isDragging) {
+                handleDragCell(this);
+            }
+        });
+        
+        // 우클릭 (삭제)
+        cell.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            if (this.classList.contains('filled')) {
+                this.classList.remove('filled');
+                this.style.backgroundColor = '';
+                this.title = '';
+                updateStudyStats();
+                saveData();
+            }
+        });
+        
+        // 드래그 방지
+        cell.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
     });
+    
+    // 마우스 업 (드래그 종료)
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            dragMode = null;
+            updateStudyStats();
+            saveData();
+        }
+    });
+    
+    // 드래그 셀 처리 함수
+    function handleDragCell(cell) {
+        const subjectSelect = document.getElementById('subject-select');
+        const selectedSubject = subjectSelect.value;
+        
+        if (dragMode === 'fill') {
+            if (!selectedSubject) {
+                alert('먼저 과목을 선택해주세요!');
+                isDragging = false;
+                return;
+            }
+            
+            const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+            const subjectColor = selectedOption.dataset.color;
+            const subjectName = selectedOption.text;
+            const hour = cell.dataset.hour;
+            const minute = cell.dataset.minute;
+            
+            cell.classList.add('filled');
+            cell.style.backgroundColor = subjectColor;
+            cell.title = `${hour}:${minute}0 - ${subjectName}`;
+            
+        } else if (dragMode === 'clear') {
+            cell.classList.remove('filled');
+            cell.style.backgroundColor = '';
+            cell.title = '';
+        }
+    }
     
     // 일일 목표 업데이트
     const dailyGoalElement = document.getElementById('daily-goal');
