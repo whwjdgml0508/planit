@@ -365,6 +365,9 @@
                     <h2 class="mb-1">📚 학습 플래너</h2>
                     <p class="mb-0" id="current-date">{{ selected_date|date:"Y년 m월 d일 l요일" }}</p>
                     <input type="date" class="form-control d-inline-block w-auto mt-2" id="date-picker" value="{{ selected_date|date:'Y-m-d' }}">
+                    <div id="save-status" class="mt-2" style="font-size: 0.8rem; color: #28a745;">
+                        💾 자동 저장 중...
+                    </div>
                 </div>
                 <div class="col-2 text-end">
                     <button class="btn btn-light btn-sm" id="next-day-btn">
@@ -558,38 +561,71 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 데이터 저장 함수
     function saveData() {
-        const dateKey = formatDate(currentDate);
-        
-        // 할 일 목록 저장
-        const todos = [];
-        document.querySelectorAll('.todo-item').forEach(item => {
-            const text = item.querySelector('.todo-text').textContent;
-            const completed = item.classList.contains('completed');
-            todos.push({ text, completed });
-        });
-        
-        // 시간표 데이터 저장
-        const timeBlocks = {};
-        document.querySelectorAll('.time-cell.filled').forEach(cell => {
-            const hour = cell.dataset.hour;
-            const minute = cell.dataset.minute;
-            const subject = cell.title.split(' - ')[1] || '';
-            const color = cell.style.backgroundColor;
-            timeBlocks[`${hour}-${minute}`] = { subject, color };
-        });
-        
-        // 일일 목표 저장
-        const dailyGoal = document.getElementById('daily-goal')?.value || '';
-        
-        const data = {
-            todos,
-            timeBlocks,
-            dailyGoal,
-            date: dateKey
-        };
-        
-        localStorage.setItem(`planner-${dateKey}`, JSON.stringify(data));
-        console.log('데이터 저장됨:', dateKey);
+        try {
+            const dateKey = formatDate(currentDate);
+            
+            // 할 일 목록 저장
+            const todos = [];
+            document.querySelectorAll('.todo-item').forEach(item => {
+                const textElement = item.querySelector('.todo-text');
+                if (textElement) {
+                    const text = textElement.textContent;
+                    const completed = item.classList.contains('completed');
+                    todos.push({ text, completed });
+                }
+            });
+            
+            // 시간표 데이터 저장
+            const timeBlocks = {};
+            document.querySelectorAll('.time-cell.filled').forEach(cell => {
+                const hour = cell.dataset.hour;
+                const minute = cell.dataset.minute;
+                const subject = cell.title.split(' - ')[1] || '';
+                const color = cell.style.backgroundColor;
+                timeBlocks[`${hour}-${minute}`] = { subject, color };
+            });
+            
+            // 일일 목표 저장
+            const dailyGoalElement = document.getElementById('daily-goal');
+            const dailyGoal = dailyGoalElement ? dailyGoalElement.value : '';
+            
+            const data = {
+                todos,
+                timeBlocks,
+                dailyGoal,
+                date: dateKey,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem(`planner-${dateKey}`, JSON.stringify(data));
+            console.log('✅ 데이터 저장 완료:', dateKey, '할일:', todos.length, '시간블록:', Object.keys(timeBlocks).length);
+            
+            // 저장 상태 표시
+            const saveStatus = document.getElementById('save-status');
+            if (saveStatus) {
+                saveStatus.innerHTML = '✅ 저장 완료';
+                saveStatus.style.color = '#28a745';
+                setTimeout(() => {
+                    saveStatus.innerHTML = '💾 자동 저장 중...';
+                    saveStatus.style.color = '#6c757d';
+                }, 2000);
+            }
+            
+            // 저장 확인
+            const saved = localStorage.getItem(`planner-${dateKey}`);
+            if (!saved) {
+                console.error('❌ 데이터 저장 실패!');
+                if (saveStatus) {
+                    saveStatus.innerHTML = '❌ 저장 실패';
+                    saveStatus.style.color = '#dc3545';
+                }
+                alert('데이터 저장에 실패했습니다. 브라우저 저장소를 확인해주세요.');
+            }
+            
+        } catch (error) {
+            console.error('❌ 저장 중 오류:', error);
+            alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
+        }
     }
     
     // 데이터 로드 함수
@@ -786,46 +822,52 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addTodoBtn) {
         addTodoBtn.addEventListener('click', function() {
             const title = document.getElementById('new-todo-title').value.trim();
-        
-        if (!title) {
-            alert('할 일을 입력해주세요.');
-            return;
-        }
-        
-        const todoList = document.querySelector('.todo-list');
-        const newTodo = document.createElement('div');
-        newTodo.className = 'todo-item';
-        newTodo.innerHTML = `
-            <input type="checkbox" class="todo-checkbox">
-            <span class="todo-text">${title}</span>
-            <button class="todo-delete delete-todo-btn">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        // 빈 상태 메시지 제거
-        const emptyState = todoList.querySelector('.empty-state');
-        if (emptyState) {
-            emptyState.remove();
-        }
-        
-        todoList.appendChild(newTodo);
-        document.getElementById('new-todo-title').value = '';
-        
-        // 이벤트 리스너 재등록
-        attachTodoEventListeners();
-        
+            
+            if (!title) {
+                alert('할 일을 입력해주세요.');
+                return;
+            }
+            
+            const todoList = document.querySelector('.todo-list');
+            const newTodo = document.createElement('div');
+            newTodo.className = 'todo-item';
+            newTodo.innerHTML = `
+                <input type="checkbox" class="todo-checkbox">
+                <span class="todo-text">${title}</span>
+                <button class="todo-delete delete-todo-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // 빈 상태 메시지 제거
+            const emptyState = todoList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            todoList.appendChild(newTodo);
+            document.getElementById('new-todo-title').value = '';
+            
+            // 이벤트 리스너 재등록
+            attachTodoEventListeners();
+            
             // 데이터 저장
             saveData();
         });
     }
     
     // Enter 키로 할 일 추가
-    document.getElementById('new-todo-title').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('add-todo-btn').click();
-        }
-    });
+    const newTodoInput = document.getElementById('new-todo-title');
+    if (newTodoInput) {
+        newTodoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const addBtn = document.getElementById('add-todo-btn');
+                if (addBtn) {
+                    addBtn.click();
+                }
+            }
+        });
+    }
     
     
     // 시간 블록 클릭 이벤트
@@ -854,22 +896,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // 페이지 종료 시 데이터 자동 저장
     window.addEventListener('beforeunload', function(e) {
         saveData();
-        // 모바일에서도 작동하도록 추가 저장
-        setTimeout(() => saveData(), 100);
+        console.log('페이지 종료 시 저장');
     });
     
     // 페이지 숨김/표시 시에도 저장 (모바일 대응)
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') {
             saveData();
+            console.log('페이지 숨김 시 저장');
+        } else {
+            console.log('페이지 다시 표시됨');
         }
     });
     
-    // 주기적 자동 저장 (30초마다)
+    // 모바일 브라우저 대응 - 포커스 잃을 때 저장
+    window.addEventListener('blur', function() {
+        saveData();
+        console.log('포커스 잃음 시 저장');
+    });
+    
+    // 모바일 터치 이벤트 후 저장
+    document.addEventListener('touchend', function() {
+        setTimeout(() => saveData(), 500);
+    });
+    
+    // 주기적 자동 저장 (15초마다로 단축)
     setInterval(function() {
         saveData();
-        console.log('자동 저장 완료');
-    }, 30000);
+        console.log('⏰ 주기적 자동 저장 완료');
+    }, 15000);
+    
+    // 입력 필드 변경 시 즉시 저장
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'daily-goal' || e.target.id === 'new-todo-title') {
+            setTimeout(() => saveData(), 1000); // 1초 후 저장
+        }
+    });
 });
 
 // 시간 블록 토글 함수
