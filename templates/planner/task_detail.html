@@ -132,7 +132,7 @@ function toggleTaskStatus() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            window.location.reload();
         } else {
             alert('오류가 발생했습니다.');
         }

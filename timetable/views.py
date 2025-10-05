@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.db import transaction
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from .models import Subject, TimeSlot, Semester
 from .forms import SubjectForm, TimeSlotForm, SubjectWithTimeSlotsForm, SemesterForm
 
@@ -391,3 +393,37 @@ def remove_from_timetable(request):
             })
     
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+@login_required
+@require_http_methods(["GET"])
+def get_timetable_data(request):
+    """시간표 데이터를 JSON으로 반환하는 API"""
+    try:
+        user = request.user
+        
+        # 사용자의 모든 과목과 시간표 데이터 가져오기
+        subjects = Subject.objects.filter(user=user).prefetch_related('time_slots')
+        
+        timetable_data = []
+        for subject in subjects:
+            for time_slot in subject.time_slots.all():
+                timetable_data.append({
+                    'day': time_slot.day,
+                    'period': time_slot.period,
+                    'subject_name': subject.name,
+                    'subject_color': subject.color or '#007bff',
+                    'subject_id': subject.id,
+                    'time_slot_id': time_slot.id
+                })
+        
+        return JsonResponse({
+            'success': True,
+            'timetable_data': timetable_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

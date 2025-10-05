@@ -140,7 +140,7 @@ function removeAttachment(attachmentId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                window.location.reload();
             } else {
                 alert('파일 삭제 중 오류가 발생했습니다.');
             }

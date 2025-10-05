@@ -19,6 +19,7 @@ urlpatterns = [
     path('manage/', views.TimetableManageView.as_view(), name='timetable_manage'),
     path('ajax/add-to-timetable/', views.add_to_timetable, name='add_to_timetable'),
     path('ajax/remove-from-timetable/', views.remove_from_timetable, name='remove_from_timetable'),
+    path('ajax/get-timetable-data/', views.get_timetable_data, name='get_timetable_data'),
     
     # 기존 기능
     path('subject/<uuid:subject_id>/timeslot/add/', views.TimeSlotCreateView.as_view(), name='timeslot_add'),

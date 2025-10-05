@@ -359,7 +359,7 @@ function toggleTask(taskId) {
             alert(data.message);
             // 페이지 새로고침
             setTimeout(() => {
-                location.reload();
+                window.location.reload();
             }, 1000);
         } else {
             alert('오류가 발생했습니다.');
@@ -391,7 +391,7 @@ document.getElementById('quick-add-form').addEventListener('submit', function(e)
             this.reset();
             // 페이지 새로고침
             setTimeout(() => {
-                location.reload();
+                window.location.reload();
             }, 1000);
         } else {
             alert('입력 정보를 확인해주세요.');
