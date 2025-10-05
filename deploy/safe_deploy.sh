@@ -7,8 +7,45 @@ cd /home/ubuntu/planit
 # 가상환경 활성화
 source /home/ubuntu/planit/planit/venv/bin/activate
 
-# 데이터베이스 백업
-echo "💾 데이터베이스 백업 중..."
+# 김공군 계정 데이터 특별 백업
+echo "👤 김공군 계정 데이터 백업 중..."
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+from timetable.models import Subject
+import json
+User = get_user_model()
+
+try:
+    kim_user = User.objects.get(username='김공군')
+    subjects = Subject.objects.filter(user=kim_user)
+    
+    backup_data = {
+        'user': {
+            'username': kim_user.username,
+            'first_name': kim_user.first_name,
+            'last_name': kim_user.last_name,
+            'email': kim_user.email
+        },
+        'subjects': []
+    }
+    
+    for subject in subjects:
+        backup_data['subjects'].append({
+            'name': subject.name,
+            'color': subject.color,
+            'subject_type': subject.subject_type
+        })
+    
+    with open('kim_backup.json', 'w', encoding='utf-8') as f:
+        json.dump(backup_data, f, ensure_ascii=False, indent=2)
+    
+    print(f'김공군 계정 백업 완료: {len(backup_data[\"subjects\"])}개 과목')
+except Exception as e:
+    print(f'김공군 계정 백업 실패: {e}')
+"
+
+# 전체 데이터베이스 백업
+echo "💾 전체 데이터베이스 백업 중..."
 python manage.py dumpdata --natural-foreign --natural-primary > backup_$(date +%Y%m%d_%H%M%S).json
 
 # 현재 변경사항 임시 저장 (데이터베이스 파일 포함)
@@ -24,6 +61,51 @@ git pull origin main
 echo "🗄️ 데이터베이스 업데이트 중..."
 python manage.py makemigrations
 python manage.py migrate
+
+# 김공군 계정 복구
+echo "👤 김공군 계정 복구 중..."
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+from timetable.models import Subject
+import json
+import os
+User = get_user_model()
+
+if os.path.exists('kim_backup.json'):
+    try:
+        with open('kim_backup.json', 'r', encoding='utf-8') as f:
+            backup_data = json.load(f)
+        
+        # 김공군 계정 생성/업데이트
+        user, created = User.objects.get_or_create(
+            username=backup_data['user']['username'],
+            defaults=backup_data['user']
+        )
+        
+        if created:
+            print('김공군 계정을 새로 생성했습니다.')
+        else:
+            print('김공군 계정이 이미 존재합니다.')
+        
+        # 과목 복구
+        restored_count = 0
+        for subject_data in backup_data['subjects']:
+            subject, created = Subject.objects.get_or_create(
+                user=user,
+                name=subject_data['name'],
+                defaults=subject_data
+            )
+            if created:
+                restored_count += 1
+        
+        print(f'과목 복구 완료: {restored_count}개 새로 생성')
+        print(f'김공군 계정의 총 과목 수: {Subject.objects.filter(user=user).count()}개')
+        
+    except Exception as e:
+        print(f'김공군 계정 복구 실패: {e}')
+else:
+    print('김공군 백업 파일이 없습니다.')
+"
 
 # 정적 파일 수집
 echo "📁 정적 파일 수집 중..."
@@ -49,9 +131,15 @@ print('=== 등록된 사용자 ===')
 for user in User.objects.all():
     print(f'사용자: {user.username}')
 
-print('\n=== 모든 과목들 ===')
-for subject in Subject.objects.all():
-    print(f'사용자: {subject.user.username}, 과목: {subject.name}, 색상: {subject.color}')
+print('\n=== 김공군 계정의 과목들 ===')
+try:
+    kim_user = User.objects.get(username='김공군')
+    subjects = Subject.objects.filter(user=kim_user)
+    for subject in subjects:
+        print(f'- {subject.name}: {subject.color} ({subject.subject_type})')
+    print(f'총 {subjects.count()}개 과목')
+except:
+    print('김공군 계정을 찾을 수 없습니다.')
 
-print(f'\n총 사용자: {User.objects.count()}명, 총 과목: {Subject.objects.count()}개')
+print(f'\n전체 통계: 사용자 {User.objects.count()}명, 과목 {Subject.objects.count()}개')
 "
