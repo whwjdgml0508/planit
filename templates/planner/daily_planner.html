@@ -734,27 +734,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 이전/다음 날짜 버튼
-    document.getElementById('prev-day-btn').addEventListener('click', function() {
-        saveData(); // 현재 데이터 저장
-        currentDate.setDate(currentDate.getDate() - 1);
-        updateDateDisplay();
-        loadData(); // 새 날짜 데이터 로드
-    });
+    const prevBtn = document.getElementById('prev-day-btn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
     
-    document.getElementById('next-day-btn').addEventListener('click', function() {
-        saveData(); // 현재 데이터 저장
-        currentDate.setDate(currentDate.getDate() + 1);
-        updateDateDisplay();
-        loadData(); // 새 날짜 데이터 로드
-    });
+    const nextBtn = document.getElementById('next-day-btn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
     
     // 날짜 선택기
-    document.getElementById('date-picker').addEventListener('change', function() {
-        saveData(); // 현재 데이터 저장
-        currentDate = new Date(this.value);
-        updateDateDisplay();
-        loadData(); // 새 날짜 데이터 로드
-    });
+    const datePicker = document.getElementById('date-picker');
+    if (datePicker) {
+        datePicker.addEventListener('change', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate = new Date(this.value);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
     
     // 타이머 업데이트
     function updateTimerDisplay() {
@@ -762,36 +771,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
         
-        document.getElementById('timer-display').textContent = 
-            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay) {
+            timerDisplay.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
     }
     
     // 타이머 시작
-    document.getElementById('start-btn').addEventListener('click', function() {
-        if (!isRunning) {
-            timerInterval = setInterval(function() {
-                seconds++;
-                updateTimerDisplay();
-            }, 1000);
-            isRunning = true;
-            this.textContent = '일시정지';
-        } else {
-            clearInterval(timerInterval);
-            isRunning = false;
-            this.textContent = '시작';
-        }
-    });
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', function() {
+            if (!isRunning) {
+                timerInterval = setInterval(function() {
+                    seconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                isRunning = true;
+                this.textContent = '일시정지';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-warning');
+            } else {
+                clearInterval(timerInterval);
+                isRunning = false;
+                this.textContent = '시작';
+                this.classList.remove('btn-warning');
+                this.classList.add('btn-success');
+            }
+        });
+    }
     
     // 타이머 리셋
-    document.getElementById('reset-btn').addEventListener('click', function() {
-        clearInterval(timerInterval);
-        seconds = 0;
-        isRunning = false;
-        updateTimerDisplay();
-        document.getElementById('start-btn').textContent = '시작';
-    });
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            isRunning = false;
+            updateTimerDisplay();
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.textContent = '시작';
+                startBtn.classList.remove('btn-warning');
+                startBtn.classList.add('btn-success');
+            }
+        });
+    }
     
-    // 할 일 이벤트 리스너 등록 함수
+    // 할 일 이벤트 리스너 등록
     function attachTodoEventListeners() {
         // 할 일 체크박스 토글
         document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
@@ -838,7 +865,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const addTodoBtn = document.getElementById('add-todo-btn');
     if (addTodoBtn) {
         addTodoBtn.addEventListener('click', function() {
-            const title = document.getElementById('new-todo-title').value.trim();
+            const titleInput = document.getElementById('new-todo-title');
+            if (!titleInput) return;
+            const title = titleInput.value.trim();
             
             if (!title) {
                 alert('할 일을 입력해주세요.');
@@ -863,7 +892,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             todoList.appendChild(newTodo);
-            document.getElementById('new-todo-title').value = '';
+            const todoInput = document.getElementById('new-todo-title');
+            if (todoInput) {
+                todoInput.value = '';
+            }
             
             // 이벤트 리스너 재등록
             attachTodoEventListeners();
