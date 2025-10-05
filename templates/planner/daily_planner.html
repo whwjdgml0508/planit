@@ -355,18 +355,19 @@
         <div class="planner-header">
             <div class="row align-items-center">
                 <div class="col-2">
-                    <a href="?date={{ selected_date|date:'Y-m-d'|add_days:-1 }}" class="btn btn-light btn-sm">
+                    <button class="btn btn-light btn-sm" id="prev-day-btn">
                         <i class="fas fa-chevron-left"></i> 이전
-                    </a>
+                    </button>
                 </div>
                 <div class="col-8 text-center">
                     <h2 class="mb-1">📚 학습 플래너</h2>
-                    <p class="mb-0">{{ selected_date|date:"Y년 m월 d일 l요일" }}</p>
+                    <p class="mb-0" id="current-date">{{ selected_date|date:"Y년 m월 d일 l요일" }}</p>
+                    <input type="date" class="form-control d-inline-block w-auto mt-2" id="date-picker" value="{{ selected_date|date:'Y-m-d' }}">
                 </div>
                 <div class="col-2 text-end">
-                    <a href="?date={{ selected_date|date:'Y-m-d'|add_days:1 }}" class="btn btn-light btn-sm">
+                    <button class="btn btn-light btn-sm" id="next-day-btn">
                         다음 <i class="fas fa-chevron-right"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -442,6 +443,22 @@
                     <span>10분 단위 시간표</span>
                 </div>
                 
+                <!-- 과목 선택 -->
+                <div class="subject-selector mb-3">
+                    <label for="subject-select" class="form-label">과목 선택:</label>
+                    <select class="form-select" id="subject-select">
+                        <option value="">과목을 선택하세요</option>
+                        <option value="math" data-color="#ff6b6b">수학</option>
+                        <option value="korean" data-color="#4ecdc4">국어</option>
+                        <option value="english" data-color="#45b7d1">영어</option>
+                        <option value="history" data-color="#f9ca24">역사</option>
+                        <option value="science" data-color="#6c5ce7">과학</option>
+                        <option value="military" data-color="#a0a0a0">군사학</option>
+                        <option value="physical" data-color="#00d2d3">체육</option>
+                        <option value="other" data-color="#2ed573">기타</option>
+                    </select>
+                </div>
+                
                 <!-- 시간표 헤더 -->
                 <div class="timetable-header">
                     <div class="time-label">시간</div>
@@ -491,12 +508,49 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const selectedDate = '{{ selected_date|date:"Y-m-d" }}';
+    let currentDate = new Date('{{ selected_date|date:"Y-m-d" }}');
     
-    // 타이머 변수
-    let timerInterval = null;
-    let seconds = 0;
-    let isRunning = false;
+    // 날짜 관련 함수들
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    function formatDateKorean(date) {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const dayOfWeek = days[date.getDay()];
+        return `${year}년 ${month}월 ${day}일 ${dayOfWeek}요일`;
+    }
+    
+    function updateDateDisplay() {
+        document.getElementById('current-date').textContent = formatDateKorean(currentDate);
+        document.getElementById('date-picker').value = formatDate(currentDate);
+    }
+    
+    // 이전/다음 날짜 버튼
+    document.getElementById('prev-day-btn').addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() - 1);
+        updateDateDisplay();
+        // TODO: 데이터 다시 로드
+    });
+    
+    document.getElementById('next-day-btn').addEventListener('click', function() {
+        currentDate.setDate(currentDate.getDate() + 1);
+        updateDateDisplay();
+        // TODO: 데이터 다시 로드
+    });
+    
+    // 날짜 선택기
+    document.getElementById('date-picker').addEventListener('change', function() {
+        currentDate = new Date(this.value);
+        updateDateDisplay();
+        // TODO: 데이터 다시 로드
+    });
     
     // 타이머 업데이트
     function updateTimerDisplay() {
@@ -542,20 +596,42 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        fetch('{% url "planner:add_todo_item" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: `date=${selectedDate}&title=${encodeURIComponent(title)}&priority=MEDIUM`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
+        // 임시로 할 일 추가 (실제 AJAX는 나중에 구현)
+        const todoList = document.querySelector('.todo-list');
+        const newTodo = document.createElement('div');
+        newTodo.className = 'todo-item';
+        newTodo.innerHTML = `
+            <input type="checkbox" class="todo-checkbox">
+            <span class="todo-text">${title}</span>
+            <button class="todo-delete delete-todo-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // 빈 상태 메시지 제거
+        const emptyState = todoList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        todoList.appendChild(newTodo);
+        document.getElementById('new-todo-title').value = '';
+        
+        // 새로 추가된 요소에 이벤트 리스너 추가
+        const checkbox = newTodo.querySelector('.todo-checkbox');
+        const deleteBtn = newTodo.querySelector('.delete-todo-btn');
+        
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                newTodo.classList.add('completed');
             } else {
-                alert(data.error);
+                newTodo.classList.remove('completed');
+            }
+        });
+        
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('이 할 일을 삭제하시겠습니까?')) {
+                newTodo.remove();
             }
         });
     });
@@ -645,15 +721,28 @@ document.addEventListener('DOMContentLoaded', function() {
 // 시간 블록 토글 함수
 function toggleTimeBlock(hour, minute) {
     const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
+    const subjectSelect = document.getElementById('subject-select');
+    const selectedSubject = subjectSelect.value;
+    
+    if (!selectedSubject) {
+        alert('먼저 과목을 선택해주세요!');
+        return;
+    }
+    
+    const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+    const subjectColor = selectedOption.dataset.color;
+    const subjectName = selectedOption.text;
     
     if (cell.classList.contains('filled')) {
         // 제거
         cell.classList.remove('filled');
-        // TODO: 서버에 제거 요청 보내기
+        cell.style.backgroundColor = '';
+        cell.title = '';
     } else {
         // 추가
         cell.classList.add('filled');
-        // TODO: 서버에 추가 요청 보내기
+        cell.style.backgroundColor = subjectColor;
+        cell.title = `${hour}:${minute*10}0 - ${subjectName}`;
     }
     
     // 통계 업데이트
