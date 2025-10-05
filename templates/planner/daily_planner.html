@@ -655,24 +655,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const todoItem = this.closest('.todo-item');
             const todoId = todoItem.dataset.todoId;
             
-            fetch(`{% url "planner:toggle_todo_item" "dummy" %}`.replace('dummy', todoId), {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.is_completed) {
-                        todoItem.classList.add('completed');
-                    } else {
-                        todoItem.classList.remove('completed');
-                    }
-                    // 통계 업데이트를 위해 페이지 새로고침
-                    setTimeout(() => location.reload(), 500);
-                }
-            });
+            // TODO: 서버 연동 예정 - 현재는 클라이언트에서만 처리
+            if (this.checked) {
+                todoItem.classList.add('completed');
+            } else {
+                todoItem.classList.remove('completed');
+            }
+            console.log('할 일 토글:', todoItem.querySelector('.todo-text').textContent);
         });
     });
     
@@ -684,19 +673,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const todoItem = this.closest('.todo-item');
             const todoId = todoItem.dataset.todoId;
             
-            fetch(`{% url "planner:delete_todo_item" "dummy" %}`.replace('dummy', todoId), {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    todoItem.remove();
-                    location.reload();
-                }
-            });
+            // TODO: 서버 연동 예정 - 현재는 클라이언트에서만 처리
+            todoItem.remove();
+            console.log('할 일 삭제:', todoItem.querySelector('.todo-text').textContent);
         });
     });
     
@@ -710,18 +689,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 일일 목표 업데이트
-    document.getElementById('daily-goal').addEventListener('blur', function() {
-        const goal = this.value;
-        
-        fetch('{% url "planner:update_daily_goal" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: `date=${selectedDate}&goal=${encodeURIComponent(goal)}`
+    const dailyGoalElement = document.getElementById('daily-goal');
+    if (dailyGoalElement) {
+        dailyGoalElement.addEventListener('blur', function() {
+            const goal = this.value;
+            // TODO: 서버 연동 예정 - 현재는 로컬 저장소에 저장
+            localStorage.setItem('daily-goal-' + formatDate(currentDate), goal);
+            console.log('일일 목표 저장:', goal);
         });
-    });
+    }
 });
 
 // 시간 블록 토글 함수
