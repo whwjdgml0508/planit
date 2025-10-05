@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.db import transaction
 from .models import Subject, TimeSlot, Semester
-from .forms import SubjectForm, TimeSlotForm, SubjectWithTimeSlotsForm, SemesterForm, TimeSlotFormSet
+from .forms import SubjectForm, TimeSlotForm, SubjectWithTimeSlotsForm, SemesterForm
 
 class TimetableView(LoginRequiredMixin, TemplateView):
     """시간표 메인 뷰"""
@@ -105,38 +105,17 @@ class SubjectUpdateView(LoginRequiredMixin, UpdateView):
     model = Subject
     form_class = SubjectForm
     template_name = 'timetable/subject_edit.html'
-    success_url = reverse_lazy('timetable:index')
+    success_url = reverse_lazy('timetable:subject_list')
     
     def get_queryset(self):
         return Subject.objects.filter(user=self.request.user)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['timeslot_formset'] = TimeSlotFormSet(
-                self.request.POST, 
-                instance=self.object
-            )
-        else:
-            context['timeslot_formset'] = TimeSlotFormSet(instance=self.object)
-        return context
-    
     def form_valid(self, form):
-        context = self.get_context_data()
-        timeslot_formset = context['timeslot_formset']
-        
-        with transaction.atomic():
-            if timeslot_formset.is_valid():
-                self.object = form.save()
-                timeslot_formset.instance = self.object
-                timeslot_formset.save()
-                messages.success(self.request, f'"{self.object.name}" 과목이 성공적으로 수정되었습니다.')
-                return redirect(self.success_url)
-            else:
-                return self.form_invalid(form)
+        messages.success(self.request, f'"{form.instance.name}" 과목이 성공적으로 수정되었습니다.')
+        return super().form_valid(form)
     
     def form_invalid(self, form):
-        messages.error(self.request, '과목 수정 중 오류가 발생했습니다.')
+        messages.error(self.request, '과목 수정 중 오류가 발생했습니다. 입력 내용을 확인해주세요.')
         return super().form_invalid(form)
 
 class SubjectDeleteView(LoginRequiredMixin, DeleteView):
