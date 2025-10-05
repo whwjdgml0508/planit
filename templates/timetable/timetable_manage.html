@@ -327,7 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('서버 응답:', data);
             if (data.success) {
                 alert(data.message || '과목이 시간표에 추가되었습니다.');
-                location.reload(); // 페이지 새로고침으로 시간표 업데이트
+                // 시간표 자동 업데이트
+                updateTimetableDisplay();
             } else {
                 alert(data.error || '알 수 없는 오류가 발생했습니다.');
             }
@@ -336,6 +337,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert(`네트워크 오류가 발생했습니다: ${error.message}`);
         });
+    }
+    
+    // 시간표 자동 업데이트 함수
+    function updateTimetableDisplay() {
+        // 현재 페이지를 새로고침하여 시간표 업데이트
+        window.location.reload();
     }
     
     function removeFromTimetable(day, period) {
@@ -354,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // 페이지 새로고침으로 시간표 업데이트
+                updateTimetableDisplay(); // 시간표 자동 업데이트
             } else {
                 alert(data.error);
             }
