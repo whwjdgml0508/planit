@@ -1,0 +1,115 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Environment variables
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Static files (collected)
+staticfiles/
+static_collected/
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+
+# User-specific files (outside project scope)
+# These should not be tracked as they are personal files
+Desktop/
+Documents/
+Downloads/
+Pictures/
+Videos/
+Music/
+AppData/
+.cache/
+.ssh/
+.gitconfig
+.python_history
+.lesshst
+.matplotlib/
+.ipython/
+.codeium/
+.cursor/
+.windsurf/
+NTUSER.DAT*
+ntuser.dat*
+ntuser.ini
+package-lock.json
+test.xlsx
+*.lnk
+*.hwp
+*.JPG
+*.pdf
+source/
+ssh/
+bearer/
+extensions/
+iconengines/
+imageformats/
+licenses/
+platforms/
+printsupport/
+translations/
+Contacts/
+Favorites/
+Links/
+OneDrive/
+Organized/
+"Saved Games"/
+Searches/
+IntelGraphicsProfiles/
+"3D Objects"/
+.git-for-windows-updater
