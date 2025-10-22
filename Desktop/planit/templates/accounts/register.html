@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}회원가입 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                        <h2 class="fw-bold">회원가입</h2>
+                        <p class="text-muted">PlanIt과 함께 체계적인 학습을 시작하세요</p>
+                    </div>
+                    
+                    {% crispy form %}
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            이미 계정이 있으신가요? 
+                            <a href="{% url 'accounts:login' %}" class="text-primary fw-bold">로그인</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 개인정보 처리방침 안내 -->
+            <div class="card border-secondary mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-secondary">
+                        <i class="fas fa-shield-alt me-2"></i>개인정보 보호
+                    </h6>
+                    <p class="card-text small mb-0">
+                        회원가입 시 입력하신 정보는 학습 관리 서비스 제공 목적으로만 사용되며, 
+                        안전하게 보호됩니다. 자세한 내용은 개인정보처리방침을 확인하세요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

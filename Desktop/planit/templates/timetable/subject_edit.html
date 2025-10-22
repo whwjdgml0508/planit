@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}과목 수정 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>과목 수정
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {% crispy form %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'timetable:subject_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>취소
+                        </a>
+                        <a href="{% url 'timetable:subject_detail' subject.pk %}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i>상세보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 도움말 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-lightbulb me-2"></i>과목 수정 도움말
+                    </h6>
+                    <ul class="card-text small mb-0">
+                        <li>과목명은 필수 입력 사항입니다</li>
+                        <li>색상은 시간표와 플래너에서 과목을 구분하는 데 사용됩니다</li>
+                        <li>과목 유형을 선택하면 더 체계적으로 관리할 수 있습니다</li>
+                        <li>수정된 정보는 모든 관련 기능에 즉시 반영됩니다</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}과목 관리 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📚 과목 관리</h2>
+                <div>
+                    <a href="{% url 'timetable:subject_create' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus"></i> 과목 추가
+                    </a>
+                    <a href="{% url 'timetable:timetable_manage' %}" class="btn btn-success">
+                        <i class="fas fa-calendar-alt"></i> 시간표 관리
+                    </a>
+                </div>
+            </div>
+
+            {% if subjects %}
+            <div class="row">
+                {% for subject in subjects %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center" 
+                             style="background-color: {{ subject.color }}; color: white;">
+                            <h6 class="mb-0 fw-bold">{{ subject.name }}</h6>
+                            <span class="badge bg-light text-dark">{{ subject.credits }}학점</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <small class="text-muted">교수:</small>
+                                <span>{{ subject.professor|default:"미정" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">구분:</small>
+                                <span class="badge bg-secondary">{{ subject.get_subject_type_display }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">평가:</small>
+                                <span class="badge bg-info">{{ subject.get_evaluation_type_display }}</span>
+                            </div>
+                            {% if subject.classroom %}
+                            <div class="mb-2">
+                                <small class="text-muted">강의실:</small>
+                                <span>{{ subject.classroom }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 시간표 정보 -->
+                            {% if subject.time_slots.all %}
+                            <div class="mt-3">
+                                <small class="text-muted">시간표:</small>
+                                <div class="mt-1">
+                                    {% for slot in subject.time_slots.all %}
+                                    <span class="badge bg-primary me-1 mb-1">
+                                        {{ slot.get_day_display }} {{ slot.period }}교시
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="mt-3">
+                                <small class="text-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 시간표 미설정
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'timetable:subject_detail' subject.pk %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> 상세
+                                </a>
+                                <a href="{% url 'timetable:subject_edit' subject.pk %}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i> 수정
+                                </a>
+                                <a href="{% url 'timetable:subject_delete' subject.pk %}" 
+                                   class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i> 삭제
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-book fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">등록된 과목이 없습니다</h4>
+                <p class="text-muted">새로운 과목을 추가해보세요!</p>
+                <a href="{% url 'timetable:subject_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 첫 번째 과목 추가하기
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

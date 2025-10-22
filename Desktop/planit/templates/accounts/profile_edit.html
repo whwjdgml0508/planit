@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}프로필 수정 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>프로필 수정
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- 현재 프로필 이미지 미리보기 -->
+                    {% if user.profile_image %}
+                    <div class="text-center mb-4">
+                        <img src="{{ user.profile_image.url }}" 
+                             alt="현재 프로필 이미지" 
+                             class="rounded-circle mb-2" 
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <p class="text-muted small">현재 프로필 이미지</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% crispy form %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>취소
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 도움말 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-lightbulb me-2"></i>프로필 수정 도움말
+                    </h6>
+                    <ul class="card-text small mb-0">
+                        <li>프로필 이미지는 JPG, PNG 형식만 지원됩니다 (최대 5MB)</li>
+                        <li>전화번호는 010-1234-5678 형식으로 입력해주세요</li>
+                        <li>자기소개는 최대 500자까지 입력 가능합니다</li>
+                        <li>학과와 학년 정보는 시간표 및 커뮤니티 기능에서 활용됩니다</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 프로필 이미지 미리보기
+    const imageInput = document.querySelector('input[type="file"][name="profile_image"]');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // 기존 미리보기 이미지가 있다면 업데이트, 없다면 생성
+                    let preview = document.querySelector('.profile-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.className = 'profile-preview text-center mb-3';
+                        imageInput.parentNode.insertBefore(preview, imageInput);
+                    }
+                    
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" 
+                             alt="미리보기" 
+                             class="rounded-circle mb-2" 
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <p class="text-muted small">새 프로필 이미지 미리보기</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 전화번호 자동 포맷팅
+    const phoneInput = document.querySelector('input[name="phone_number"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 3 && value.length <= 7) {
+                value = value.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+            } else if (value.length > 7) {
+                value = value.replace(/(\d{3})(\d{4})(\d{1,4})/, '$1-$2-$3');
+            }
+            e.target.value = value;
+        });
+    }
+});
+</script>
+{% endblock %}

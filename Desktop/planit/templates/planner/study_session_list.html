@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}학습 기록 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-clock me-2"></i>학습 기록</h2>
+        <a href="{% url 'planner:daily_planner' %}" class="btn btn-success">
+            <i class="fas fa-calendar-day me-2"></i>일일 플래너에서 기록
+        </a>
+    </div>
+    
+    {% if sessions %}
+    <div class="row">
+        {% for session in sessions %}
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ session.title }}</h5>
+                        {% if session.effectiveness_rating %}
+                        <div class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= session.effectiveness_rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if session.description %}
+                    <p class="text-muted small">{{ session.description }}</p>
+                    {% endif %}
+                    
+                    <div class="row text-center mb-2">
+                        <div class="col-4">
+                            <small class="text-muted">시작</small><br>
+                            <strong>{{ session.start_time|date:"H:i" }}</strong>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">소요시간</small><br>
+                            <strong>{{ session.get_duration_display }}</strong>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">날짜</small><br>
+                            <strong>{{ session.start_time|date:"m/d" }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if session.subject %}
+                            <span class="badge bg-primary">{{ session.subject.name }}</span>
+                            {% endif %}
+                            {% if session.task %}
+                            <span class="badge bg-secondary">{{ session.task.title|truncatechars:20 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if session.notes %}
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <small>{{ session.notes|truncatewords:15 }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- 페이지네이션 -->
+    {% if is_paginated %}
+    <nav aria-label="학습 기록 페이지네이션">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+        <h5>학습 기록이 없습니다</h5>
+        <p class="text-muted">새로운 학습 세션을 기록해보세요.</p>
+        <a href="{% url 'planner:daily_planner' %}" class="btn btn-success">
+            <i class="fas fa-calendar-day me-2"></i>일일 플래너에서 기록하기
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

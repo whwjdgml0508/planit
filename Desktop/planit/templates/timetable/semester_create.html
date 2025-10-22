@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}새 학기 추가 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-calendar-plus fa-2x"></i>
+                        </div>
+                        <h2 class="fw-bold">새 학기 추가</h2>
+                        <p class="text-muted">새로운 학기 정보를 입력하세요</p>
+                    </div>
+                    
+                    {% crispy form %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'timetable:semester_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> 목록으로
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 학기 정보 안내 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-info-circle me-2"></i>학기 설정 안내
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">학기 구분</h6>
+                            <ul class="small mb-3">
+                                <li><strong>1학기:</strong> 3월 ~ 6월</li>
+                                <li><strong>여름학기:</strong> 6월 ~ 8월</li>
+                                <li><strong>2학기:</strong> 9월 ~ 12월</li>
+                                <li><strong>겨울학기:</strong> 12월 ~ 2월</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-success">현재 학기 설정</h6>
+                            <p class="small mb-0">
+                                "현재 학기로 설정"을 체크하면 이 학기가 활성 학기가 되어 
+                                시간표와 플래너에서 기본으로 사용됩니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 빠른 설정 -->
+            <div class="card border-secondary mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-secondary">
+                        <i class="fas fa-magic me-2"></i>빠른 설정
+                    </h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="setQuickSemester(2024, 'SPRING')">
+                                2024년 1학기
+                            </button>
+                            <button class="btn btn-outline-success btn-sm w-100" onclick="setQuickSemester(2024, 'FALL')">
+                                2024년 2학기
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-info btn-sm w-100 mb-2" onclick="setQuickSemester(2025, 'SPRING')">
+                                2025년 1학기
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm w-100" onclick="setQuickSemester(2025, 'FALL')">
+                                2025년 2학기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setQuickSemester(year, semester) {
+    // 년도 설정
+    const yearField = document.getElementById('id_year');
+    if (yearField) yearField.value = year;
+    
+    // 학기 설정
+    const semesterField = document.getElementById('id_semester');
+    if (semesterField) semesterField.value = semester;
+    
+    // 날짜 자동 설정
+    let startDate, endDate;
+    
+    if (semester === 'SPRING') {
+        startDate = `${year}-03-01`;
+        endDate = `${year}-06-30`;
+    } else if (semester === 'SUMMER') {
+        startDate = `${year}-06-01`;
+        endDate = `${year}-08-31`;
+    } else if (semester === 'FALL') {
+        startDate = `${year}-09-01`;
+        endDate = `${year}-12-31`;
+    } else if (semester === 'WINTER') {
+        startDate = `${year}-12-01`;
+        endDate = `${year + 1}-02-28`;
+    }
+    
+    const startDateField = document.getElementById('id_start_date');
+    const endDateField = document.getElementById('id_end_date');
+    
+    if (startDateField) startDateField.value = startDate;
+    if (endDateField) endDateField.value = endDate;
+    
+    // 현재 학기로 설정
+    const currentField = document.getElementById('id_is_current');
+    if (currentField) currentField.checked = true;
+}
+
+// 폼 검증
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const startDate = new Date(document.getElementById('id_start_date').value);
+            const endDate = new Date(document.getElementById('id_end_date').value);
+            
+            if (startDate >= endDate) {
+                e.preventDefault();
+                alert('시작일은 종료일보다 빨라야 합니다.');
+                return false;
+            }
+            
+            // 학기 기간이 너무 짧은지 확인
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 30) {
+                e.preventDefault();
+                alert('학기 기간이 너무 짧습니다. 최소 30일 이상이어야 합니다.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover,
+.btn-outline-warning:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

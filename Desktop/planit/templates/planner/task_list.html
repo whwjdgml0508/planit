@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}과제 목록 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📝 과제 관리</h2>
+                <div>
+                    <a href="{% url 'planner:task_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 새 과제 추가
+                    </a>
+                    <a href="{% url 'planner:index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 플래너 홈
+                    </a>
+                </div>
+            </div>
+
+            <!-- 필터 및 정렬 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-outline-primary btn-sm filter-btn active" data-filter="all">
+                                    전체
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm filter-btn" data-filter="pending">
+                                    진행중
+                                </button>
+                                <button class="btn btn-outline-success btn-sm filter-btn" data-filter="completed">
+                                    완료
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm filter-btn" data-filter="overdue">
+                                    지연
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <select class="form-select form-select-sm" id="sortSelect" style="width: auto;">
+                                    <option value="due_date">마감일순</option>
+                                    <option value="priority">우선순위순</option>
+                                    <option value="created">생성일순</option>
+                                    <option value="subject">과목순</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if tasks %}
+            <div class="row" id="task-container">
+                {% for task in tasks %}
+                <div class="col-md-6 col-lg-4 mb-3 task-item" 
+                     data-status="{% if task.is_completed %}completed{% elif task.is_overdue %}overdue{% else %}pending{% endif %}"
+                     data-priority="{{ task.priority }}"
+                     data-due="{{ task.due_date|date:'Y-m-d' }}"
+                     data-subject="{{ task.subject.name|default:'기타' }}">
+                    <div class="card h-100 {% if task.is_overdue and not task.is_completed %}border-danger{% elif task.is_completed %}border-success{% endif %}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if task.priority == 'HIGH' %}
+                                <span class="badge bg-danger">높음</span>
+                                {% elif task.priority == 'MEDIUM' %}
+                                <span class="badge bg-warning">보통</span>
+                                {% else %}
+                                <span class="badge bg-secondary">낮음</span>
+                                {% endif %}
+                                
+                                {% if task.subject %}
+                                <span class="badge bg-primary ms-1">{{ task.subject.name }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       {% if task.is_completed %}checked{% endif %}
+                                       onchange="toggleTask('{{ task.pk }}', this.checked)">
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h6 class="card-title {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                                {{ task.title }}
+                            </h6>
+                            
+                            {% if task.description %}
+                            <p class="card-text small text-muted">
+                                {{ task.description|truncatewords:15 }}
+                            </p>
+                            {% endif %}
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    마감: {{ task.due_date|date:"m월 d일 H:i" }}
+                                </small>
+                            </div>
+                            
+                            {% if task.is_overdue and not task.is_completed %}
+                            <div class="alert alert-danger py-1 px-2 small mb-2">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                {{ task.days_overdue }}일 지연
+                            </div>
+                            {% endif %}
+                            
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar {% if task.is_completed %}bg-success{% elif task.is_overdue %}bg-danger{% else %}bg-primary{% endif %}" 
+                                     style="width: {% if task.is_completed %}100{% else %}{{ task.progress|default:0 }}{% endif %}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'planner:task_detail' task.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'planner:task_edit' task.pk %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'planner:task_delete' task.pk %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-tasks fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">등록된 과제가 없습니다</h4>
+                <p class="text-muted">새로운 과제를 추가해보세요!</p>
+                <a href="{% url 'planner:task_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 첫 번째 과제 추가하기
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// 과제 완료 토글
+function toggleTask(taskId, isCompleted) {
+    fetch(`{% url 'planner:task_toggle' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', taskId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('오류가 발생했습니다.');
+        }
+    });
+}
+
+// 필터링
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const taskItems = document.querySelectorAll('.task-item');
+    const sortSelect = document.getElementById('sortSelect');
+    
+    // 필터 버튼 이벤트
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // 활성 버튼 변경
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            taskItems.forEach(item => {
+                if (filter === 'all' || item.dataset.status === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // 정렬
+    sortSelect.addEventListener('change', function() {
+        const sortBy = this.value;
+        const container = document.getElementById('task-container');
+        const items = Array.from(taskItems);
+        
+        items.sort((a, b) => {
+            let aVal, bVal;
+            
+            switch(sortBy) {
+                case 'due_date':
+                    aVal = new Date(a.dataset.due);
+                    bVal = new Date(b.dataset.due);
+                    break;
+                case 'priority':
+                    const priorityOrder = {'HIGH': 3, 'MEDIUM': 2, 'LOW': 1};
+                    aVal = priorityOrder[a.dataset.priority] || 0;
+                    bVal = priorityOrder[b.dataset.priority] || 0;
+                    return bVal - aVal; // 높은 우선순위가 먼저
+                case 'subject':
+                    aVal = a.dataset.subject;
+                    bVal = b.dataset.subject;
+                    break;
+                default:
+                    return 0;
+            }
+            
+            if (aVal < bVal) return -1;
+            if (aVal > bVal) return 1;
+            return 0;
+        });
+        
+        items.forEach(item => container.appendChild(item));
+    });
+});
+</script>
+
+{% csrf_token %}
+{% endblock %}

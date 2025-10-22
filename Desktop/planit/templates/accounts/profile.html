@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name }} 프로필 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 프로필 헤더 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            {% if profile_user.profile_image %}
+                                <img src="{{ profile_user.profile_image.url }}" 
+                                     alt="프로필 이미지" 
+                                     class="rounded-circle" 
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                                     style="width: 100px; height: 100px; font-size: 2rem;">
+                                    {{ profile_user.get_full_name|first }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <h2 class="fw-bold mb-1">{{ profile_user.get_full_name }}</h2>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-id-card me-2"></i>{{ profile_user.student_id }}
+                                <span class="mx-2">|</span>
+                                <i class="fas fa-graduation-cap me-2"></i>{{ profile_user.get_department_display }} {{ profile_user.get_grade_display }}
+                            </p>
+                            {% if profile_user.bio %}
+                            <p class="mb-0">{{ profile_user.bio }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>프로필 수정
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 통계 카드 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ total_subjects|length }}</h4>
+                    <p class="mb-0">등록된 과목</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ completed_tasks }}</h4>
+                    <p class="mb-0">완료된 과제</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ community_posts }}</h4>
+                    <p class="mb-0">커뮤니티 게시글</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ study_hours }}h</h4>
+                    <p class="mb-0">이번 주 학습시간</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 상세 정보 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>기본 정보
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">사용자명:</div>
+                        <div class="col-sm-8">{{ profile_user.username }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">이메일:</div>
+                        <div class="col-sm-8">{{ profile_user.email }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">학번:</div>
+                        <div class="col-sm-8">{{ profile_user.student_id }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">학과:</div>
+                        <div class="col-sm-8">{{ profile_user.get_department_display }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">학년:</div>
+                        <div class="col-sm-8">{{ profile_user.get_grade_display }}</div>
+                    </div>
+                    {% if profile_user.phone_number %}
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">전화번호:</div>
+                        <div class="col-sm-8">{{ profile_user.phone_number }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-sm-4 fw-bold">가입일:</div>
+                        <div class="col-sm-8">{{ profile_user.date_joined|date:"Y년 m월 d일" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>최근 활동
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-chart-bar fa-3x mb-3 opacity-50"></i>
+                        <p>활동 데이터를 수집 중입니다.</p>
+                        <p class="small">시간표, 플래너, 커뮤니티 기능을 사용하시면<br>여기에 활동 통계가 표시됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 빠른 액션 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>빠른 시작
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'timetable:index' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-alt d-block mb-2 fa-2x"></i>
+                                시간표 관리
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'planner:index' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-tasks d-block mb-2 fa-2x"></i>
+                                학습 플래너
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'community:index' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-users d-block mb-2 fa-2x"></i>
+                                커뮤니티
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-user-edit d-block mb-2 fa-2x"></i>
+                                프로필 수정
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

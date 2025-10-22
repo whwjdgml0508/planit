@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}학기 관리 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📅 학기 관리</h2>
+                <div>
+                    <a href="{% url 'timetable:semester_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 새 학기 추가
+                    </a>
+                    <a href="{% url 'timetable:index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 시간표로 돌아가기
+                    </a>
+                </div>
+            </div>
+
+            {% if semesters %}
+            <div class="row">
+                {% for semester in semesters %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 {% if semester.is_current %}border-primary{% endif %}">
+                        {% if semester.is_current %}
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-star me-2"></i>현재 학기
+                                </h6>
+                                <span class="badge bg-light text-primary">활성</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ semester.year }}년 {{ semester.get_semester_display }}</h5>
+                            
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">시작일</small>
+                                        <div class="fw-bold">{{ semester.start_date|date:"m월 d일" }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">종료일</small>
+                                        <div class="fw-bold">{{ semester.end_date|date:"m월 d일" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 학기 통계 -->
+                            <div class="row text-center bg-light rounded p-2 mb-3">
+                                <div class="col-6">
+                                    <div class="fw-bold text-primary">{{ semester.year }}</div>
+                                    <small class="text-muted">년도</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-success">
+                                        {% if semester.start_date <= today and semester.end_date >= today %}
+                                        진행중
+                                        {% elif semester.start_date > today %}
+                                        예정
+                                        {% else %}
+                                        완료
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">상태</small>
+                                </div>
+                            </div>
+                            
+                            <!-- 기간 표시 -->
+                            <div class="progress mb-3" style="height: 8px;">
+                                {% now "Y-m-d" as today %}
+                                {% if semester.start_date <= today and semester.end_date >= today %}
+                                <div class="progress-bar bg-success" style="width: 60%"></div>
+                                {% elif semester.start_date > today %}
+                                <div class="progress-bar bg-info" style="width: 0%"></div>
+                                {% else %}
+                                <div class="progress-bar bg-secondary" style="width: 100%"></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                {% if not semester.is_current %}
+                                <button class="btn btn-outline-primary btn-sm" onclick="setCurrentSemester('{{ semester.id }}')">
+                                    <i class="fas fa-check"></i> 현재 학기로 설정
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i> 수정
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteSemester('{{ semester.id }}', '{{ semester }}')">
+                                    <i class="fas fa-trash"></i> 삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">등록된 학기가 없습니다</h4>
+                <p class="text-muted">새로운 학기를 추가해보세요!</p>
+                <a href="{% url 'timetable:semester_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 첫 번째 학기 추가하기
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function setCurrentSemester(semesterId) {
+    if (confirm('이 학기를 현재 학기로 설정하시겠습니까?')) {
+        // AJAX 요청으로 현재 학기 설정
+        fetch(`/timetable/semester/${semesterId}/set-current/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('오류가 발생했습니다.');
+            }
+        });
+    }
+}
+
+function deleteSemester(semesterId, semesterName) {
+    if (confirm(`"${semesterName}" 학기를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        fetch(`/timetable/semester/${semesterId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('오류가 발생했습니다.');
+            }
+        });
+    }
+}
+</script>
+
+{% csrf_token %}
+{% endblock %}

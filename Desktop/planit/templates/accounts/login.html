@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}로그인 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-graduation-cap text-primary fa-3x mb-3"></i>
+                        <h2 class="fw-bold">로그인</h2>
+                        <p class="text-muted">PlanIt에 오신 것을 환영합니다</p>
+                    </div>
+                    
+                    {% crispy form %}
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            계정이 없으신가요? 
+                            <a href="{% url 'accounts:register' %}" class="text-primary fw-bold">회원가입</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 데모 계정 안내 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-info-circle me-2"></i>데모 계정
+                    </h6>
+                    <p class="card-text small mb-0">
+                        테스트를 위해 회원가입 후 로그인하거나, 관리자에게 데모 계정을 요청하세요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

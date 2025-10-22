@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+{% load timetable_extras %}
+
+{% block title %}시간표 관리 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📅 시간표 관리</h2>
+                <div>
+                    <button type="button" class="btn btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#helpModal">
+                        <i class="fas fa-question-circle"></i> 사용법
+                    </button>
+                    <a href="{% url 'timetable:subject_list' %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-book"></i> 과목 관리
+                    </a>
+                    <a href="{% url 'timetable:index' %}" class="btn btn-success">
+                        <i class="fas fa-eye"></i> 시간표 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 과목 목록 -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📚 등록된 과목</h5>
+                    <small class="text-muted">과목을 선택하고 여러 시간에 배치할 수 있습니다</small>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% if subjects %}
+                        {% for subject in subjects %}
+                        <div class="subject-item mb-2 p-2 border rounded" 
+                             data-subject-id="{{ subject.id }}"
+                             data-subject-name="{{ subject.name }}"
+                             data-subject-color="{{ subject.color }}"
+                             style="cursor: pointer; border-color: {{ subject.color }};">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong style="color: {{ subject.color }};">{{ subject.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ subject.professor|default:"교수 미정" }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge" style="background-color: {{ subject.color }};">
+                                        {{ subject.credits }}학점
+                                    </span>
+                                    {% if subject.time_slots.all %}
+                                    <br>
+                                    <small class="text-success">
+                                        <i class="fas fa-check"></i> 배치됨
+                                    </small>
+                                    {% else %}
+                                    <br>
+                                    <small class="text-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> 미배치
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">등록된 과목이 없습니다</p>
+                            <a href="{% url 'timetable:subject_create' %}" class="btn btn-primary btn-sm">
+                                과목 추가
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 선택된 과목 정보 -->
+            <div class="card mt-3" id="selected-subject-info" style="display: none;">
+                <div class="card-header">
+                    <h6 class="mb-0">선택된 과목</h6>
+                </div>
+                <div class="card-body">
+                    <div id="subject-details"></div>
+                    <div class="mt-2">
+                        <label for="location-input" class="form-label">강의실</label>
+                        <input type="text" class="form-control form-control-sm" id="location-input" placeholder="강의실 입력">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 시간표 -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">🗓️ 시간표</h5>
+                    <small class="text-muted">과목을 선택한 후 원하는 시간을 클릭하세요</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered timetable-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 100px;">교시</th>
+                                    {% for day_code, day_name in day_names.items %}
+                                    <th class="text-center">{{ day_name }}요일</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for period in periods %}
+                                <tr>
+                                    <td class="text-center align-middle">
+                                        <strong>{{ period }}교시</strong><br>
+                                        <small class="text-muted">{{ period_times|get_item:period }}</small>
+                                    </td>
+                                    {% for day_code, day_name in day_names.items %}
+                                    <td class="timetable-cell text-center align-middle" 
+                                        data-day="{{ day_code }}" 
+                                        data-period="{{ period }}"
+                                        style="height: 80px; cursor: pointer;">
+                                        {% if timetable_data|get_item:day_code|get_item:period %}
+                                            {% with slot_data=timetable_data|get_item:day_code|get_item:period %}
+                                            <div class="subject-slot rounded p-2 h-100 d-flex flex-column justify-content-center"
+                                                 style="background-color: {{ slot_data.subject.color }}; color: white;">
+                                                <strong style="font-size: 0.9em;">{{ slot_data.subject.name }}</strong>
+                                                {% if slot_data.time_slot.location %}
+                                                <small>{{ slot_data.time_slot.location }}</small>
+                                                {% endif %}
+                                                <button class="btn btn-sm btn-outline-light mt-1 remove-btn" 
+                                                        data-day="{{ day_code }}" 
+                                                        data-period="{{ period }}"
+                                                        style="font-size: 0.7em;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="empty-slot h-100 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-plus text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 사용법 안내 모달 -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">시간표 관리 사용법</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="text-primary">📚 하나의 과목을 여러 시간에 배치하기</h6>
+                <ol>
+                    <li>왼쪽에서 시간표에 추가할 과목을 선택하세요</li>
+                    <li>필요시 강의실을 입력하세요</li>
+                    <li>시간표에서 원하는 시간을 클릭하여 과목을 배치하세요</li>
+                    <li><strong>같은 과목을 여러 요일/시간에 배치할 수 있습니다</strong></li>
+                    <li>이미 배치된 과목은 X 버튼을 클릭하여 제거할 수 있습니다</li>
+                </ol>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>예시:</strong> "네트워크 프로그래밍" 과목을 월요일 1교시와 수요일 3교시에 모두 배치할 수 있습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.subject-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+
+.subject-item.selected {
+    background-color: #e3f2fd;
+    border-color: #2196f3 !important;
+}
+
+.timetable-cell:hover .empty-slot {
+    background-color: #f0f0f0;
+}
+
+.timetable-cell.can-add:hover {
+    background-color: #e8f5e8;
+}
+
+.remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.subject-slot:hover .remove-btn {
+    opacity: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedSubject = null;
+    
+    // 과목 선택
+    document.querySelectorAll('.subject-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // 이전 선택 해제
+            document.querySelectorAll('.subject-item').forEach(i => i.classList.remove('selected'));
+            
+            // 현재 선택
+            this.classList.add('selected');
+            selectedSubject = {
+                id: this.dataset.subjectId,
+                name: this.dataset.subjectName,
+                color: this.dataset.subjectColor
+            };
+            
+            // 선택된 과목 정보 표시
+            document.getElementById('selected-subject-info').style.display = 'block';
+            document.getElementById('subject-details').innerHTML = `
+                <strong style="color: ${selectedSubject.color};">${selectedSubject.name}</strong>
+            `;
+            
+            // 시간표 셀 상태 업데이트
+            updateTimetableCells();
+        });
+    });
+    
+    // 시간표 셀 클릭 (과목 추가)
+    document.querySelectorAll('.timetable-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            console.log('시간표 셀 클릭됨');
+            
+            if (!selectedSubject) {
+                alert('먼저 과목을 선택해주세요.');
+                return;
+            }
+            
+            const day = this.dataset.day;
+            const period = this.dataset.period;
+            const location = document.getElementById('location-input').value;
+            
+            console.log('선택된 정보:', {
+                subject: selectedSubject,
+                day: day,
+                period: period,
+                location: location
+            });
+            
+            // 이미 과목이 있는 경우
+            if (this.querySelector('.subject-slot')) {
+                console.log('이미 과목이 있는 셀입니다.');
+                return;
+            }
+            
+            // AJAX로 과목 추가
+            addToTimetable(selectedSubject.id, day, period, location);
+        });
+    });
+    
+    // 과목 제거
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-btn')) {
+            e.stopPropagation();
+            const btn = e.target.closest('.remove-btn');
+            const day = btn.dataset.day;
+            const period = btn.dataset.period;
+            
+            removeFromTimetable(day, period);
+        }
+    });
+    
+    function updateTimetableCells() {
+        document.querySelectorAll('.timetable-cell').forEach(cell => {
+            if (!cell.querySelector('.subject-slot')) {
+                cell.classList.add('can-add');
+            }
+        });
+    }
+    
+    function addToTimetable(subjectId, day, period, location) {
+        console.log('addToTimetable 함수 호출됨:', {
+            subjectId: subjectId,
+            day: day,
+            period: period,
+            location: location
+        });
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        console.log('CSRF 토큰:', csrfToken);
+        
+        const requestBody = `subject_id=${subjectId}&day=${day}&period=${period}&location=${encodeURIComponent(location)}`;
+        console.log('요청 본문:', requestBody);
+        
+        fetch('{% url "timetable:add_to_timetable" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: requestBody
+        })
+        .then(response => {
+            console.log('응답 상태:', response.status, response.statusText);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('서버 응답:', data);
+            if (data.success) {
+                alert(data.message || '과목이 시간표에 추가되었습니다.');
+                // 시간표 자동 업데이트
+                updateTimetableDisplay();
+            } else {
+                alert(data.error || '알 수 없는 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`네트워크 오류가 발생했습니다: ${error.message}`);
+        });
+    }
+    
+    // 시간표 자동 업데이트 함수 (실시간 업데이트)
+    function updateTimetableDisplay() {
+        // AJAX로 시간표 데이터만 가져와서 업데이트
+        fetch('{% url "timetable:get_timetable_data" %}', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 기존 시간표 셀 초기화
+                document.querySelectorAll('.timetable-cell').forEach(cell => {
+                    cell.innerHTML = '<button class="btn btn-outline-secondary btn-sm w-100 h-100" onclick="addToTimetable(\'' + cell.dataset.day + '\', ' + cell.dataset.period + ')">+</button>';
+                });
+                
+                // 새로운 시간표 데이터로 업데이트
+                data.timetable_data.forEach(slot => {
+                    const cell = document.querySelector(`[data-day="${slot.day}"][data-period="${slot.period}"]`);
+                    if (cell) {
+                        cell.innerHTML = `
+                            <div class="subject-card" style="background-color: ${slot.subject_color}; color: white; padding: 5px; border-radius: 3px; position: relative;">
+                                <strong>${slot.subject_name}</strong>
+                                <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0" 
+                                        onclick="removeFromTimetable('${slot.day}', ${slot.period})" 
+                                        style="padding: 1px 4px; font-size: 10px;">×</button>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                console.error('시간표 데이터 로드 실패:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('시간표 업데이트 오류:', error);
+            // 오류 발생 시에만 페이지 새로고침
+            window.location.reload();
+        });
+    }
+    
+    function removeFromTimetable(day, period) {
+        if (!confirm('이 시간표 슬롯을 제거하시겠습니까?')) {
+            return;
+        }
+        
+        fetch('{% url "timetable:remove_from_timetable" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `day=${day}&period=${period}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateTimetableDisplay(); // 시간표 자동 업데이트
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다.');
+        });
+    }
+});
+</script>
+
+{% csrf_token %}
+{% endblock %}

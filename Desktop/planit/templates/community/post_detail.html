@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- 게시글 내용 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-2">{{ post.category.get_name_display }}</span>
+                            {% if post.is_pinned %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-thumbtack"></i> 공지
+                            </span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ post.created_at|date:"Y년 m월 d일 H:i" }}</small>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <h2 class="card-title mb-3">{{ post.title }}</h2>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="me-3">
+                            {% if post.author.profile_image %}
+                            <img src="{{ post.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40">
+                            {% else %}
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ post.author.get_full_name|default:post.author.username }}</div>
+                            <small class="text-muted">{{ post.author.get_department_display_short }} {{ post.author.grade }}학년</small>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content mb-4">
+                        {{ post.content|linebreaks }}
+                    </div>
+                    
+                    <!-- 첨부파일 -->
+                    {% if post.attachments.exists %}
+                    <div class="mb-4">
+                        <h6 class="text-secondary">
+                            <i class="fas fa-paperclip me-2"></i>첨부파일
+                        </h6>
+                        <div class="list-group">
+                            {% for attachment in post.attachments.all %}
+                            <a href="{% url 'community:attachment_download' attachment.pk %}" 
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file me-2"></i>{{ attachment.file.name|slice:"10:" }}
+                                </div>
+                                <small class="text-muted">{{ attachment.file.size|filesizeformat }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 좋아요 및 조회수 -->
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        <div class="d-flex align-items-center">
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-outline-danger btn-sm me-2" id="like-btn" 
+                                    data-post-id="{{ post.pk }}" 
+                                    data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}">
+                                <i class="fas fa-heart"></i> 
+                                <span id="like-count">{{ post.likes.count }}</span>
+                            </button>
+                            {% else %}
+                            <span class="text-muted me-2">
+                                <i class="fas fa-heart"></i> {{ post.likes.count }}
+                            </span>
+                            {% endif %}
+                            
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>{{ post.view_count }}
+                            </small>
+                        </div>
+                        
+                        {% if post.author == user %}
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'community:post_edit' post.pk %}" class="btn btn-outline-warning">
+                                <i class="fas fa-edit"></i> 수정
+                            </a>
+                            <a href="{% url 'community:post_delete' post.pk %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> 삭제
+                            </a>
+                        </div>
+                        {% else %}
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#reportModal">
+                            <i class="fas fa-flag"></i> 신고
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 댓글 섹션 (향후 구현) -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>댓글 (준비중)
+                    </h6>
+                </div>
+                <div class="card-body text-center text-muted">
+                    <i class="fas fa-tools fa-2x mb-2"></i>
+                    <p>댓글 기능은 곧 추가될 예정입니다.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 사이드바 -->
+        <div class="col-md-4">
+            <!-- 작성자 정보 -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user me-2"></i>작성자 정보
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if post.author.profile_image %}
+                    <img src="{{ post.author.profile_image.url }}" alt="프로필" class="rounded-circle mb-3" width="80" height="80">
+                    {% else %}
+                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-user text-white fa-2x"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h6>{{ post.author.get_full_name|default:post.author.username }}</h6>
+                    <p class="text-muted mb-2">{{ post.author.get_department_display }} {{ post.author.grade }}학년</p>
+                    
+                    {% if post.author.bio %}
+                    <p class="small text-muted">{{ post.author.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 관련 게시글 -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>같은 카테고리 글
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <!-- 향후 관련 게시글 표시 -->
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-tools mb-2"></i>
+                            <p class="small mb-0">관련 게시글 기능 준비중</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 네비게이션 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>목록으로
+                </a>
+                <div>
+                    <a href="{% url 'community:index' %}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-home me-2"></i>커뮤니티 홈
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'community:post_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>새 글 작성
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 신고 모달 -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">게시글 신고</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="post_id" value="{{ post.pk }}">
+                    <div class="mb-3">
+                        <label class="form-label">신고 사유</label>
+                        <select class="form-select" name="reason" required>
+                            <option value="">선택하세요</option>
+                            <option value="spam">스팸</option>
+                            <option value="inappropriate">부적절한 내용</option>
+                            <option value="harassment">괴롭힘</option>
+                            <option value="copyright">저작권 침해</option>
+                            <option value="other">기타</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">상세 내용</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="신고 사유를 자세히 설명해주세요"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="submitReport()">신고하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 좋아요 토글
+document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const isLiked = this.dataset.liked === 'true';
+            
+            fetch(`{% url 'community:post_like_toggle' post.pk %}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('like-count').textContent = data.like_count;
+                    this.dataset.liked = data.is_liked;
+                    
+                    if (data.is_liked) {
+                        this.classList.remove('btn-outline-danger');
+                        this.classList.add('btn-danger');
+                    } else {
+                        this.classList.remove('btn-danger');
+                        this.classList.add('btn-outline-danger');
+                    }
+                }
+            });
+        });
+    }
+});
+
+// 신고 제출
+function submitReport() {
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
+    
+    fetch('{% url "community:report_create" %}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('신고가 접수되었습니다.');
+            bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+        } else {
+            alert('신고 접수 중 오류가 발생했습니다.');
+        }
+    });
+}
+</script>
+
+{% csrf_token %}
+{% endblock %}

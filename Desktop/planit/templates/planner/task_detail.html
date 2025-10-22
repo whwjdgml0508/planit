@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - 과제 상세 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ task.title }}</h4>
+                    <span class="badge {{ task.get_status_badge_class }} fs-6">{{ task.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    {% if task.description %}
+                    <div class="mb-4">
+                        <h6>설명</h6>
+                        <p class="text-muted">{{ task.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>카테고리:</strong> {{ task.get_category_display }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>우선순위:</strong> 
+                            <span class="{{ task.get_priority_class }}">{{ task.get_priority_display }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {% if task.due_date %}
+                            <strong>마감일:</strong> {{ task.due_date|date:"Y년 m월 d일 H:i" }}
+                            {% if task.is_overdue %}
+                            <span class="badge bg-danger ms-2">지연</span>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if task.subject %}
+                            <strong>관련 과목:</strong> {{ task.subject.name }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {% if task.estimated_hours %}
+                            <strong>예상 소요시간:</strong> {{ task.estimated_hours }}시간
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>진행률:</strong> {{ task.progress }}%
+                            <div class="progress mt-1" style="height: 6px;">
+                                <div class="progress-bar" style="width: {{ task.progress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if task.completed_at %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ task.completed_at|date:"Y년 m월 d일 H:i" }}에 완료되었습니다.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">작업</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'planner:task_edit' task.id %}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>수정
+                        </a>
+                        <button class="btn btn-success" onclick="toggleTaskStatus()">
+                            {% if task.status == 'COMPLETED' %}
+                            <i class="fas fa-undo me-2"></i>미완료로 변경
+                            {% else %}
+                            <i class="fas fa-check me-2"></i>완료 표시
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'planner:task_delete' task.id %}" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>삭제
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {% if study_sessions %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">관련 학습 세션</h6>
+                </div>
+                <div class="card-body">
+                    {% for session in study_sessions %}
+                    <div class="mb-2 p-2 border rounded">
+                        <strong>{{ session.title }}</strong><br>
+                        <small class="text-muted">
+                            {{ session.start_time|date:"m/d H:i" }} - 
+                            {{ session.get_duration_display }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{% url 'planner:task_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>과제 목록으로 돌아가기
+        </a>
+    </div>
+</div>
+
+<script>
+function toggleTaskStatus() {
+    fetch('{% url "planner:task_toggle" task.id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('오류가 발생했습니다.');
+        }
+    });
+}
+</script>
+
+{% csrf_token %}
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load timetable_extras %}
+
+{% block title %}시간표 - PlanIt{% endblock %}
+
+{% block extra_css %}
+<style>
+.timetable-grid {
+    min-width: 800px;
+}
+
+.timetable-cell {
+    height: 60px;
+    border: 1px solid #dee2e6;
+    position: relative;
+    vertical-align: middle;
+}
+
+.timetable-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+}
+
+.timetable-time {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.subject-block {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    border-radius: 4px;
+    padding: 4px 6px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.subject-block:hover {
+    opacity: 0.8;
+}
+
+.subject-name {
+    font-weight: 600;
+    margin-bottom: 1px;
+}
+
+.subject-location {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
+.empty-slot {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.empty-slot:hover {
+    background-color: #e9ecef;
+    border-color: #007bff;
+}
+
+.empty-slot i {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.empty-slot:hover i {
+    color: #007bff;
+}
+
+.semester-info {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 헤더 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-calendar-alt me-2"></i>시간표</h2>
+            {% if current_semester %}
+            <small class="text-muted">{{ current_semester }}</small>
+            {% endif %}
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'timetable:subject_list' %}" class="btn btn-primary">
+                <i class="fas fa-book me-2"></i>과목 관리
+            </a>
+            <a href="{% url 'timetable:timetable_manage' %}" class="btn btn-success">
+                <i class="fas fa-edit me-2"></i>시간표 편집
+            </a>
+            <a href="{% url 'timetable:semester_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-cog me-2"></i>학기 관리
+            </a>
+        </div>
+    </div>
+
+    <!-- 현재 학기 정보 -->
+    {% if current_semester %}
+    <div class="semester-info">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-1">{{ current_semester }}</h5>
+                <p class="mb-0">{{ current_semester.start_date }} ~ {{ current_semester.end_date }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span class="badge bg-light text-dark fs-6">총 {{ subjects.count }}개 과목</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 시간표 -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0 timetable-grid">
+                    <thead>
+                        <tr>
+                            <th class="timetable-header" style="width: 80px;">교시</th>
+                            {% for day_code, day_name in day_names.items %}
+                            <th class="timetable-header">{{ day_name }}요일</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for period in periods %}
+                        <tr>
+                            <td class="timetable-time">
+                                {{ period }}교시<br>
+                                <small class="text-muted">
+                                    {% if period == 1 %}09:00-09:50
+                                    {% elif period == 2 %}10:00-10:50
+                                    {% elif period == 3 %}11:00-11:50
+                                    {% elif period == 4 %}12:00-12:50
+                                    {% elif period == 5 %}13:00-13:50
+                                    {% elif period == 6 %}14:00-14:50
+                                    {% elif period == 7 %}15:00-15:50
+                                    {% elif period == 8 %}16:00-16:50
+                                    {% elif period == 9 %}17:00-17:50
+                                    {% elif period == 10 %}18:00-18:50
+                                    {% endif %}
+                                </small>
+                            </td>
+                            {% for day in days %}
+                            <td class="timetable-cell">
+                                {% with slot_data=timetable_data|lookup:day|lookup:period %}
+                                {% if slot_data %}
+                                    <div class="subject-block" 
+                                         style="background-color: {{ slot_data.subject.color }};"
+                                         onclick="showSubjectDetail('{{ slot_data.subject.id }}')"
+                                         data-bs-toggle="tooltip"
+                                         title="{{ slot_data.subject.name }} - {{ slot_data.subject.professor }}">
+                                        <div class="subject-name">{{ slot_data.subject.name }}</div>
+                                        {% if slot_data.time_slot.location %}
+                                        <div class="subject-location">{{ slot_data.time_slot.location }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="empty-slot h-100 d-flex align-items-center justify-content-center"
+                                         onclick="goToTimetableManage()"
+                                         style="cursor: pointer;"
+                                         data-bs-toggle="tooltip"
+                                         title="시간표 관리로 이동">
+                                        <i class="fas fa-plus text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 과목 목록 -->
+    {% if subjects %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h4><i class="fas fa-list me-2"></i>등록된 과목</h4>
+            <div class="row g-3">
+                {% for subject in subjects %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1">
+                                        <span class="badge me-2" style="background-color: {{ subject.color }};">&nbsp;</span>
+                                        {{ subject.name }}
+                                    </h6>
+                                    <p class="card-text small text-muted mb-2">
+                                        <i class="fas fa-user-tie me-1"></i>{{ subject.professor|default:"미정" }}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-star me-1"></i>{{ subject.credits }}학점
+                                    </p>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'timetable:subject_detail' subject.id %}">
+                                            <i class="fas fa-eye me-2"></i>상세보기
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{% url 'timetable:subject_edit' subject.id %}">
+                                            <i class="fas fa-edit me-2"></i>수정
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="{% url 'timetable:subject_delete' subject.id %}">
+                                            <i class="fas fa-trash me-2"></i>삭제
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="small">
+                                <span class="badge bg-secondary">{{ subject.get_subject_type_display }}</span>
+                                <span class="badge bg-info">{{ subject.get_evaluation_type_display }}</span>
+                            </div>
+                            {% if subject.time_slots.all %}
+                            <div class="mt-2 small text-muted">
+                                {% for time_slot in subject.time_slots.all %}
+                                <span class="badge bg-light text-dark me-1">
+                                    {{ time_slot.get_day_display }} {{ time_slot.period }}교시
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+        <h5>등록된 과목이 없습니다</h5>
+        <p class="text-muted">새 과목을 추가하여 시간표를 만들어보세요.</p>
+        <a href="{% url 'timetable:subject_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>첫 번째 과목 추가하기
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+{{ ... }}
+// 템플릿 필터 대신 사용할 JavaScript 함수
+function lookup(obj, key) {
+    return obj[key];
+}
+
+// 과목 상세 정보 모달 표시
+function showSubjectDetail(subjectId) {
+    window.location.href = `/timetable/subject/${subjectId}/`;
+}
+
+// 시간표 관리 페이지로 이동
+function goToTimetableManage() {
+    console.log('시간표 관리 페이지로 이동 중...');
+    window.location.href = '/timetable/manage/';
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 툴팁 초기화
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1065 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load planner_extras %}
+
+{% block title %}일일 플래너 - {{ selected_date|date:"Y년 m월 d일" }} - PlanIt{% endblock %}
+
+{% block extra_css %}
+<style>
+.study-planner {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+.planner-header {
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.stat-card.green { background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); color: white; }
+.stat-card.cyan { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); color: white; }
+.stat-card.red { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); color: white; }
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.todo-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.todo-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.todo-input input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.todo-input button {
+    padding: 12px 20px;
+    background: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.todo-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.todo-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.todo-item.completed {
+    background: #f8f9fa;
+    opacity: 0.7;
+}
+
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.todo-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+.todo-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+.todo-delete {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.todo-delete:hover {
+    background: #f8d7da;
+}
+
+.timer-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.timer-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.timer-time {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #4285f4;
+    margin-bottom: 10px;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.timer-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.timer-btn.start { background: #34a853; color: white; }
+.timer-btn.pause { background: #fbbc04; color: white; }
+.timer-btn.reset { background: #ea4335; color: white; }
+
+.study-log {
+    margin-top: 20px;
+}
+
+.log-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.goal-section {
+    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    color: #2d3436;
+}
+
+.goal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* 시간표 그리드 스타일 */
+.timetable-header {
+    display: grid;
+    grid-template-columns: 60px repeat(6, 1fr);
+    gap: 1px;
+    background: #495057;
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+}
+
+.timetable-header .time-label,
+.timetable-header .minute-label {
+    color: white;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.timetable-grid {
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.timetable-row {
+    display: grid;
+    grid-template-columns: 60px repeat(6, 1fr);
+    gap: 1px;
+    background: #dee2e6;
+}
+
+.hour-label {
+    background: #6c757d;
+    color: white;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-cell {
+    background: white;
+    height: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.time-cell:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: scale(1.05);
+}
+
+.time-cell.filled {
+    opacity: 0.8;
+    border-color: #0056b3 !important;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+}
+
+.time-cell.filled:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+}
+
+.study-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #495057;
+}
+
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .timetable-header,
+    .timetable-row {
+        grid-template-columns: 50px repeat(6, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="study-planner">
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="planner-header">
+            <div class="row align-items-center">
+                <div class="col-2">
+                    <button class="btn btn-light btn-sm" id="prev-day-btn">
+                        <i class="fas fa-chevron-left"></i> 이전
+                    </button>
+                </div>
+                <div class="col-8 text-center">
+                    <h2 class="mb-1">📚 학습 플래너</h2>
+                    <p class="mb-0" id="current-date">{{ selected_date|date:"Y년 m월 d일 l요일" }}</p>
+                    <input type="date" class="form-control d-inline-block w-auto mt-2" id="date-picker" value="{{ selected_date|date:'Y-m-d' }}">
+                    <div id="save-status" class="mt-2" style="font-size: 0.8rem; color: #28a745;">
+                        💾 자동 저장 중...
+                    </div>
+                </div>
+                <div class="col-2 text-end">
+                    <button class="btn btn-light btn-sm" id="next-day-btn">
+                        다음 <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="stats-cards">
+            <div class="stat-card blue">
+                <div class="stat-number">{{ stats.completed_todos }}</div>
+                <div class="stat-label">완료한 과제</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-number">{{ stats.total_todos }}</div>
+                <div class="stat-label">오늘의 과제</div>
+            </div>
+            <div class="stat-card cyan">
+                <div class="stat-number">{{ stats.study_hours|floatformat:1 }}h</div>
+                <div class="stat-label">학습 시간</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-number">0</div>
+                <div class="stat-label">마감일 지난 과제</div>
+            </div>
+        </div>
+
+        <!-- 오늘의 목표 -->
+        <div class="goal-section">
+            <div class="section-title">
+                <span>🎯</span>
+                <span>오늘의 목표</span>
+            </div>
+            <textarea class="goal-input" id="daily-goal" 
+                      placeholder="오늘의 목표를 적어보세요...">{{ daily_planner.daily_goal }}</textarea>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main-content">
+            <!-- 좌측: 할 일 목록 -->
+            <div class="todo-section">
+                <div class="section-title">
+                    <span>✅</span>
+                    <span>오늘의 할 일</span>
+                </div>
+
+                <!-- 할 일 추가 -->
+                <div class="todo-input">
+                    <input type="text" id="new-todo-title" placeholder="할 일을 입력하세요...">
+                    <button id="add-todo-btn">추가</button>
+                </div>
+
+                <!-- 할 일 목록 -->
+                <div class="todo-list">
+                    {% for todo in todo_items %}
+                    <div class="todo-item {% if todo.is_completed %}completed{% endif %}" data-todo-id="{{ todo.id }}">
+                        <input type="checkbox" class="todo-checkbox" {% if todo.is_completed %}checked{% endif %}>
+                        <span class="todo-text">{{ todo.title }}</span>
+                        <button class="todo-delete delete-todo-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 우측: 시간표 그리드 -->
+            <div class="timer-section">
+                <div class="section-title">
+                    <span>⏰</span>
+                    <span>10분 단위 시간표</span>
+                </div>
+                
+                <!-- 과목 선택 -->
+                <div class="subject-selector mb-3">
+                    <label for="subject-select" class="form-label">과목 선택:</label>
+                    <select class="form-select" id="subject-select">
+                        <option value="">과목을 선택하세요</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}" data-color="{{ subject.color|default:'#28a745' }}">
+                            {{ subject.name }}
+                        </option>
+                        {% empty %}
+                        <option value="default" data-color="#28a745">기본 과목</option>
+                        {% endfor %}
+                    </select>
+                    {% if not subjects %}
+                    <small class="text-muted">
+                        <a href="{% url 'timetable:index' %}" class="text-decoration-none">
+                            <i class="fas fa-plus"></i> 시간표에서 과목을 먼저 추가해주세요
+                        </a>
+                    </small>
+                    {% endif %}
+                    
+                    <!-- 사용법 안내 -->
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>사용법:</strong> 
+                            과목 선택 후 시간 칸 클릭으로 기록 | 다시 클릭으로 삭제
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- 시간표 헤더 -->
+                <div class="timetable-header">
+                    <div class="time-label">시간</div>
+                    <div class="minute-label">00</div>
+                    <div class="minute-label">10</div>
+                    <div class="minute-label">20</div>
+                    <div class="minute-label">30</div>
+                    <div class="minute-label">40</div>
+                    <div class="minute-label">50</div>
+                </div>
+
+                <!-- 10분 단위 시간표 그리드 -->
+                <div class="timetable-grid">
+                    <!-- 06:00 ~ 23:00 -->
+                    <div class="timetable-row"><div class="hour-label">06:00</div><div class="time-cell" data-hour="06" data-minute="0"></div><div class="time-cell" data-hour="06" data-minute="1"></div><div class="time-cell" data-hour="06" data-minute="2"></div><div class="time-cell" data-hour="06" data-minute="3"></div><div class="time-cell" data-hour="06" data-minute="4"></div><div class="time-cell" data-hour="06" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">07:00</div><div class="time-cell" data-hour="07" data-minute="0"></div><div class="time-cell" data-hour="07" data-minute="1"></div><div class="time-cell" data-hour="07" data-minute="2"></div><div class="time-cell" data-hour="07" data-minute="3"></div><div class="time-cell" data-hour="07" data-minute="4"></div><div class="time-cell" data-hour="07" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">08:00</div><div class="time-cell" data-hour="08" data-minute="0"></div><div class="time-cell" data-hour="08" data-minute="1"></div><div class="time-cell" data-hour="08" data-minute="2"></div><div class="time-cell" data-hour="08" data-minute="3"></div><div class="time-cell" data-hour="08" data-minute="4"></div><div class="time-cell" data-hour="08" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">09:00</div><div class="time-cell" data-hour="09" data-minute="0"></div><div class="time-cell" data-hour="09" data-minute="1"></div><div class="time-cell" data-hour="09" data-minute="2"></div><div class="time-cell" data-hour="09" data-minute="3"></div><div class="time-cell" data-hour="09" data-minute="4"></div><div class="time-cell" data-hour="09" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">10:00</div><div class="time-cell" data-hour="10" data-minute="0"></div><div class="time-cell" data-hour="10" data-minute="1"></div><div class="time-cell" data-hour="10" data-minute="2"></div><div class="time-cell" data-hour="10" data-minute="3"></div><div class="time-cell" data-hour="10" data-minute="4"></div><div class="time-cell" data-hour="10" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">11:00</div><div class="time-cell" data-hour="11" data-minute="0"></div><div class="time-cell" data-hour="11" data-minute="1"></div><div class="time-cell" data-hour="11" data-minute="2"></div><div class="time-cell" data-hour="11" data-minute="3"></div><div class="time-cell" data-hour="11" data-minute="4"></div><div class="time-cell" data-hour="11" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">12:00</div><div class="time-cell" data-hour="12" data-minute="0"></div><div class="time-cell" data-hour="12" data-minute="1"></div><div class="time-cell" data-hour="12" data-minute="2"></div><div class="time-cell" data-hour="12" data-minute="3"></div><div class="time-cell" data-hour="12" data-minute="4"></div><div class="time-cell" data-hour="12" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">13:00</div><div class="time-cell" data-hour="13" data-minute="0"></div><div class="time-cell" data-hour="13" data-minute="1"></div><div class="time-cell" data-hour="13" data-minute="2"></div><div class="time-cell" data-hour="13" data-minute="3"></div><div class="time-cell" data-hour="13" data-minute="4"></div><div class="time-cell" data-hour="13" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">14:00</div><div class="time-cell" data-hour="14" data-minute="0"></div><div class="time-cell" data-hour="14" data-minute="1"></div><div class="time-cell" data-hour="14" data-minute="2"></div><div class="time-cell" data-hour="14" data-minute="3"></div><div class="time-cell" data-hour="14" data-minute="4"></div><div class="time-cell" data-hour="14" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">15:00</div><div class="time-cell" data-hour="15" data-minute="0"></div><div class="time-cell" data-hour="15" data-minute="1"></div><div class="time-cell" data-hour="15" data-minute="2"></div><div class="time-cell" data-hour="15" data-minute="3"></div><div class="time-cell" data-hour="15" data-minute="4"></div><div class="time-cell" data-hour="15" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">16:00</div><div class="time-cell" data-hour="16" data-minute="0"></div><div class="time-cell" data-hour="16" data-minute="1"></div><div class="time-cell" data-hour="16" data-minute="2"></div><div class="time-cell" data-hour="16" data-minute="3"></div><div class="time-cell" data-hour="16" data-minute="4"></div><div class="time-cell" data-hour="16" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">17:00</div><div class="time-cell" data-hour="17" data-minute="0"></div><div class="time-cell" data-hour="17" data-minute="1"></div><div class="time-cell" data-hour="17" data-minute="2"></div><div class="time-cell" data-hour="17" data-minute="3"></div><div class="time-cell" data-hour="17" data-minute="4"></div><div class="time-cell" data-hour="17" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">18:00</div><div class="time-cell" data-hour="18" data-minute="0"></div><div class="time-cell" data-hour="18" data-minute="1"></div><div class="time-cell" data-hour="18" data-minute="2"></div><div class="time-cell" data-hour="18" data-minute="3"></div><div class="time-cell" data-hour="18" data-minute="4"></div><div class="time-cell" data-hour="18" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">19:00</div><div class="time-cell" data-hour="19" data-minute="0"></div><div class="time-cell" data-hour="19" data-minute="1"></div><div class="time-cell" data-hour="19" data-minute="2"></div><div class="time-cell" data-hour="19" data-minute="3"></div><div class="time-cell" data-hour="19" data-minute="4"></div><div class="time-cell" data-hour="19" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">20:00</div><div class="time-cell" data-hour="20" data-minute="0"></div><div class="time-cell" data-hour="20" data-minute="1"></div><div class="time-cell" data-hour="20" data-minute="2"></div><div class="time-cell" data-hour="20" data-minute="3"></div><div class="time-cell" data-hour="20" data-minute="4"></div><div class="time-cell" data-hour="20" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">21:00</div><div class="time-cell" data-hour="21" data-minute="0"></div><div class="time-cell" data-hour="21" data-minute="1"></div><div class="time-cell" data-hour="21" data-minute="2"></div><div class="time-cell" data-hour="21" data-minute="3"></div><div class="time-cell" data-hour="21" data-minute="4"></div><div class="time-cell" data-hour="21" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">22:00</div><div class="time-cell" data-hour="22" data-minute="0"></div><div class="time-cell" data-hour="22" data-minute="1"></div><div class="time-cell" data-hour="22" data-minute="2"></div><div class="time-cell" data-hour="22" data-minute="3"></div><div class="time-cell" data-hour="22" data-minute="4"></div><div class="time-cell" data-hour="22" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">23:00</div><div class="time-cell" data-hour="23" data-minute="0"></div><div class="time-cell" data-hour="23" data-minute="1"></div><div class="time-cell" data-hour="23" data-minute="2"></div><div class="time-cell" data-hour="23" data-minute="3"></div><div class="time-cell" data-hour="23" data-minute="4"></div><div class="time-cell" data-hour="23" data-minute="5"></div></div>
+                    
+                    <!-- 00:00 ~ 05:00 (다음날) -->
+                    <div class="timetable-row"><div class="hour-label">00:00</div><div class="time-cell" data-hour="00" data-minute="0"></div><div class="time-cell" data-hour="00" data-minute="1"></div><div class="time-cell" data-hour="00" data-minute="2"></div><div class="time-cell" data-hour="00" data-minute="3"></div><div class="time-cell" data-hour="00" data-minute="4"></div><div class="time-cell" data-hour="00" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">01:00</div><div class="time-cell" data-hour="01" data-minute="0"></div><div class="time-cell" data-hour="01" data-minute="1"></div><div class="time-cell" data-hour="01" data-minute="2"></div><div class="time-cell" data-hour="01" data-minute="3"></div><div class="time-cell" data-hour="01" data-minute="4"></div><div class="time-cell" data-hour="01" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">02:00</div><div class="time-cell" data-hour="02" data-minute="0"></div><div class="time-cell" data-hour="02" data-minute="1"></div><div class="time-cell" data-hour="02" data-minute="2"></div><div class="time-cell" data-hour="02" data-minute="3"></div><div class="time-cell" data-hour="02" data-minute="4"></div><div class="time-cell" data-hour="02" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">03:00</div><div class="time-cell" data-hour="03" data-minute="0"></div><div class="time-cell" data-hour="03" data-minute="1"></div><div class="time-cell" data-hour="03" data-minute="2"></div><div class="time-cell" data-hour="03" data-minute="3"></div><div class="time-cell" data-hour="03" data-minute="4"></div><div class="time-cell" data-hour="03" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">04:00</div><div class="time-cell" data-hour="04" data-minute="0"></div><div class="time-cell" data-hour="04" data-minute="1"></div><div class="time-cell" data-hour="04" data-minute="2"></div><div class="time-cell" data-hour="04" data-minute="3"></div><div class="time-cell" data-hour="04" data-minute="4"></div><div class="time-cell" data-hour="04" data-minute="5"></div></div>
+                    <div class="timetable-row"><div class="hour-label">05:00</div><div class="time-cell" data-hour="05" data-minute="0"></div><div class="time-cell" data-hour="05" data-minute="1"></div><div class="time-cell" data-hour="05" data-minute="2"></div><div class="time-cell" data-hour="05" data-minute="3"></div><div class="time-cell" data-hour="05" data-minute="4"></div><div class="time-cell" data-hour="05" data-minute="5"></div></div>
+                </div>
+
+                <!-- 학습 통계 -->
+                <div class="study-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">목표시간:</span>
+                        <span class="stat-value">{{ daily_planner.target_study_hours }}시간</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">달성시간:</span>
+                        <span class="stat-value">{{ total_study_hours|floatformat:1 }}시간</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentDate = new Date('{{ selected_date|date:"Y-m-d" }}');
+    
+    // 날짜 관련 함수들
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    function formatDateKorean(date) {
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const dayOfWeek = days[date.getDay()];
+        return `${year}년 ${month}월 ${day}일 ${dayOfWeek}요일`;
+    }
+    
+    function updateDateDisplay() {
+        document.getElementById('current-date').textContent = formatDateKorean(currentDate);
+        document.getElementById('date-picker').value = formatDate(currentDate);
+    }
+    
+    // 데이터 저장 함수
+    function saveData() {
+        try {
+            const dateKey = formatDate(currentDate);
+            
+            // 할 일 목록 저장
+            const todos = [];
+            document.querySelectorAll('.todo-item').forEach(item => {
+                const textElement = item.querySelector('.todo-text');
+                if (textElement) {
+                    const text = textElement.textContent;
+                    const completed = item.classList.contains('completed');
+                    todos.push({ text, completed });
+                }
+            });
+            
+            // 시간표 데이터 저장
+            const timeBlocks = {};
+            document.querySelectorAll('.time-cell.filled').forEach(cell => {
+                const hour = cell.dataset.hour;
+                const minute = cell.dataset.minute;
+                const subject = cell.title.split(' - ')[1] || '';
+                const color = cell.style.backgroundColor;
+                timeBlocks[`${hour}-${minute}`] = { subject, color };
+            });
+            
+            // 일일 목표 저장
+            const dailyGoalElement = document.getElementById('daily-goal');
+            const dailyGoal = dailyGoalElement ? dailyGoalElement.value : '';
+            
+            const data = {
+                todos,
+                timeBlocks,
+                dailyGoal,
+                date: dateKey,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem(`planner-${dateKey}`, JSON.stringify(data));
+            console.log('✅ 데이터 저장 완료:', dateKey, '할일:', todos.length, '시간블록:', Object.keys(timeBlocks).length);
+            
+            // 저장 상태 표시
+            const saveStatus = document.getElementById('save-status');
+            if (saveStatus) {
+                saveStatus.innerHTML = '✅ 저장 완료';
+                saveStatus.style.color = '#28a745';
+                setTimeout(() => {
+                    saveStatus.innerHTML = '💾 자동 저장 중...';
+                    saveStatus.style.color = '#6c757d';
+                }, 2000);
+            }
+            
+            // 저장 확인
+            const saved = localStorage.getItem(`planner-${dateKey}`);
+            if (!saved) {
+                console.error('❌ 데이터 저장 실패!');
+                if (saveStatus) {
+                    saveStatus.innerHTML = '❌ 저장 실패';
+                    saveStatus.style.color = '#dc3545';
+                }
+                alert('데이터 저장에 실패했습니다. 브라우저 저장소를 확인해주세요.');
+            }
+            
+        } catch (error) {
+            console.error('❌ 저장 중 오류:', error);
+            alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
+        }
+    }
+    
+    // 데이터 로드 함수
+    function loadData() {
+        const dateKey = formatDate(currentDate);
+        const savedData = localStorage.getItem(`planner-${dateKey}`);
+        
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            
+            // 할 일 목록 로드
+            const todoList = document.querySelector('.todo-list');
+            todoList.innerHTML = '';
+            
+            if (data.todos && data.todos.length > 0) {
+                data.todos.forEach(todo => {
+                    const todoItem = document.createElement('div');
+                    todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                    todoItem.innerHTML = `
+                        <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''}>
+                        <span class="todo-text">${todo.text}</span>
+                        <button class="todo-delete delete-todo-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    todoList.appendChild(todoItem);
+                });
+                
+                // 이벤트 리스너 재등록
+                attachTodoEventListeners();
+            } else {
+                todoList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                    </div>
+                `;
+            }
+            
+            // 시간표 데이터 로드
+            document.querySelectorAll('.time-cell').forEach(cell => {
+                cell.classList.remove('filled');
+                cell.style.backgroundColor = '';
+                cell.title = '';
+            });
+            
+            if (data.timeBlocks) {
+                Object.keys(data.timeBlocks).forEach(key => {
+                    const [hour, minute] = key.split('-');
+                    const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
+                    if (cell) {
+                        const blockData = data.timeBlocks[key];
+                        cell.classList.add('filled');
+                        cell.style.setProperty('background-color', blockData.color, 'important');
+                        cell.title = `${hour}:${minute}0 - ${blockData.subject}`;
+                    }
+                });
+            }
+            
+            // 일일 목표 로드
+            const dailyGoalElement = document.getElementById('daily-goal');
+            if (dailyGoalElement && data.dailyGoal) {
+                dailyGoalElement.value = data.dailyGoal;
+            }
+            
+            console.log('데이터 로드됨:', dateKey);
+        } else {
+            // 데이터가 없으면 초기화
+            document.querySelector('.todo-list').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                </div>
+            `;
+            
+            document.querySelectorAll('.time-cell').forEach(cell => {
+                cell.classList.remove('filled');
+                cell.style.backgroundColor = '';
+                cell.title = '';
+            });
+            
+            const dailyGoalElement = document.getElementById('daily-goal');
+            if (dailyGoalElement) {
+                dailyGoalElement.value = '';
+            }
+        }
+        
+        updateStudyStats();
+    }
+    
+    // 이전/다음 날짜 버튼
+    const prevBtn = document.getElementById('prev-day-btn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
+    
+    const nextBtn = document.getElementById('next-day-btn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
+    
+    // 날짜 선택기
+    const datePicker = document.getElementById('date-picker');
+    if (datePicker) {
+        datePicker.addEventListener('change', function() {
+            saveData(); // 현재 데이터 저장
+            currentDate = new Date(this.value);
+            updateDateDisplay();
+            loadData(); // 새 날짜 데이터 로드
+        });
+    }
+    
+    // 타이머 업데이트
+    function updateTimerDisplay() {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay) {
+            timerDisplay.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    }
+    
+    // 타이머 시작
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', function() {
+            if (!isRunning) {
+                timerInterval = setInterval(function() {
+                    seconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                isRunning = true;
+                this.textContent = '일시정지';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-warning');
+            } else {
+                clearInterval(timerInterval);
+                isRunning = false;
+                this.textContent = '시작';
+                this.classList.remove('btn-warning');
+                this.classList.add('btn-success');
+            }
+        });
+    }
+    
+    // 타이머 리셋
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            isRunning = false;
+            updateTimerDisplay();
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.textContent = '시작';
+                startBtn.classList.remove('btn-warning');
+                startBtn.classList.add('btn-success');
+            }
+        });
+    }
+    
+    // 할 일 이벤트 리스너 등록
+    function attachTodoEventListeners() {
+        // 할 일 체크박스 토글
+        document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+            checkbox.removeEventListener('change', handleTodoToggle); // 중복 방지
+            checkbox.addEventListener('change', handleTodoToggle);
+        });
+        
+        // 할 일 삭제
+        document.querySelectorAll('.delete-todo-btn').forEach(btn => {
+            btn.removeEventListener('click', handleTodoDelete); // 중복 방지
+            btn.addEventListener('click', handleTodoDelete);
+        });
+    }
+    
+    function handleTodoToggle() {
+        const todoItem = this.closest('.todo-item');
+        if (this.checked) {
+            todoItem.classList.add('completed');
+        } else {
+            todoItem.classList.remove('completed');
+        }
+        saveData(); // 변경사항 저장
+    }
+    
+    function handleTodoDelete() {
+        if (!confirm('이 할 일을 삭제하시겠습니까?')) return;
+        const todoItem = this.closest('.todo-item');
+        todoItem.remove();
+        
+        // 할 일이 모두 삭제되면 빈 상태 메시지 표시
+        const todoList = document.querySelector('.todo-list');
+        if (todoList.children.length === 0) {
+            todoList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                </div>
+            `;
+        }
+        saveData(); // 변경사항 저장
+    }
+    
+    // 할 일 추가
+    const addTodoBtn = document.getElementById('add-todo-btn');
+    if (addTodoBtn) {
+        addTodoBtn.addEventListener('click', function() {
+            const titleInput = document.getElementById('new-todo-title');
+            if (!titleInput) return;
+            const title = titleInput.value.trim();
+            
+            if (!title) {
+                alert('할 일을 입력해주세요.');
+                return;
+            }
+            
+            const todoList = document.querySelector('.todo-list');
+            const newTodo = document.createElement('div');
+            newTodo.className = 'todo-item';
+            newTodo.innerHTML = `
+                <input type="checkbox" class="todo-checkbox">
+                <span class="todo-text">${title}</span>
+                <button class="todo-delete delete-todo-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // 빈 상태 메시지 제거
+            const emptyState = todoList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            todoList.appendChild(newTodo);
+            const todoInput = document.getElementById('new-todo-title');
+            if (todoInput) {
+                todoInput.value = '';
+            }
+            
+            // 이벤트 리스너 재등록
+            attachTodoEventListeners();
+            
+            // 데이터 저장
+            saveData();
+        });
+    }
+    
+    // Enter 키로 할 일 추가
+    const newTodoInput = document.getElementById('new-todo-title');
+    if (newTodoInput) {
+        newTodoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const addBtn = document.getElementById('add-todo-btn');
+                if (addBtn) {
+                    addBtn.click();
+                }
+            }
+        });
+    }
+    
+    
+    // 간단한 클릭 방식 시간표 기록
+    function attachTimeTableEvents() {
+        document.querySelectorAll('.time-cell').forEach(cell => {
+            cell.addEventListener('click', function(e) {
+                e.preventDefault();
+                const hour = this.dataset.hour;
+                const minute = this.dataset.minute;
+                console.log(`클릭된 시간: ${hour}:${minute}`); // 디버깅용
+                toggleTimeBlock(hour, minute);
+            });
+        });
+    }
+    
+    // 이벤트 리스너 등록
+    attachTimeTableEvents();
+    
+    // 일일 목표 업데이트
+    const dailyGoalElement = document.getElementById('daily-goal');
+    if (dailyGoalElement) {
+        dailyGoalElement.addEventListener('blur', function() {
+            saveData(); // 목표 변경 시 저장
+        });
+    }
+    
+    // 초기 데이터 로드
+    loadData();
+    
+    // 초기 이벤트 리스너 등록
+    attachTodoEventListeners();
+    
+    // 페이지 종료 시 데이터 자동 저장
+    window.addEventListener('beforeunload', function(e) {
+        saveData();
+        console.log('페이지 종료 시 저장');
+    });
+    
+    // 페이지 숨김/표시 시에도 저장 (모바일 대응)
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            saveData();
+            console.log('페이지 숨김 시 저장');
+        } else {
+            console.log('페이지 다시 표시됨');
+        }
+    });
+    
+    // 모바일 브라우저 대응 - 포커스 잃을 때 저장
+    window.addEventListener('blur', function() {
+        saveData();
+        console.log('포커스 잃음 시 저장');
+    });
+    
+    // 모바일 터치 이벤트 후 저장
+    document.addEventListener('touchend', function() {
+        setTimeout(() => saveData(), 500);
+    });
+    
+    // 주기적 자동 저장 (15초마다로 단축)
+    setInterval(function() {
+        saveData();
+        console.log('⏰ 주기적 자동 저장 완료');
+    }, 15000);
+    
+    // 입력 필드 변경 시 즉시 저장
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'daily-goal' || e.target.id === 'new-todo-title') {
+            setTimeout(() => saveData(), 1000); // 1초 후 저장
+        }
+    });
+});
+
+// 시간 블록 토글 함수
+function toggleTimeBlock(hour, minute) {
+    console.log(`toggleTimeBlock 호출: ${hour}:${minute}`); // 디버깅용
+    
+    const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
+    console.log('찾은 셀:', cell); // 디버깅용
+    
+    const subjectSelect = document.getElementById('subject-select');
+    const selectedSubject = subjectSelect.value;
+    console.log('선택된 과목:', selectedSubject); // 디버깅용
+    
+    if (!selectedSubject) {
+        alert('먼저 과목을 선택해주세요!');
+        return;
+    }
+    
+    const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+    const subjectColor = selectedOption.dataset.color;
+    const subjectName = selectedOption.text;
+    console.log('과목 색상:', subjectColor, '과목명:', subjectName); // 디버깅용
+    
+    if (cell.classList.contains('filled')) {
+        // 제거
+        console.log('셀 제거 중...'); // 디버깅용
+        cell.classList.remove('filled');
+        cell.style.backgroundColor = '';
+        cell.title = '';
+    } else {
+        // 추가
+        console.log('셀 추가 중...', subjectColor); // 디버깅용
+        cell.classList.add('filled');
+        cell.style.setProperty('background-color', subjectColor, 'important');
+        cell.title = `${hour}:${minute}0 - ${subjectName}`;
+    }
+    
+    // 통계 업데이트 및 데이터 저장
+    updateStudyStats();
+    
+    // 현재 날짜의 데이터 저장
+    const currentDate = new Date(document.getElementById('date-picker').value);
+    const dateKey = currentDate.getFullYear() + '-' + 
+                   String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(currentDate.getDate()).padStart(2, '0');
+    
+    // 시간표 데이터 저장
+    const timeBlocks = {};
+    document.querySelectorAll('.time-cell.filled').forEach(filledCell => {
+        const h = filledCell.dataset.hour;
+        const m = filledCell.dataset.minute;
+        const subject = filledCell.title.split(' - ')[1] || '';
+        const color = filledCell.style.backgroundColor;
+        timeBlocks[`${h}-${m}`] = { subject, color };
+    });
+    
+    // 기존 데이터 가져와서 시간표만 업데이트
+    const existingData = JSON.parse(localStorage.getItem(`planner-${dateKey}`) || '{}');
+    existingData.timeBlocks = timeBlocks;
+    localStorage.setItem(`planner-${dateKey}`, JSON.stringify(existingData));
+}
+
+// 학습 통계 업데이트 (10분 단위)
+function updateStudyStats() {
+    const filledCells = document.querySelectorAll('.time-cell.filled');
+    const studyMinutes = filledCells.length * 10;
+    const studyHours = (studyMinutes / 60).toFixed(1);
+    
+    const studyTimeElement = document.querySelector('.stat-value');
+    if (studyTimeElement) {
+        studyTimeElement.textContent = `${studyHours}시간`;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}학습 플래너 - PlanIt{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 12px;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.task-item {
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover {
+    background-color: #e9ecef;
+}
+
+.task-completed {
+    border-left-color: #28a745;
+    opacity: 0.7;
+}
+
+.task-overdue {
+    border-left-color: #dc3545;
+}
+
+.priority-urgent { border-left-color: #dc3545; }
+.priority-high { border-left-color: #fd7e14; }
+.priority-medium { border-left-color: #ffc107; }
+.priority-low { border-left-color: #28a745; }
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+}
+
+.quick-add-form {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 헤더 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-tasks me-2"></i>학습 플래너</h2>
+            <p class="text-muted mb-0">오늘도 목표를 향해 한 걸음 더!</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'planner:daily_planner' %}" class="btn btn-info">
+                <i class="fas fa-calendar-day me-2"></i>일일 플래너
+            </a>
+            <a href="{% url 'planner:task_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>과제 추가
+            </a>
+            <a href="{% url 'planner:study_session_list' %}" class="btn btn-success">
+                <i class="fas fa-clock me-2"></i>학습 기록
+            </a>
+            <a href="{% url 'planner:goal_create' %}" class="btn btn-warning">
+                <i class="fas fa-bullseye me-2"></i>목표 설정
+            </a>
+        </div>
+    </div>
+
+    <!-- 빠른 과제 추가 -->
+    <div class="quick-add-form">
+        <h6 class="mb-3"><i class="fas fa-bolt me-2"></i>빠른 과제 추가</h6>
+        <form id="quick-add-form" method="post" action="{% url 'planner:task_quick_add' %}">
+            {% csrf_token %}
+            {% crispy quick_add_form %}
+        </form>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ task_stats.total }}</h4>
+                    <p class="mb-0">총 과제</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ task_stats.completed }}</h4>
+                    <p class="mb-0">완료된 과제</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-spinner fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ task_stats.in_progress }}</h4>
+                    <p class="mb-0">진행 중</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h4 class="fw-bold">{{ task_stats.overdue }}</h4>
+                    <p class="mb-0">마감일 지남</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 왼쪽 컬럼 -->
+        <div class="col-lg-8">
+            <!-- 오늘의 과제 -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>오늘의 과제
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if today_tasks %}
+                        {% for task in today_tasks %}
+                        <div class="task-item p-3 mb-2 priority-{{ task.priority|lower }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="{% url 'planner:task_detail' task.id %}" class="text-decoration-none">
+                                            {{ task.title }}
+                                        </a>
+                                    </h6>
+                                    <p class="text-muted small mb-2">
+                                        <span class="badge bg-secondary">{{ task.get_category_display }}</span>
+                                        <span class="badge {{ task.get_priority_class }}">{{ task.get_priority_display }}</span>
+                                        {% if task.subject %}
+                                        <span class="badge bg-info">{{ task.subject.name }}</span>
+                                        {% endif %}
+                                    </p>
+                                    {% if task.description %}
+                                    <p class="small text-muted mb-0">{{ task.description|truncatewords:15 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3">
+                                    <button class="btn btn-sm btn-outline-success" onclick="toggleTask('{{ task.id }}')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-smile fa-3x text-success mb-3"></i>
+                            <h6>오늘 할 과제가 없습니다!</h6>
+                            <p class="text-muted">새로운 과제를 추가하거나 휴식을 취하세요.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 마감일 지난 과제 -->
+            {% if overdue_tasks %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>마감일 지난 과제
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for task in overdue_tasks %}
+                    <div class="task-item task-overdue p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'planner:task_detail' task.id %}" class="text-decoration-none">
+                                        {{ task.title }}
+                                    </a>
+                                </h6>
+                                <p class="text-danger small mb-0">
+                                    <i class="fas fa-clock me-1"></i>
+                                    마감: {{ task.due_date|date:"m월 d일 H:i" }}
+                                </p>
+                            </div>
+                            <div class="ms-3">
+                                <button class="btn btn-sm btn-outline-success" onclick="toggleTask('{{ task.id }}')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 이번 주 과제 -->
+            <div class="card dashboard-card">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-week me-2"></i>이번 주 과제
+                        </h5>
+                        <a href="{% url 'planner:task_list' %}" class="btn btn-sm btn-light">
+                            전체 보기
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if week_tasks %}
+                        {% for task in week_tasks|slice:":5" %}
+                        <div class="task-item p-3 mb-2 priority-{{ task.priority|lower }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="{% url 'planner:task_detail' task.id %}" class="text-decoration-none">
+                                            {{ task.title }}
+                                        </a>
+                                    </h6>
+                                    <p class="text-muted small mb-0">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ task.due_date|date:"m월 d일 H:i" }}
+                                    </p>
+                                </div>
+                                <div class="ms-3">
+                                    <span class="badge {{ task.get_status_badge_class }}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <h6>이번 주 예정된 과제가 없습니다</h6>
+                            <p class="text-muted">새로운 과제를 추가해보세요.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 컬럼 -->
+        <div class="col-lg-4">
+            <!-- 이번 주 학습 시간 -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>이번 주 학습 현황
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-success fw-bold">{{ total_study_hours|floatformat:1 }}시간</h3>
+                    <p class="text-muted mb-3">총 학습시간</p>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" style="width: {% widthratio total_study_hours 40 100 %}%"></div>
+                    </div>
+                    <small class="text-muted">목표: 주 40시간</small>
+                </div>
+            </div>
+
+            <!-- 활성 목표 -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bullseye me-2"></i>활성 목표
+                        </h5>
+                        <a href="{% url 'planner:goal_list' %}" class="btn btn-sm btn-dark">
+                            전체 보기
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if active_goals %}
+                        {% for goal in active_goals|slice:":3" %}
+                        <div class="mb-3">
+                            <h6 class="mb-1">{{ goal.title }}</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ goal.get_progress_percentage }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ goal.get_progress_percentage }}% 달성</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-target fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">설정된 목표가 없습니다</p>
+                            <a href="{% url 'planner:goal_create' %}" class="btn btn-sm btn-warning mt-2">
+                                목표 설정하기
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 최근 완료된 과제 -->
+            {% if recent_completed %}
+            <div class="card dashboard-card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>최근 완료
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for task in recent_completed|slice:":5" %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 small">{{ task.title }}</h6>
+                            <small class="text-muted">{{ task.completed_at|date:"m월 d일" }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 과제 상태 토글
+function toggleTask(taskId) {
+    fetch(`/planner/tasks/${taskId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // 페이지 새로고침
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            alert('오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('네트워크 오류가 발생했습니다.');
+    });
+}
+
+// 빠른 과제 추가
+document.getElementById('quick-add-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            this.reset();
+            // 페이지 새로고침
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            alert('입력 정보를 확인해주세요.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('네트워크 오류가 발생했습니다.');
+    });
+});
+</script>
+{% endblock %}

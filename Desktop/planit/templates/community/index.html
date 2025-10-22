@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}커뮤니티 - PlanIt{% endblock %}
+
+{% block extra_css %}
+<style>
+.category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.category-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin: 0 auto 1rem;
+}
+
+.post-card {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.post-type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.stats-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 헤더 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-users me-2"></i>커뮤니티</h2>
+            <p class="text-muted mb-0">생도들과 함께 소통하고 정보를 공유하세요</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'community:post_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>게시글 작성
+            </a>
+            <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>전체 게시글
+            </a>
+        </div>
+    </div>
+
+    <!-- 통계 섹션 -->
+    <div class="stats-section">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h3 class="fw-bold">{{ categories.count }}</h3>
+                <p class="mb-0">활성 카테고리</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="fw-bold">{{ recent_posts.count }}</h3>
+                <p class="mb-0">최근 게시글</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="fw-bold">{{ popular_posts.count }}</h3>
+                <p class="mb-0">인기 게시글</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="fw-bold">{{ notices.count }}</h3>
+                <p class="mb-0">공지사항</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카테고리 섹션 -->
+    <div class="mb-5">
+        <h4 class="mb-4"><i class="fas fa-th-large me-2"></i>카테고리</h4>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{{ category.get_absolute_url }}" class="text-decoration-none">
+                    <div class="card category-card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="category-icon" style="background-color: {{ category.color }};">
+                                <i class="{{ category.icon }}"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">{{ category.name }}</h5>
+                            <p class="card-text text-muted small">{{ category.description|truncatewords:10 }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="badge bg-primary">{{ category.get_category_type_display }}</span>
+                                <small class="text-muted">
+                                    <i class="fas fa-file-alt me-1"></i>{{ category.post_count }}개 게시글
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <h5>사용 가능한 카테고리가 없습니다</h5>
+                    <p class="text-muted">관리자에게 문의하세요.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 왼쪽 컬럼 -->
+        <div class="col-lg-8">
+            <!-- 공지사항 -->
+            {% if notices %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bullhorn me-2"></i>공지사항
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for notice in notices %}
+                    <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                {% if notice.is_pinned %}
+                                <i class="fas fa-thumbtack text-warning me-1"></i>
+                                {% endif %}
+                                <a href="{{ notice.get_absolute_url }}" class="text-decoration-none">
+                                    {{ notice.title }}
+                                </a>
+                            </h6>
+                            <div class="post-meta">
+                                <span class="badge post-type-badge bg-warning text-dark">{{ notice.get_post_type_display }}</span>
+                                <span class="ms-2">{{ notice.author.get_full_name }}</span>
+                                <span class="mx-2">|</span>
+                                <span>{{ notice.created_at|date:"m월 d일" }}</span>
+                                <span class="mx-2">|</span>
+                                <i class="fas fa-eye me-1"></i>{{ notice.views }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 최근 게시글 -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>최근 게시글
+                        </h5>
+                        <a href="{% url 'community:post_list' %}" class="btn btn-sm btn-light">
+                            전체 보기
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_posts %}
+                        {% for post in recent_posts %}
+                        <div class="post-card p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2">
+                                        <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
+                                            {{ post.title }}
+                                        </a>
+                                    </h6>
+                                    <div class="post-meta mb-2">
+                                        <span class="badge bg-secondary">{{ post.category.name }}</span>
+                                        {% if post.post_type != 'NORMAL' %}
+                                        <span class="badge post-type-badge bg-info">{{ post.get_post_type_display }}</span>
+                                        {% endif %}
+                                        {% if post.subject %}
+                                        <span class="badge bg-success">{{ post.subject.name }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="post-meta">
+                                        <span>{{ post.author.get_full_name }}</span>
+                                        <span class="mx-2">|</span>
+                                        <span>{{ post.created_at|date:"m월 d일 H:i" }}</span>
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-eye me-1"></i>{{ post.views }}
+                                        <i class="fas fa-heart ms-2 me-1"></i>{{ post.get_like_count }}
+                                        <i class="fas fa-comment ms-2 me-1"></i>{{ post.get_comment_count }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h6>최근 게시글이 없습니다</h6>
+                            <p class="text-muted">첫 번째 게시글을 작성해보세요!</p>
+                            <a href="{% url 'community:post_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>게시글 작성하기
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 컬럼 -->
+        <div class="col-lg-4">
+            <!-- 인기 게시글 -->
+            {% if popular_posts %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire me-2"></i>이번 주 인기 게시글
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for post in popular_posts %}
+                    <div class="d-flex align-items-start mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="badge bg-success me-2 mt-1">{{ forloop.counter }}</div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 small">
+                                <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
+                                    {{ post.title|truncatechars:30 }}
+                                </a>
+                            </h6>
+                            <div class="post-meta small">
+                                <i class="fas fa-heart me-1"></i>{{ post.get_like_count }}
+                                <i class="fas fa-eye ms-2 me-1"></i>{{ post.views }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 빠른 링크 -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link me-2"></i>빠른 링크
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'community:post_create' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>새 게시글 작성
+                        </a>
+                        <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>전체 게시글 보기
+                        </a>
+                        {% for category in categories|slice:":3" %}
+                        <a href="{{ category.get_absolute_url }}" class="btn btn-outline-info btn-sm">
+                            <i class="{{ category.icon }} me-2"></i>{{ category.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
