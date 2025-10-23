@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}앱 설치 - PlanIt{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-download me-3"></i>PlanIt 앱 설치
+                </h1>
+                <p class="lead mb-4">
+                    언제 어디서나 PlanIt을 사용하세요.<br>
+                    모바일 앱과 데스크톱 앱을 다운로드할 수 있습니다.
+                </p>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-phone display-1 opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Download Section -->
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-center text-white py-4">
+                    <h3 class="fw-bold mb-3">
+                        <i class="bi bi-rocket-takeoff me-2"></i>지금 바로 다운로드하세요!
+                    </h3>
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-md-4">
+                            <a href="{% url 'download_android' %}" class="btn btn-light btn-lg w-100 shadow">
+                                <i class="bi bi-android2 text-success me-2" style="font-size: 1.5rem;"></i><br>
+                                <strong>Android</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'download_windows' %}" class="btn btn-light btn-lg w-100 shadow">
+                                <i class="bi bi-windows text-primary me-2" style="font-size: 1.5rem;"></i><br>
+                                <strong>Windows</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="quickInstallPWA" class="btn btn-light btn-lg w-100 shadow">
+                                <i class="bi bi-globe text-info me-2" style="font-size: 1.5rem;"></i><br>
+                                <strong>웹앱</strong>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Options -->
+<div class="container mb-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="fw-bold mb-3">다운로드 옵션</h2>
+            <p class="text-muted">원하는 플랫폼에 맞는 앱을 선택하여 다운로드하세요</p>
+        </div>
+    </div>
+    
+    <div class="row g-4 justify-content-center">
+        <!-- Android App -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-android2 text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Android 앱</h5>
+                    <p class="card-text text-muted mb-4">
+                        안드로이드 기기에서 PlanIt을 사용하세요.<br>
+                        오프라인에서도 일부 기능을 이용할 수 있습니다.
+                    </p>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            버전: 1.0.0 | 크기: 25MB
+                        </small>
+                    </div>
+                    <a href="{% url 'download_android' %}" class="btn btn-success btn-lg w-100" style="font-size: 1.2rem; padding: 15px;">
+                        <i class="bi bi-download me-2" style="font-size: 1.5rem;"></i>
+                        <strong>Android APK 다운로드</strong>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Windows App -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-windows text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Windows 앱</h5>
+                    <p class="card-text text-muted mb-4">
+                        Windows PC에서 PlanIt을 사용하세요.<br>
+                        데스크톱 환경에 최적화된 인터페이스를 제공합니다.
+                    </p>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            버전: 1.0.0 | 크기: 45MB
+                        </small>
+                    </div>
+                    <a href="{% url 'download_windows' %}" class="btn btn-primary btn-lg w-100" style="font-size: 1.2rem; padding: 15px;">
+                        <i class="bi bi-download me-2" style="font-size: 1.5rem;"></i>
+                        <strong>Windows EXE 다운로드</strong>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PWA Install -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-globe text-info" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">웹 앱 설치</h5>
+                    <p class="card-text text-muted mb-4">
+                        브라우저에서 바로 앱처럼 설치하세요.<br>
+                        별도 다운로드 없이 즉시 사용 가능합니다.
+                    </p>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            PWA 지원 | 자동 업데이트
+                        </small>
+                    </div>
+                    <button id="installPWA" class="btn btn-info btn-lg w-100" style="font-size: 1.2rem; padding: 15px;">
+                        <i class="bi bi-plus-circle me-2" style="font-size: 1.5rem;"></i>
+                        <strong>홈 화면에 추가</strong>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Installation Guide -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h3 class="fw-bold">설치 가이드</h3>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold text-primary fs-4">1</span>
+                    </div>
+                    <h5 class="fw-bold">다운로드</h5>
+                    <p class="text-muted">원하는 플랫폼의 앱을 다운로드하세요.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold text-success fs-4">2</span>
+                    </div>
+                    <h5 class="fw-bold">설치</h5>
+                    <p class="text-muted">다운로드한 파일을 실행하여 설치하세요.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold text-info fs-4">3</span>
+                    </div>
+                    <h5 class="fw-bold">로그인</h5>
+                    <p class="text-muted">기존 계정으로 로그인하여 사용하세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Requirements -->
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h3 class="fw-bold">시스템 요구사항</h3>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">
+                        <i class="bi bi-android2 text-success me-2"></i>Android
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Android 7.0 (API 24) 이상</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>RAM 2GB 이상</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>저장공간 100MB 이상</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">
+                        <i class="bi bi-windows text-primary me-2"></i>Windows
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Windows 10 이상</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>RAM 4GB 이상</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>저장공간 200MB 이상</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h3 class="fw-bold">자주 묻는 질문</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                앱과 웹 버전의 차이점은 무엇인가요?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                앱 버전은 오프라인에서도 일부 기능을 사용할 수 있으며, 푸시 알림을 받을 수 있습니다. 웹 버전은 항상 최신 기능을 제공하며 별도 설치가 필요하지 않습니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                앱이 안전한가요?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                네, PlanIt 앱은 안전합니다. 모든 데이터는 암호화되어 전송되며, 개인정보는 안전하게 보호됩니다.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                앱 업데이트는 어떻게 하나요?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                앱은 자동으로 업데이트를 확인하며, 새 버전이 있을 때 알림을 받게 됩니다. 수동으로 이 페이지에서 최신 버전을 다운로드할 수도 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// PWA Install functionality
+let deferredPrompt;
+const installButton = document.getElementById('installPWA');
+const quickInstallButton = document.getElementById('quickInstallPWA');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installButton.style.display = 'block';
+});
+
+const handlePWAInstall = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('PWA installed');
+        }
+        deferredPrompt = null;
+    } else {
+        // Fallback for browsers that don't support PWA install
+        alert('이 브라우저에서는 홈 화면에 추가 기능을 지원하지 않습니다. 브라우저 메뉴에서 "홈 화면에 추가" 옵션을 찾아보세요.');
+    }
+};
+
+installButton.addEventListener('click', handlePWAInstall);
+quickInstallButton.addEventListener('click', handlePWAInstall);
+
+// Hide install button if PWA is already installed
+window.addEventListener('appinstalled', () => {
+    installButton.style.display = 'none';
+    console.log('PWA was installed');
+});
+</script>
+{% endblock %}

@@ -7,7 +7,12 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
+# downloads/ - commented out to allow downloads directory
+downloads/*.apk
+downloads/*.exe
+downloads/*.dmg
+downloads/*.deb
+downloads/*.rpm
 eggs/
 .eggs/
 lib/
