@@ -37,7 +37,7 @@
                         <div class="col-md-4">
                             <a href="{% url 'download_android' %}" class="btn btn-light btn-lg w-100 shadow">
                                 <i class="bi bi-android2 text-success me-2" style="font-size: 1.5rem;"></i><br>
-                                <strong>Android</strong>
+                                <strong>Android 앱</strong>
                             </a>
                         </div>
                         <div class="col-md-4">
@@ -59,12 +59,36 @@
     </div>
 </div>
 
+<!-- Security Notice -->
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-check text-primary me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h5 class="alert-heading mb-2">🔒 안전한 다운로드</h5>
+                        <p class="mb-0">
+                            이 앱은 <strong>공군사관학교 공식 프로젝트</strong>입니다. 
+                            브라우저에서 보안 경고가 나타날 수 있지만, <strong>안전한 파일</strong>임을 보장합니다.
+                        </p>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Windows Defender나 브라우저에서 경고가 나타나면 "계속 다운로드" 또는 "더 보기 → 실행"을 선택하세요.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Download Options -->
 <div class="container mb-5">
     <div class="row text-center mb-5">
         <div class="col-12">
             <h2 class="fw-bold mb-3">다운로드 옵션</h2>
-            <p class="text-muted">원하는 플랫폼에 맞는 앱을 선택하여 다운로드하세요</p>
+            <p class="text-muted">원하는 플랫폼에 맞는 앱을 선택하여 다운로다하세요</p>
         </div>
     </div>
     
@@ -78,13 +102,13 @@
                     </div>
                     <h5 class="card-title fw-bold">Android 앱</h5>
                     <p class="card-text text-muted mb-4">
-                        안드로이드 기기에서 PlanIt을 사용하세요.<br>
-                        오프라인에서도 일부 기능을 이용할 수 있습니다.
+                        안드로이드 기기에서 PlanIt 앱을 설치하세요.<br>
+                        실제 앱으로 더 나은 성능을 경험할 수 있습니다.
                     </p>
                     <div class="mb-3">
                         <small class="text-muted">
                             <i class="bi bi-info-circle me-1"></i>
-                            버전: 1.0.0 | 크기: 25MB
+                            버전: 1.0.0 | 크기: 1.8KB | WebView 기반
                         </small>
                     </div>
                     <a href="{% url 'download_android' %}" class="btn btn-success btn-lg w-100" style="font-size: 1.2rem; padding: 15px;">
@@ -254,12 +278,24 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                앱이 안전한가요?
+                                앱이 안전한가요? 브라우저에서 경고가 나타나는데요?
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                네, PlanIt 앱은 안전합니다. 모든 데이터는 암호화되어 전송되며, 개인정보는 안전하게 보호됩니다.
+                                <strong>네, PlanIt 앱은 100% 안전합니다.</strong> 
+                                <ul class="mt-2 mb-2">
+                                    <li><strong>공군사관학교 공식 프로젝트</strong>로 개발되었습니다</li>
+                                    <li>모든 데이터는 <strong>암호화</strong>되어 전송됩니다</li>
+                                    <li>개인정보는 <strong>안전하게 보호</strong>됩니다</li>
+                                </ul>
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <strong>브라우저 경고 해결법:</strong><br>
+                                    • Chrome: "계속 다운로드" 클릭<br>
+                                    • Edge: "더 보기" → "계속 다운로드"<br>
+                                    • Windows Defender: "더 보기" → "실행"<br>
+                                    <small class="text-muted">이는 코드 서명 인증서가 없어서 나타나는 일반적인 경고입니다.</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -282,8 +318,110 @@
 </div>
 {% endblock %}
 
+<!-- Android Guide Modal -->
+<div class="modal fade" id="androidGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-android2 me-2"></i>Android 앱 사용 가이드
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>Android에서 PlanIt을 사용하는 가장 좋은 방법!</strong> 
+                    APK 설치 없이도 앱처럼 사용할 수 있습니다.
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="bi bi-globe text-success" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">웹앱으로 사용</h5>
+                                <p class="card-text">브라우저에서 바로 사용 가능하며, 홈 화면에 추가할 수 있습니다.</p>
+                                <button onclick="installPWA()" class="btn btn-success">
+                                    <i class="bi bi-plus-circle me-1"></i>홈 화면에 추가
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="bi bi-browser-chrome text-primary" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">브라우저에서 사용</h5>
+                                <p class="card-text">Chrome, Samsung Internet 등에서 바로 접속하여 사용하세요.</p>
+                                <a href="/" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right me-1"></i>바로 사용하기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6><i class="bi bi-phone me-2"></i>홈 화면에 추가하는 방법:</h6>
+                    <ol class="small">
+                        <li><strong>Chrome:</strong> 메뉴(⋮) → "홈 화면에 추가"</li>
+                        <li><strong>Samsung Internet:</strong> 메뉴(≡) → "페이지를 추가" → "홈 화면"</li>
+                        <li><strong>Firefox:</strong> 메뉴(⋮) → "홈 화면에 설치"</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <a href="/" class="btn btn-success">PlanIt 사용하기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script>
+// Direct PWA Install for Android
+function installPWADirect() {
+    if (deferredPrompt) {
+        // PWA 설치 프롬프트가 있으면 바로 실행
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                alert('✅ PlanIt이 홈 화면에 추가되었습니다!');
+            }
+            deferredPrompt = null;
+        });
+    } else {
+        // PWA 설치 프롬프트가 없으면 수동 안내
+        showManualInstallGuide();
+    }
+}
+
+// 수동 설치 안내
+function showManualInstallGuide() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let instructions = '';
+    
+    if (userAgent.includes('chrome')) {
+        instructions = '1. Chrome 메뉴(⋮) 클릭\n2. "홈 화면에 추가" 선택\n3. "추가" 버튼 클릭';
+    } else if (userAgent.includes('samsung')) {
+        instructions = '1. Samsung Internet 메뉴(≡) 클릭\n2. "페이지를 추가" → "홈 화면" 선택\n3. "추가" 버튼 클릭';
+    } else if (userAgent.includes('firefox')) {
+        instructions = '1. Firefox 메뉴(⋮) 클릭\n2. "홈 화면에 설치" 선택\n3. "추가" 버튼 클릭';
+    } else {
+        instructions = '1. 브라우저 메뉴 클릭\n2. "홈 화면에 추가" 또는 "바로가기 추가" 선택\n3. "추가" 버튼 클릭';
+    }
+    
+    alert('📱 PlanIt을 홈 화면에 추가하는 방법:\n\n' + instructions + '\n\n추가 후 홈 화면의 PlanIt 아이콘을 터치하면 앱처럼 사용할 수 있습니다!');
+}
+
+// Android Guide Modal (백업용)
+function showAndroidGuide() {
+    const modal = new bootstrap.Modal(document.getElementById('androidGuideModal'));
+    modal.show();
+}
+
 // PWA Install functionality
 let deferredPrompt;
 const installButton = document.getElementById('installPWA');

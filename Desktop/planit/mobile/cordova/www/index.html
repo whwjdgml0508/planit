@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PlanIt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #webview {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="splash">
+        <div class="logo">🎓</div>
+        <div class="title">PlanIt</div>
+        <div class="subtitle">생도 학습 관리 플랫폼</div>
+        <button class="btn" onclick="loadPlanIt()">시작하기</button>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">PlanIt 로딩 중...</p>
+        </div>
+    </div>
+    
+    <iframe id="webview" src="about:blank"></iframe>
+    
+    <script>
+        function loadPlanIt() {
+            document.getElementById('loading').style.display = 'block';
+            
+            setTimeout(() => {
+                const webview = document.getElementById('webview');
+                webview.src = 'http://planit.boramae.club';
+                
+                webview.onload = function() {
+                    document.getElementById('splash').style.display = 'none';
+                    webview.style.display = 'block';
+                };
+                
+                // 5초 후에도 로딩이 안되면 강제로 표시
+                setTimeout(() => {
+                    document.getElementById('splash').style.display = 'none';
+                    webview.style.display = 'block';
+                }, 5000);
+            }, 1000);
+        }
+        
+        // 뒤로가기 버튼 처리
+        document.addEventListener('deviceready', function() {
+            document.addEventListener('backbutton', function(e) {
+                const webview = document.getElementById('webview');
+                if (webview.style.display === 'block') {
+                    // 웹뷰가 표시 중이면 스플래시로 돌아가기
+                    webview.style.display = 'none';
+                    document.getElementById('splash').style.display = 'block';
+                    e.preventDefault();
+                } else {
+                    // 스플래시에서는 앱 종료
+                    navigator.app.exitApp();
+                }
+            }, false);
+        }, false);
+        
+        // 자동 시작 (3초 후)
+        setTimeout(() => {
+            loadPlanIt();
+        }, 3000);
+    </script>
+    
+    <script type="text/javascript" src="cordova.js"></script>
+</body>
+</html>
