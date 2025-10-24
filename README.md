@@ -250,7 +250,7 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 - [x] **서버 안정성 개선** ✅
 - [x] **자동 배포 스크립트 구현** ✅
 
-#### 크로스 플랫폼 앱 개발 🆕
+#### 크로스 플랫폼 앱 개발(진행중) 🆕
 - [x] **Android 앱 개발 환경 구축** ✅
 - [x] **WebView 기반 Android 앱 구현** ✅
 - [x] **Cordova 하이브리드 앱 설정** ✅
@@ -264,6 +264,7 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 - [ ] Gunicorn 서비스 자동 시작 설정
 - [ ] 통합 정보 관리 (E-class, 구글 클래스 연동)
 - [ ] SSL 인증서 설정 (HTTPS)
+- [ ] 앱 다운로드가 되지 않는 오류 수정 및 보완
 - [ ] iOS 앱 개발 (React Native)
 - [ ] 앱 스토어 배포 준비
 - [ ] 푸시 알림 기능
@@ -271,3 +272,4 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 
 ## 라이선스
 이 프로젝트는 교육 목적으로 개발되었습니다.
+
