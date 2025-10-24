@@ -250,7 +250,7 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 - [x] **서버 안정성 개선** ✅
 - [x] **자동 배포 스크립트 구현** ✅
 
-#### 크로스 플랫폼 앱 개발 🆕
+#### 크로스 플랫폼 앱 개발 진행중 🆕
 - [x] **Android 앱 개발 환경 구축** ✅
 - [x] **WebView 기반 Android 앱 구현** ✅
 - [x] **Cordova 하이브리드 앱 설정** ✅
@@ -271,3 +271,4 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 
 ## 라이선스
 이 프로젝트는 교육 목적으로 개발되었습니다.
+
