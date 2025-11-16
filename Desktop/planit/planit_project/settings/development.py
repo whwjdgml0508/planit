@@ -13,6 +13,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1',
+    '10.185.16.201',  # 현재 컴퓨터의 IP 주소
+    '10.185.*',       # 로컬 네트워크 범위
+    '192.168.*',      # 일반적인 로컬 네트워크 범위
+    '172.16.*',       # 사설 IP 범위
     'planit.boramae.club',
     'www.planit.boramae.club',
     '35.163.12.109',
