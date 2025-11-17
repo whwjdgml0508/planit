@@ -256,8 +256,6 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 ### 화면
 
 ### 📊 개발 현황
-![로그인 화면](https://github.com/user-attachments/assets/12d1862b-6e50-4929-b282-6fd39cc6217e)
-
 
 #### 웹 애플리케이션 개발
 - [x] 프로젝트 초기 설정
