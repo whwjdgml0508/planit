@@ -253,15 +253,6 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 
 ### 📊 개발 현황
 
-#### 웹 애플리케이션 개발
-- [x] 프로젝트 초기 설정
-- [x] 사용자 인증 시스템 (accounts 앱)
-- [x] 시간표 관리 기능 (timetable 앱)
-- [x] 스터디 플래너 기능 (planner 앱)
-- [x] 커뮤니티 기능 (community 앱)
-- [x] 기본 UI/UX 구현 (Bootstrap 5)
-- [x] 반응형 웹 디자인 구현
-
 #### 서버 배포 및 운영
 - [x] EC2 배포 설정 완료
 - [x] **실제 EC2 배포 완료** ✅
