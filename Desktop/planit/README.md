@@ -165,10 +165,6 @@ planit/
 ![커뮤니티](screenshots/community.png)
 *학과별 소통 공간 및 자료 공유*
 
-### 모바일 앱
-![모바일 앱](screenshots/mobile_app.png)
-*Android 앱 - 반응형 웹 디자인 기반*
-
 ### 관리자 페이지
 ![관리자 페이지](screenshots/admin_page.png)
 *Django 관리자 인터페이스*
