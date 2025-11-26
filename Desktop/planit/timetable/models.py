@@ -132,7 +132,6 @@ class Semester(models.Model):
     
     SEMESTER_CHOICES = [
         ('SPRING', '1학기'),
-        ('SUMMER', '여름학기'),
         ('FALL', '2학기'),
         ('WINTER', '겨울학기'),
     ]

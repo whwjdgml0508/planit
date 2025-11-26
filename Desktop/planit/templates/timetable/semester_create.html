@@ -38,10 +38,9 @@
                         <div class="col-md-6">
                             <h6 class="text-primary">학기 구분</h6>
                             <ul class="small mb-3">
-                                <li><strong>1학기:</strong> 3월 ~ 6월</li>
-                                <li><strong>여름학기:</strong> 6월 ~ 8월</li>
-                                <li><strong>2학기:</strong> 9월 ~ 12월</li>
-                                <li><strong>겨울학기:</strong> 12월 ~ 2월</li>
+                                <li><strong>1학기</strong></li>
+                                <li><strong>2학기</strong></li>
+                                <li><strong>겨울학기</strong></li>
                             </ul>
                         </div>
                         <div class="col-md-6">
@@ -101,9 +100,6 @@ function setQuickSemester(year, semester) {
     if (semester === 'SPRING') {
         startDate = `${year}-03-01`;
         endDate = `${year}-06-30`;
-    } else if (semester === 'SUMMER') {
-        startDate = `${year}-06-01`;
-        endDate = `${year}-08-31`;
     } else if (semester === 'FALL') {
         startDate = `${year}-09-01`;
         endDate = `${year}-12-31`;

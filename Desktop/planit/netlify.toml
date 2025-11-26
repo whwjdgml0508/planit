@@ -1,0 +1,18 @@
+[build]
+  publish = "static"
+  command = "python manage.py collectstatic --noinput"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+  DJANGO_SETTINGS_MODULE = "planit_project.settings.production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  DEBUG = "False"
+
+[context.deploy-preview.environment]
+  DEBUG = "True"
