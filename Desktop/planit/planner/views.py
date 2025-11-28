@@ -353,9 +353,38 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
             block_type='STUDY'
         ).count() * 10
         
+        # 통계 데이터 계산
+        completed_todos = todo_items.filter(is_completed=True).count()
+        total_todos = todo_items.count()
+        
+        # 이번 주 과제 (마감일 기준)
+        week_start = target_date - timedelta(days=target_date.weekday())
+        week_end = week_start + timedelta(days=6)
+        
+        overdue_tasks = Task.objects.filter(
+            user=user,
+            due_date__lt=timezone.now(),
+            status__in=['TODO', 'IN_PROGRESS']
+        ).count()
+        
+        # 목표 달성률 계산
+        target_hours = daily_planner.target_study_hours
+        actual_hours = total_study_minutes / 60
+        achievement_rate = min(100, (actual_hours / target_hours * 100)) if target_hours > 0 else 0
+        
+        stats = {
+            'completed_todos': completed_todos,
+            'total_todos': total_todos,
+            'study_hours': actual_hours,
+            'overdue_tasks': overdue_tasks,
+            'achievement_rate': round(achievement_rate, 1),
+            'target_hours': target_hours,
+        }
+        
         context.update({
             'daily_planner': daily_planner,
             'target_date': target_date,
+            'selected_date': target_date,  # 템플릿에서 사용
             'today': timezone.now().date(),
             'time_blocks': time_blocks,
             'todo_items': todo_items,
@@ -363,6 +392,7 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
             'total_study_hours': total_study_minutes / 60,
             'hours_range': range(6, 24),
             'minute_blocks_range': range(6),
+            'stats': stats,
         })
         
         return context

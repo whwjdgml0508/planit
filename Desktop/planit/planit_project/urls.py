@@ -69,54 +69,11 @@ def sw_view(request):
         """
         return HttpResponse(default_sw, content_type='application/javascript')
 
-def download_android(request):
-    """Android APK 파일 다운로드"""
-    try:
-        file_path = os.path.join(settings.BASE_DIR, 'downloads', 'planit-android.apk')
-        if os.path.exists(file_path):
-            response = FileResponse(
-                open(file_path, 'rb'),
-                as_attachment=True,
-                filename='PlanIt-Android.apk'
-            )
-            response['Content-Type'] = 'application/vnd.android.package-archive'
-            return response
-        else:
-            # 파일이 없으면 더미 파일 생성 안내
-            return HttpResponse(
-                "Android APK 파일이 준비 중입니다. 잠시 후 다시 시도해주세요.",
-                status=404
-            )
-    except Exception as e:
-        raise Http404("파일을 찾을 수 없습니다.")
-
-def download_windows(request):
-    """Windows EXE 파일 다운로드"""
-    try:
-        file_path = os.path.join(settings.BASE_DIR, 'downloads', 'planit-windows.exe')
-        if os.path.exists(file_path):
-            response = FileResponse(
-                open(file_path, 'rb'),
-                as_attachment=True,
-                filename='PlanIt-Windows.exe'
-            )
-            response['Content-Type'] = 'application/octet-stream'
-            return response
-        else:
-            # 파일이 없으면 더미 파일 생성 안내
-            return HttpResponse(
-                "Windows 설치 파일이 준비 중입니다. 잠시 후 다시 시도해주세요.",
-                status=404
-            )
-    except Exception as e:
-        raise Http404("파일을 찾을 수 없습니다.")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
     path('install/', TemplateView.as_view(template_name='install.html'), name='install'),
-    path('download/android/', download_android, name='download_android'),
-    path('download/windows/', download_windows, name='download_windows'),
     path('manifest.json', manifest_view, name='manifest'),
     path('sw.js', sw_view, name='sw'),
     

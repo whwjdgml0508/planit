@@ -1,45 +1,81 @@
-name: Auto Deploy to Server
+name: 🚀 PlanIt Auto Deploy
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'screenshots/**'
+      - '*.md'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: 📥 코드 체크아웃
+      uses: actions/checkout@v4
       
-    - name: Setup Python
+    - name: 🐍 Python 설정
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         
-    - name: Install dependencies
+    - name: 📦 의존성 설치 및 테스트
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: Run tests (if any)
+    - name: 🔍 Django 프로젝트 검증
       run: |
-        python manage.py check
+        export DJANGO_SETTINGS_MODULE=planit_project.settings.development
+        python manage.py check --deploy
         
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.5
+    - name: 🚀 서버 배포
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ubuntu/planit
+          echo "🔄 PlanIt 자동 배포 시작..."
+          
+          # 프로젝트 디렉토리로 이동
+          cd /var/www/planit/Desktop/planit
+          
+          # 최신 코드 가져오기
+          echo "📥 최신 코드 가져오는 중..."
           git pull origin main
-          source venv/bin/activate
+          
+          # 가상환경 활성화 및 의존성 업데이트
+          echo "📦 의존성 업데이트 중..."
+          source /var/www/planit/Desktop/planit/venv/bin/activate
           pip install -r requirements.txt
-          python manage.py collectstatic --noinput
+          
+          # Django 설정
+          export DJANGO_SETTINGS_MODULE=planit_project.settings.development
+          
+          # 데이터베이스 마이그레이션
+          echo "🗄️ 데이터베이스 마이그레이션 실행 중..."
           python manage.py migrate
-          sudo systemctl restart planit
-          echo "✅ 배포 완료!"
+          
+          # 정적 파일 수집
+          echo "📁 정적 파일 수집 중..."
+          python manage.py collectstatic --noinput
+          
+          # 기존 Django 프로세스 종료
+          echo "🔄 서버 재시작 중..."
+          sudo pkill -f 'python.*manage.py.*runserver' || true
+          
+          # 새 Django 서버 시작
+          nohup sudo /var/www/planit/Desktop/planit/venv/bin/python manage.py runserver 0.0.0.0:80 > server.log 2>&1 &
+          
+          # 배포 완료 확인
+          sleep 3
+          if pgrep -f 'python.*manage.py.*runserver' > /dev/null; then
+            echo "✅ 배포 완료! 서버가 정상적으로 실행 중입니다."
+            echo "🌐 웹사이트: http://planit.boramae.club"
+          else
+            echo "❌ 서버 시작 실패!"
+            exit 1
+          fi

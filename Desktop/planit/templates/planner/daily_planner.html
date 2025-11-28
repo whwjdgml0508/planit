@@ -55,6 +55,14 @@
 .stat-label {
     font-size: 0.9rem;
     opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.stat-progress {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-top: 5px;
+    line-height: 1.2;
 }
 
 .main-content {
@@ -449,20 +457,48 @@
         <!-- 통계 카드 -->
         <div class="stats-cards">
             <div class="stat-card blue">
-                <div class="stat-number">{{ stats.completed_todos }}</div>
-                <div class="stat-label">완료한 과제</div>
+                <div class="stat-number">{{ stats.completed_todos }}/{{ stats.total_todos }}</div>
+                <div class="stat-label">완료한 할 일</div>
+                <div class="stat-progress">
+                    {% if stats.total_todos > 0 %}
+                        {{ stats.completed_todos|percentage:stats.total_todos }}% 완료
+                    {% else %}
+                        할 일을 추가해보세요
+                    {% endif %}
+                </div>
             </div>
             <div class="stat-card green">
-                <div class="stat-number">{{ stats.total_todos }}</div>
-                <div class="stat-label">오늘의 과제</div>
+                <div class="stat-number">{{ stats.study_hours|floatformat:1 }}h</div>
+                <div class="stat-label">오늘 학습 시간</div>
+                <div class="stat-progress">
+                    목표: {{ stats.target_hours }}h ({{ stats.achievement_rate }}%)
+                </div>
             </div>
             <div class="stat-card cyan">
-                <div class="stat-number">{{ stats.study_hours|floatformat:1 }}h</div>
-                <div class="stat-label">학습 시간</div>
+                <div class="stat-number">{{ stats.achievement_rate }}%</div>
+                <div class="stat-label">목표 달성률</div>
+                <div class="stat-progress">
+                    {% if stats.achievement_rate >= 100 %}
+                        🎉 목표 달성!
+                    {% elif stats.achievement_rate >= 80 %}
+                        💪 거의 다 왔어요!
+                    {% elif stats.achievement_rate >= 50 %}
+                        📚 열심히 하고 있어요
+                    {% else %}
+                        🚀 시작해봅시다!
+                    {% endif %}
+                </div>
             </div>
-            <div class="stat-card red">
-                <div class="stat-number">0</div>
-                <div class="stat-label">마감일 지난 과제</div>
+            <div class="stat-card {% if stats.overdue_tasks > 0 %}red{% else %}green{% endif %}">
+                <div class="stat-number">{{ stats.overdue_tasks }}</div>
+                <div class="stat-label">밀린 과제</div>
+                <div class="stat-progress">
+                    {% if stats.overdue_tasks > 0 %}
+                        ⚠️ 확인 필요
+                    {% else %}
+                        ✅ 모두 완료
+                    {% endif %}
+                </div>
             </div>
         </div>
 
@@ -837,6 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         updateStudyStats();
+        updateTodoStats();
     }
     
     // 이전/다음 날짜 버튼
@@ -946,6 +983,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             todoItem.classList.remove('completed');
         }
+        updateTodoStats(); // 통계 업데이트
         saveData(); // 변경사항 저장
     }
     
@@ -964,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         }
+        updateTodoStats(); // 통계 업데이트
         saveData(); // 변경사항 저장
     }
     
@@ -1005,6 +1044,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 이벤트 리스너 재등록
             attachTodoEventListeners();
+            
+            // 통계 업데이트
+            updateTodoStats();
             
             // 데이터 저장
             saveData();
@@ -1205,9 +1247,61 @@ function updateStudyStats() {
     const studyMinutes = filledCells.length * 10;
     const studyHours = (studyMinutes / 60).toFixed(1);
     
-    const studyTimeElement = document.querySelector('.stat-value');
-    if (studyTimeElement) {
-        studyTimeElement.textContent = `${studyHours}시간`;
+    // 학습 시간 카드 업데이트
+    const studyHoursCard = document.querySelector('.stat-card.green .stat-number');
+    if (studyHoursCard) {
+        studyHoursCard.textContent = `${studyHours}h`;
+    }
+    
+    // 목표 달성률 계산 및 업데이트
+    const targetHours = parseFloat(document.querySelector('.stat-progress')?.textContent.match(/목표: ([\d.]+)h/)?.[1] || 8);
+    const achievementRate = Math.min(100, (studyHours / targetHours * 100)).toFixed(1);
+    
+    const achievementCard = document.querySelector('.stat-card.cyan .stat-number');
+    const achievementProgress = document.querySelector('.stat-card.cyan .stat-progress');
+    
+    if (achievementCard) {
+        achievementCard.textContent = `${achievementRate}%`;
+    }
+    
+    if (achievementProgress) {
+        let message = '🚀 시작해봅시다!';
+        if (achievementRate >= 100) {
+            message = '🎉 목표 달성!';
+        } else if (achievementRate >= 80) {
+            message = '💪 거의 다 왔어요!';
+        } else if (achievementRate >= 50) {
+            message = '📚 열심히 하고 있어요';
+        }
+        achievementProgress.textContent = message;
+    }
+    
+    // 학습 시간 카드의 목표 달성률도 업데이트
+    const studyProgress = document.querySelector('.stat-card.green .stat-progress');
+    if (studyProgress) {
+        studyProgress.textContent = `목표: ${targetHours}h (${achievementRate}%)`;
+    }
+}
+
+// 할 일 통계 업데이트
+function updateTodoStats() {
+    const totalTodos = document.querySelectorAll('.todo-item').length;
+    const completedTodos = document.querySelectorAll('.todo-item.completed').length;
+    const percentage = totalTodos > 0 ? ((completedTodos / totalTodos) * 100).toFixed(1) : 0;
+    
+    const todoCard = document.querySelector('.stat-card.blue .stat-number');
+    const todoProgress = document.querySelector('.stat-card.blue .stat-progress');
+    
+    if (todoCard) {
+        todoCard.textContent = `${completedTodos}/${totalTodos}`;
+    }
+    
+    if (todoProgress) {
+        if (totalTodos > 0) {
+            todoProgress.textContent = `${percentage}% 완료`;
+        } else {
+            todoProgress.textContent = '할 일을 추가해보세요';
+        }
     }
 }
 </script>
