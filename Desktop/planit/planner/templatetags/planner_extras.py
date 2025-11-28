@@ -20,26 +20,35 @@ def add_days(value, days):
 def mul(value, arg):
     """곱셈 필터"""
     try:
-        return float(value) * float(arg)
-    except (ValueError, TypeError):
+        value_float = float(str(value)) if value is not None else 0
+        arg_float = float(str(arg)) if arg is not None else 0
+        return value_float * arg_float
+    except (ValueError, TypeError, AttributeError):
         return 0
 
 @register.filter
 def div(value, arg):
     """나눗셈 필터"""
     try:
-        if float(arg) == 0:
+        value_float = float(str(value)) if value is not None else 0
+        arg_float = float(str(arg)) if arg is not None else 0
+        
+        if arg_float == 0:
             return 0
-        return float(value) / float(arg)
-    except (ValueError, TypeError):
+        return value_float / arg_float
+    except (ValueError, TypeError, AttributeError):
         return 0
 
 @register.filter
 def percentage(value, total):
     """퍼센트 계산 필터"""
     try:
-        if float(total) == 0:
+        # Decimal이나 다른 타입을 float로 변환
+        value_float = float(str(value)) if value is not None else 0
+        total_float = float(str(total)) if total is not None else 0
+        
+        if total_float == 0:
             return 0
-        return round((float(value) / float(total)) * 100, 1)
-    except (ValueError, TypeError):
+        return round((value_float / total_float) * 100, 1)
+    except (ValueError, TypeError, AttributeError):
         return 0
