@@ -132,9 +132,10 @@ class CustomAuthenticationForm(AuthenticationForm):
             Submit('submit', '로그인', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
-        self.fields['username'].label = '사용자명'
+        self.fields['username'].label = '사용자명 또는 학번'
         self.fields['password'].label = '비밀번호'
-        self.fields['username'].widget.attrs.update({'placeholder': '사용자명 또는 학번'})
+        self.fields['username'].widget.attrs.update({'placeholder': '사용자명 또는 학번을 입력하세요'})
+        self.fields['username'].help_text = '회원가입 시 사용한 사용자명 또는 7자리 학번으로 로그인하세요.'
 
 class ProfileEditForm(forms.ModelForm):
     """프로필 수정 폼"""

@@ -104,5 +104,11 @@ LOGOUT_REDIRECT_URL = '/'
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
 
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.StudentIdBackend',  # 사용자명 또는 학번으로 로그인
+    'django.contrib.auth.backends.ModelBackend',  # 기본 백엔드
+]
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
