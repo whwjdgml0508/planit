@@ -51,6 +51,19 @@ SECURE_HSTS_PRELOAD = True
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
 
+# CSRF settings for production
+CSRF_TRUSTED_ORIGINS = [
+    'https://planit.boramae.club',
+    'https://www.planit.boramae.club',
+    'http://planit.boramae.club',
+    'http://www.planit.boramae.club',
+]
+
+# CSRF cookie settings
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+
 # Static files settings for production
 # Use simpler WhiteNoise storage to avoid manifest issues
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'

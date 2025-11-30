@@ -23,7 +23,7 @@ class CommunityView(LoginRequiredMixin, TemplateView):
         if not user.is_staff:
             categories = categories.filter(
                 Q(department_restricted=False) |
-                Q(allowed_departments__contains=[user.department])
+                Q(allowed_departments__icontains=user.department)
             )
         
         # 각 카테고리별 게시글 수 추가
@@ -76,7 +76,7 @@ class PostListView(LoginRequiredMixin, ListView):
         if not user.is_staff:
             accessible_categories = accessible_categories.filter(
                 Q(department_restricted=False) |
-                Q(allowed_departments__contains=[user.department])
+                Q(allowed_departments__icontains=user.department)
             )
         
         queryset = Post.objects.filter(
@@ -100,13 +100,13 @@ class PostListView(LoginRequiredMixin, ListView):
                 elif search_type == 'author':
                     queryset = queryset.filter(author__username__icontains=query)
                 elif search_type == 'tags':
-                    queryset = queryset.filter(tags__contains=[query])
+                    queryset = queryset.filter(tags__icontains=query)
                 else:  # all
                     queryset = queryset.filter(
                         Q(title__icontains=query) |
                         Q(content__icontains=query) |
                         Q(author__username__icontains=query) |
-                        Q(tags__contains=[query])
+                        Q(tags__icontains=query)
                     )
             
             if category:
@@ -165,7 +165,7 @@ class PostDetailView(LoginRequiredMixin, DetailView):
         if not user.is_staff:
             accessible_categories = accessible_categories.filter(
                 Q(department_restricted=False) |
-                Q(allowed_departments__contains=[user.department])
+                Q(allowed_departments__icontains=user.department)
             )
         
         return Post.objects.filter(

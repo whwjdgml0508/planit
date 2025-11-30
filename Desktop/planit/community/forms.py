@@ -37,7 +37,7 @@ class PostForm(forms.ModelForm):
                 # 일반 사용자는 학과 제한이 있는 카테고리 필터링
                 categories = categories.filter(
                     models.Q(department_restricted=False) |
-                    models.Q(allowed_departments__contains=[user.department])
+                    models.Q(allowed_departments__icontains=user.department)
                 )
             self.fields['category'].queryset = categories
         
@@ -181,7 +181,7 @@ class PostSearchForm(forms.Form):
                 is_active=True
             ).filter(
                 models.Q(department_restricted=False) |
-                models.Q(allowed_departments__contains=[user.department])
+                models.Q(allowed_departments__icontains=user.department)
             )
             self.fields['category'].queryset = categories
         
