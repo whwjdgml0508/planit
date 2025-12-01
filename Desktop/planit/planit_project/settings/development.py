@@ -24,6 +24,33 @@ ALLOWED_HOSTS = [
     '*.compute.amazonaws.com',
 ]
 
+# CSRF settings for development
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:50616',  # Browser preview URL
+    'http://127.0.0.1:50617',  # Additional browser preview ports
+    'http://127.0.0.1:50618',
+    'http://127.0.0.1:50619',
+    'http://127.0.0.1:50620',
+    'http://localhost:50616',
+    'http://localhost:50617',
+    'http://localhost:50618',
+    'http://localhost:50619',
+    'http://localhost:50620',
+    'https://planit.boramae.club',
+    'http://planit.boramae.club',
+]
+
+# Additional CSRF settings for development
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+
+# For development only - disable CSRF for easier testing
+# WARNING: Never use this in production!
+CSRF_COOKIE_SECURE = False
+
 # Database
 DATABASES = {
     'default': {
