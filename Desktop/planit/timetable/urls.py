@@ -11,6 +11,7 @@ urlpatterns = [
     path('subjects/', views.SubjectListView.as_view(), name='subject_list'),
     path('subject/create/', views.SubjectOnlyCreateView.as_view(), name='subject_create'),
     path('subject/create-with-timetable/', views.SubjectCreateView.as_view(), name='subject_create_with_timetable'),
+    path('subject/create-improved/', views.ImprovedSubjectCreateView.as_view(), name='subject_create_improved'),
     path('subject/<uuid:pk>/', views.SubjectDetailView.as_view(), name='subject_detail'),
     path('subject/<uuid:pk>/edit/', views.SubjectUpdateView.as_view(), name='subject_edit'),
     path('subject/<uuid:pk>/delete/', views.SubjectDeleteView.as_view(), name='subject_delete'),

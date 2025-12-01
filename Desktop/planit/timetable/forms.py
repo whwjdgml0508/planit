@@ -256,3 +256,121 @@ class SemesterForm(forms.ModelForm):
             raise forms.ValidationError('시작일은 종료일보다 빨라야 합니다.')
         
         return cleaned_data
+
+class TimeSlotSelectionForm(forms.Form):
+    """시간표 그리드 선택 폼 - 여러 시간대를 동시에 선택 가능"""
+    
+    # 동적으로 생성될 체크박스 필드들
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # 각 요일과 교시 조합에 대한 체크박스 생성
+        for day_code, day_name in TimeSlot.DAY_CHOICES:
+            for period_num, period_name in TimeSlot.PERIOD_CHOICES:
+                field_name = f'slot_{day_code}_{period_num}'
+                self.fields[field_name] = forms.BooleanField(
+                    required=False,
+                    label=f'{day_name} {period_name}',
+                    widget=forms.CheckboxInput(attrs={
+                        'class': 'time-slot-checkbox',
+                        'data-day': day_code,
+                        'data-period': period_num
+                    })
+                )
+        
+        # 추가 정보 필드
+        self.fields['location'] = forms.CharField(
+            max_length=50,
+            required=False,
+            label='장소',
+            widget=forms.TextInput(attrs={'placeholder': '강의실 또는 장소'})
+        )
+        
+        self.fields['note'] = forms.CharField(
+            required=False,
+            label='메모',
+            widget=forms.Textarea(attrs={'rows': 2, 'placeholder': '시간표에 대한 메모'})
+        )
+    
+    def get_selected_slots(self):
+        """선택된 시간대 목록 반환"""
+        selected_slots = []
+        for field_name, value in self.cleaned_data.items():
+            if field_name.startswith('slot_') and value:
+                # slot_MON_1 형태에서 요일과 교시 추출
+                parts = field_name.split('_')
+                if len(parts) == 3:
+                    day = parts[1]
+                    period = int(parts[2])
+                    selected_slots.append({'day': day, 'period': period})
+        return selected_slots
+
+class ImprovedSubjectWithTimeSlotsForm(forms.ModelForm):
+    """개선된 과목과 시간표 생성 폼 - 시간표 그리드 선택 방식"""
+    
+    class Meta:
+        model = Subject
+        fields = ['name', 'professor', 'credits', 'subject_type', 
+                 'evaluation_method', 'classroom', 'note', 'color']
+        widgets = {
+            'color': forms.TextInput(attrs={'type': 'color'}),
+            'note': forms.Textarea(attrs={'rows': 3}),
+            'evaluation_method': forms.Textarea(attrs={'rows': 2}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # 시간표 선택 필드들 추가
+        for day_code, day_name in TimeSlot.DAY_CHOICES:
+            for period_num, period_name in TimeSlot.PERIOD_CHOICES:
+                field_name = f'slot_{day_code}_{period_num}'
+                self.fields[field_name] = forms.BooleanField(
+                    required=False,
+                    label=f'{day_name} {period_name}',
+                    widget=forms.CheckboxInput(attrs={
+                        'class': 'time-slot-checkbox',
+                        'data-day': day_code,
+                        'data-period': period_num
+                    })
+                )
+        
+        # 시간표 공통 정보
+        self.fields['timeslot_location'] = forms.CharField(
+            max_length=50,
+            required=False,
+            label='시간표 장소',
+            widget=forms.TextInput(attrs={'placeholder': '강의실 또는 장소'})
+        )
+        
+        self.fields['timeslot_note'] = forms.CharField(
+            required=False,
+            label='시간표 메모',
+            widget=forms.Textarea(attrs={'rows': 2, 'placeholder': '시간표에 대한 메모'})
+        )
+        
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.form_id = 'improved-subject-form'
+        
+        # 필드 라벨 설정
+        self.fields['name'].label = '과목명'
+        self.fields['professor'].label = '교수명'
+        self.fields['credits'].label = '학점'
+        self.fields['subject_type'].label = '과목 구분'
+        self.fields['evaluation_method'].label = '평가 방식'
+        self.fields['classroom'].label = '강의실'
+        self.fields['note'].label = '메모'
+        self.fields['color'].label = '색상'
+    
+    def get_selected_slots(self):
+        """선택된 시간대 목록 반환"""
+        selected_slots = []
+        for field_name, value in self.cleaned_data.items():
+            if field_name.startswith('slot_') and value:
+                parts = field_name.split('_')
+                if len(parts) == 3:
+                    day = parts[1]
+                    period = int(parts[2])
+                    selected_slots.append({'day': day, 'period': period})
+        return selected_slots

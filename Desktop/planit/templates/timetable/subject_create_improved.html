@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ page_title }} - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>{{ page_title }}
+                    </h3>
+                    <p class="mb-0 mt-2 opacity-75">
+                        과목 정보를 입력하고 시간표에서 원하는 시간대를 선택하세요
+                    </p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" id="improved-subject-form">
+                        {% csrf_token %}
+                        
+                        <!-- 과목 정보 섹션 -->
+                        <div class="mb-5">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-book me-2"></i>과목 정보
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        {{ form.name.label_tag }}
+                                        {{ form.name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        {{ form.color.label_tag }}
+                                        {{ form.color }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.professor.label_tag }}
+                                        {{ form.professor }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        {{ form.credits.label_tag }}
+                                        {{ form.credits }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        {{ form.subject_type.label_tag }}
+                                        {{ form.subject_type }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.classroom.label_tag }}
+                                        {{ form.classroom }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.evaluation_method.label_tag }}
+                                        {{ form.evaluation_method }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.note.label_tag }}
+                                {{ form.note }}
+                            </div>
+                        </div>
+                        
+                        <!-- 시간표 선택 섹션 -->
+                        <div class="mb-5">
+                            <h5 class="text-success mb-3">
+                                <i class="fas fa-calendar-alt me-2"></i>시간표 선택
+                            </h5>
+                            <p class="text-muted mb-4">
+                                <i class="fas fa-info-circle me-1"></i>
+                                원하는 시간대를 클릭하여 선택하세요. 여러 시간대를 동시에 선택할 수 있습니다.
+                            </p>
+                            
+                            <!-- 시간표 그리드 -->
+                            <div class="timetable-grid-container">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered timetable-selection-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-center" style="width: 100px;">교시</th>
+                                                {% for day_code, day_name in days %}
+                                                <th class="text-center">{{ day_name }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for period_num, period_name in periods %}
+                                            <tr>
+                                                <td class="text-center fw-bold bg-light">
+                                                    <div>{{ period_name }}</div>
+                                                    <small class="text-muted">
+                                                        {% if period_num == 1 %}08:10-09:00
+                                                        {% elif period_num == 2 %}09:10-10:00
+                                                        {% elif period_num == 3 %}10:10-11:00
+                                                        {% elif period_num == 4 %}11:10-12:00
+                                                        {% elif period_num == 5 %}13:00-13:50
+                                                        {% elif period_num == 6 %}14:00-14:50
+                                                        {% elif period_num == 7 %}15:10-16:00
+                                                        {% elif period_num == 8 %}16:10-17:00
+                                                        {% endif %}
+                                                    </small>
+                                                </td>
+                                                {% for day_code, day_name in days %}
+                                                <td class="text-center time-slot-cell" data-day="{{ day_code }}" data-period="{{ period_num }}">
+                                                    <div class="time-slot-checkbox-wrapper">
+                                                        {% with field_name="slot_"|add:day_code|add:"_"|add:period_num %}
+                                                        <input type="checkbox" 
+                                                               name="{{ field_name }}" 
+                                                               id="id_{{ field_name }}"
+                                                               class="time-slot-checkbox d-none"
+                                                               data-day="{{ day_code }}" 
+                                                               data-period="{{ period_num }}">
+                                                        <label for="id_{{ field_name }}" class="time-slot-label">
+                                                            <i class="fas fa-plus"></i>
+                                                        </label>
+                                                        {% endwith %}
+                                                    </div>
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 선택된 시간대 표시 -->
+                            <div class="mt-3">
+                                <div class="alert alert-info" id="selected-slots-info" style="display: none;">
+                                    <strong>선택된 시간대:</strong>
+                                    <span id="selected-slots-list"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- 시간표 추가 정보 -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.timeslot_location.label_tag }}
+                                        {{ form.timeslot_location }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.timeslot_note.label_tag }}
+                                        {{ form.timeslot_note }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 제출 버튼 -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'timetable:index' %}" class="btn btn-secondary btn-lg me-md-2">
+                                <i class="fas fa-times me-2"></i>취소
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>과목 및 시간표 저장
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timetable-selection-table {
+    font-size: 0.9rem;
+}
+
+.time-slot-cell {
+    height: 60px;
+    vertical-align: middle;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.time-slot-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.time-slot-checkbox-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-slot-label {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: white;
+    margin: 0;
+}
+
+.time-slot-label:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.time-slot-checkbox:checked + .time-slot-label {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.time-slot-checkbox:checked + .time-slot-label i {
+    transform: rotate(45deg);
+}
+
+.timetable-grid-container {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.time-slot-checkbox');
+    const selectedSlotsInfo = document.getElementById('selected-slots-info');
+    const selectedSlotsList = document.getElementById('selected-slots-list');
+    
+    const dayNames = {
+        'MON': '월',
+        'TUE': '화',
+        'WED': '수',
+        'THU': '목',
+        'FRI': '금'
+    };
+    
+    const periodNames = {
+        1: '1교시',
+        2: '2교시',
+        3: '3교시',
+        4: '4교시',
+        5: '5교시',
+        6: '6교시',
+        7: '7교시',
+        8: '8교시'
+    };
+    
+    function updateSelectedSlots() {
+        const selected = [];
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const day = checkbox.dataset.day;
+                const period = parseInt(checkbox.dataset.period);
+                selected.push(`${dayNames[day]} ${periodNames[period]}`);
+            }
+        });
+        
+        if (selected.length > 0) {
+            selectedSlotsInfo.style.display = 'block';
+            selectedSlotsList.textContent = selected.join(', ');
+        } else {
+            selectedSlotsInfo.style.display = 'none';
+        }
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedSlots);
+    });
+    
+    // 초기 상태 업데이트
+    updateSelectedSlots();
+});
+</script>
+{% endblock %}
