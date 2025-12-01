@@ -83,7 +83,7 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'overdue_tasks': overdue_tasks,
             'recent_completed': recent_completed,
             'week_sessions': week_sessions,
-            'total_study_hours': total_study_minutes / 60,
+            'total_study_hours': float(total_study_minutes) / 60.0,
             'active_goals': active_goals,
             'task_stats': task_stats,
             'quick_add_form': TaskQuickAddForm(),
@@ -368,9 +368,9 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         ).count()
         
         # 목표 달성률 계산
-        target_hours = daily_planner.target_study_hours
-        actual_hours = total_study_minutes / 60
-        achievement_rate = min(100, (actual_hours / target_hours * 100)) if target_hours > 0 else 0
+        target_hours = float(daily_planner.target_study_hours)
+        actual_hours = float(total_study_minutes) / 60.0
+        achievement_rate = min(100.0, (actual_hours / target_hours * 100.0)) if target_hours > 0 else 0.0
         
         stats = {
             'completed_todos': completed_todos,
@@ -389,7 +389,7 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
             'time_blocks': time_blocks,
             'todo_items': todo_items,
             'subjects': subjects,
-            'total_study_hours': total_study_minutes / 60,
+            'total_study_hours': float(total_study_minutes) / 60.0,
             'hours_range': range(6, 24),
             'minute_blocks_range': range(6),
             'stats': stats,
