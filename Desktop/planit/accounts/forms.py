@@ -111,6 +111,8 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError('학번은 숫자만 입력 가능합니다.')
         if student_id and len(student_id) != 7:
             raise forms.ValidationError('학번은 7자리여야 합니다.')
+        if student_id and User.objects.filter(student_id=student_id).exists():
+            raise forms.ValidationError('이미 사용 중인 학번입니다.')
         return student_id
     
     def clean_email(self):

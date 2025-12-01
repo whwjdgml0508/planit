@@ -44,15 +44,31 @@ class RegisterView(CreateView):
         return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
-        user = form.save()
-        # 회원가입 후 자동 로그인을 위해 authenticate 사용
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-        user = authenticate(username=username, password=password)
-        if user:
-            login(self.request, user)
-            messages.success(self.request, f'{user.get_full_name()}님, 회원가입을 환영합니다!')
-        return redirect(self.success_url)
+        try:
+            # 사용자 저장
+            user = form.save()
+            print(f"DEBUG: 사용자 저장됨 - ID: {user.id}, 사용자명: {user.username}, 학번: {user.student_id}")
+            
+            # 회원가입 후 자동 로그인을 위해 authenticate 사용
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            authenticated_user = authenticate(username=username, password=password)
+            
+            if authenticated_user:
+                login(self.request, authenticated_user)
+                messages.success(self.request, f'{authenticated_user.get_full_name()}님, 회원가입을 환영합니다!')
+                print(f"DEBUG: 자동 로그인 성공 - {authenticated_user.username}")
+            else:
+                # 인증 실패 시에도 회원가입은 성공했음을 알림
+                messages.success(self.request, f'{user.get_full_name()}님, 회원가입이 완료되었습니다. 로그인해주세요.')
+                print(f"DEBUG: 자동 로그인 실패, 하지만 회원가입은 성공 - {user.username}")
+            
+            return redirect(self.success_url)
+            
+        except Exception as e:
+            print(f"DEBUG: 회원가입 중 오류 발생 - {str(e)}")
+            messages.error(self.request, f'회원가입 중 오류가 발생했습니다: {str(e)}')
+            return super().form_invalid(form)
     
     def form_invalid(self, form):
         messages.error(self.request, '회원가입 정보를 다시 확인해주세요.')
