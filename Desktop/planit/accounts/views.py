@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
+import logging
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
@@ -10,6 +11,7 @@ from django.views import View
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class LoginView(BaseLoginView):
     """로그인 뷰"""
@@ -47,26 +49,26 @@ class RegisterView(CreateView):
         try:
             # 사용자 저장
             user = form.save()
-            print(f"DEBUG: 사용자 저장됨 - ID: {user.id}, 사용자명: {user.username}, 학번: {user.student_id}")
+            logger.info(f"사용자 저장됨 - ID: {user.id}, 사용자명: {user.username}, 학번: {user.student_id}")
             
             # 회원가입 후 자동 로그인을 위해 authenticate 사용
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
-            authenticated_user = authenticate(username=username, password=password)
+            authenticated_user = authenticate(request=self.request, username=username, password=password)
             
             if authenticated_user:
                 login(self.request, authenticated_user)
                 messages.success(self.request, f'{authenticated_user.get_full_name()}님, 회원가입을 환영합니다!')
-                print(f"DEBUG: 자동 로그인 성공 - {authenticated_user.username}")
+                logger.info(f"자동 로그인 성공 - {authenticated_user.username}")
             else:
                 # 인증 실패 시에도 회원가입은 성공했음을 알림
                 messages.success(self.request, f'{user.get_full_name()}님, 회원가입이 완료되었습니다. 로그인해주세요.')
-                print(f"DEBUG: 자동 로그인 실패, 하지만 회원가입은 성공 - {user.username}")
+                logger.warning(f"자동 로그인 실패, 하지만 회원가입은 성공 - {user.username}")
             
             return redirect(self.success_url)
             
         except Exception as e:
-            print(f"DEBUG: 회원가입 중 오류 발생 - {str(e)}")
+            logger.error(f"회원가입 중 오류 발생 - {str(e)}")
             messages.error(self.request, f'회원가입 중 오류가 발생했습니다: {str(e)}')
             return super().form_invalid(form)
     
