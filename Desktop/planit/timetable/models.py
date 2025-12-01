@@ -133,7 +133,7 @@ class Semester(models.Model):
     SEMESTER_CHOICES = [
         ('SPRING', '1학기'),
         ('FALL', '2학기'),
-        ('WINTER', '겨울학기'),
+        ('WINTER', '동계학기'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
