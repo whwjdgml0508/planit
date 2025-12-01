@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, UpdateView, DetailView
@@ -44,11 +44,15 @@ class RegisterView(CreateView):
         return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
-        response = super().form_valid(form)
         user = form.save()
-        login(self.request, user)
-        messages.success(self.request, f'{user.get_full_name()}님, 회원가입을 환영합니다!')
-        return response
+        # 회원가입 후 자동 로그인을 위해 authenticate 사용
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        if user:
+            login(self.request, user)
+            messages.success(self.request, f'{user.get_full_name()}님, 회원가입을 환영합니다!')
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
         messages.error(self.request, '회원가입 정보를 다시 확인해주세요.')
