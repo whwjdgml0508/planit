@@ -550,9 +550,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 titleField.focus();
                 isValid = false;
             }
-            // 내용 검증
-            else if (contentField && contentField.value.trim().length < 10) {
-                errorMessage = '내용은 최소 10자 이상 입력해주세요.';
+            // 내용 검증 (빈 값만 체크)
+            else if (contentField && contentField.value.trim().length === 0) {
+                errorMessage = '내용을 입력해주세요.';
                 contentField.focus();
                 isValid = false;
             }
