@@ -177,7 +177,11 @@ textarea.form-control {
                                             <i class="fas fa-tag text-success"></i>
                                             게시글 유형
                                         </label>
-                                        {{ form.post_type|add_class:"form-select" }}
+                                        <select name="post_type" class="form-select" id="id_post_type">
+                                            {% for value, label in form.post_type.field.choices %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
                                         {% if form.post_type.errors %}
                                         <div class="text-danger small mt-1">{{ form.post_type.errors }}</div>
                                         {% endif %}
@@ -191,7 +195,7 @@ textarea.form-control {
                                     <i class="fas fa-heading text-info"></i>
                                     제목
                                 </label>
-                                {{ form.title|add_class:"form-control"|attr:"placeholder:게시글 제목을 입력하세요" }}
+                                <input type="text" name="title" class="form-control" id="id_title" placeholder="게시글 제목을 입력하세요" required>
                                 {% if form.title.errors %}
                                 <div class="text-danger small mt-1">{{ form.title.errors }}</div>
                                 {% endif %}
@@ -204,7 +208,12 @@ textarea.form-control {
                                     <i class="fas fa-book text-warning"></i>
                                     관련 과목 (선택사항)
                                 </label>
-                                {{ form.subject|add_class:"form-select" }}
+                                <select name="subject" class="form-select" id="id_subject">
+                                    <option value="">과목 선택 (선택사항)</option>
+                                    {% for subject in form.subject.field.queryset %}
+                                    <option value="{{ subject.pk }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.subject.errors %}
                                 <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
                                 {% endif %}
@@ -217,7 +226,7 @@ textarea.form-control {
                                     <i class="fas fa-hashtag text-purple"></i>
                                     태그 (선택사항)
                                 </label>
-                                {{ form.tags_input|add_class:"form-control"|attr:"placeholder:태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)" }}
+                                <input type="text" name="tags_input" class="form-control" id="id_tags_input" placeholder="태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)">
                                 <small class="text-muted">최대 10개까지 입력 가능합니다.</small>
                                 {% if form.tags_input.errors %}
                                 <div class="text-danger small mt-1">{{ form.tags_input.errors }}</div>
@@ -230,7 +239,7 @@ textarea.form-control {
                                     <i class="fas fa-align-left text-secondary"></i>
                                     내용
                                 </label>
-                                {{ form.content|add_class:"form-control"|attr:"placeholder:내용을 입력하세요..." }}
+                                <textarea name="content" class="form-control" id="id_content" placeholder="내용을 입력하세요..." rows="10" required></textarea>
                                 {% if form.content.errors %}
                                 <div class="text-danger small mt-1">{{ form.content.errors }}</div>
                                 {% endif %}
