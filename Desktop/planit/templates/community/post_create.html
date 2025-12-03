@@ -254,10 +254,30 @@ textarea.form-control {
                                 <div class="file-upload-area" id="fileUploadArea">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-                                    <input type="file" class="d-none" name="attachments" multiple id="fileInput" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
                                     <small class="text-muted">최대 5개 파일, 각 파일 최대 10MB</small>
                                 </div>
+                                
+                                <!-- 숨겨진 파일 입력들 -->
+                                <div id="fileInputsContainer" style="display: none;">
+                                    <input type="file" name="attachments" id="fileInput0" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                    <input type="file" name="attachments" id="fileInput1" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                    <input type="file" name="attachments" id="fileInput2" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                    <input type="file" name="attachments" id="fileInput3" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                    <input type="file" name="attachments" id="fileInput4" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                </div>
+                                
+                                <!-- 파일 목록 표시 -->
                                 <div id="fileList" class="mt-2"></div>
+                                
+                                <!-- 파일 추가 버튼 -->
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="addFileBtn">
+                                        <i class="fas fa-plus me-1"></i>파일 추가
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="clearFilesBtn" style="display: none;">
+                                        <i class="fas fa-trash me-1"></i>모든 파일 제거
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- 공지사항 설정 (관리자만) -->
@@ -331,13 +351,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentField = document.getElementById('id_content');
     const categoryField = document.getElementById('id_category');
     const fileUploadArea = document.getElementById('fileUploadArea');
-    const fileInput = document.getElementById('fileInput');
     const fileList = document.getElementById('fileList');
+    const addFileBtn = document.getElementById('addFileBtn');
+    const clearFilesBtn = document.getElementById('clearFilesBtn');
+    
+    let selectedFiles = [];
+    let fileInputIndex = 0;
     
     // 파일 업로드 영역 클릭 이벤트
-    if (fileUploadArea && fileInput) {
+    if (fileUploadArea) {
         fileUploadArea.addEventListener('click', function() {
-            fileInput.click();
+            addFile();
         });
         
         // 드래그 앤 드롭 기능
@@ -355,40 +379,150 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             this.classList.remove('dragover');
             
-            const files = e.dataTransfer.files;
-            fileInput.files = files;
-            displayFileList(files);
-        });
-        
-        // 파일 선택 시 목록 표시
-        fileInput.addEventListener('change', function() {
-            displayFileList(this.files);
+            const files = Array.from(e.dataTransfer.files);
+            addMultipleFiles(files);
         });
     }
     
-    function displayFileList(files) {
+    // 파일 추가 버튼
+    if (addFileBtn) {
+        addFileBtn.addEventListener('click', function() {
+            addFile();
+        });
+    }
+    
+    // 모든 파일 제거 버튼
+    if (clearFilesBtn) {
+        clearFilesBtn.addEventListener('click', function() {
+            clearAllFiles();
+        });
+    }
+    
+    function addFile() {
+        if (selectedFiles.length >= 5) {
+            alert('최대 5개 파일까지 업로드 가능합니다.');
+            return;
+        }
+        
+        const fileInput = document.getElementById(`fileInput${fileInputIndex % 5}`);
+        if (fileInput) {
+            fileInput.click();
+            fileInput.onchange = function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    if (validateFile(file)) {
+                        selectedFiles.push({
+                            file: file,
+                            inputId: this.id
+                        });
+                        updateFileDisplay();
+                        fileInputIndex++;
+                    }
+                }
+            };
+        }
+    }
+    
+    function addMultipleFiles(files) {
+        files.forEach(file => {
+            if (selectedFiles.length >= 5) {
+                alert('최대 5개 파일까지 업로드 가능합니다.');
+                return;
+            }
+            
+            if (validateFile(file)) {
+                const fileInput = document.getElementById(`fileInput${fileInputIndex % 5}`);
+                if (fileInput) {
+                    // DataTransfer를 사용해서 파일을 input에 설정
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    
+                    selectedFiles.push({
+                        file: file,
+                        inputId: fileInput.id
+                    });
+                    fileInputIndex++;
+                }
+            }
+        });
+        updateFileDisplay();
+    }
+    
+    function validateFile(file) {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        
+        if (file.size > maxSize) {
+            alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
+            return false;
+        }
+        
+        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.zip'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            alert(`파일 "${file.name}"은 지원하지 않는 형식입니다.`);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function removeFile(index) {
+        const fileData = selectedFiles[index];
+        const fileInput = document.getElementById(fileData.inputId);
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        selectedFiles.splice(index, 1);
+        updateFileDisplay();
+    }
+    
+    function clearAllFiles() {
+        selectedFiles = [];
+        for (let i = 0; i < 5; i++) {
+            const fileInput = document.getElementById(`fileInput${i}`);
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+        updateFileDisplay();
+    }
+    
+    function updateFileDisplay() {
         if (!fileList) return;
         
         fileList.innerHTML = '';
         
-        if (files.length === 0) return;
+        if (selectedFiles.length === 0) {
+            clearFilesBtn.style.display = 'none';
+            return;
+        }
+        
+        clearFilesBtn.style.display = 'inline-block';
         
         const listContainer = document.createElement('div');
         listContainer.className = 'mt-2';
         
-        Array.from(files).forEach((file, index) => {
+        selectedFiles.forEach((fileData, index) => {
             const fileItem = document.createElement('div');
-            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center';
+            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center mb-2';
             fileItem.innerHTML = `
                 <i class="fas fa-file me-2"></i>
-                <span class="me-auto">${file.name} (${formatFileSize(file.size)})</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <span class="me-auto">${fileData.file.name} (${formatFileSize(fileData.file.size)})</span>
+                <button type="button" class="btn-close" onclick="removeFileByIndex(${index})"></button>
             `;
             listContainer.appendChild(fileItem);
         });
         
         fileList.appendChild(listContainer);
     }
+    
+    // 전역 함수로 만들어서 onclick에서 사용 가능하도록
+    window.removeFileByIndex = function(index) {
+        removeFile(index);
+    };
     
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
@@ -426,29 +560,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isValid) {
                 e.preventDefault();
                 alert(errorMessage);
-            }
-        });
-    }
-    
-    // 파일 크기 검증
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const files = this.files;
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            const maxFiles = 5;
-            
-            if (files.length > maxFiles) {
-                alert(`최대 ${maxFiles}개 파일까지 업로드 가능합니다.`);
-                this.value = '';
-                return;
-            }
-            
-            for (let file of files) {
-                if (file.size > maxSize) {
-                    alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
-                    this.value = '';
-                    break;
-                }
             }
         });
     }
