@@ -3,117 +3,310 @@
 
 {% block title %}새 글 작성 - PlanIt{% endblock %}
 
+{% block extra_css %}
+<style>
+.post-create-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.create-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.create-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+.create-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    background: white;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+textarea.form-control {
+    min-height: 200px;
+    resize: vertical;
+}
+
+.btn-create {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.guide-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 15px;
+    border: none;
+    margin-top: 1.5rem;
+}
+
+.file-upload-area {
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #667eea;
+    background: #edf2f7;
+}
+
+.file-upload-area.dragover {
+    border-color: #667eea;
+    background: #e6fffa;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div class="card shadow-lg border-0 mt-4">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 80px; height: 80px;">
+<div class="post-create-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card create-card">
+                    <div class="create-header">
+                        <div class="create-icon">
                             <i class="fas fa-pen fa-2x"></i>
                         </div>
-                        <h2 class="fw-bold">새 글 작성</h2>
-                        <p class="text-muted">커뮤니티에 새로운 글을 작성하세요</p>
+                        <h2 class="fw-bold mb-2">새 글 작성</h2>
+                        <p class="mb-0 opacity-90">커뮤니티에 새로운 글을 작성하세요</p>
                     </div>
                     
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <!-- 카테고리 선택 -->
-                        <div class="mb-3">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">카테고리</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}
-                            <div class="text-danger small">{{ form.category.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 제목 -->
-                        <div class="mb-3">
-                            <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
-                            {{ form.title }}
-                            {% if form.title.errors %}
-                            <div class="text-danger small">{{ form.title.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 내용 -->
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">내용</label>
-                            {{ form.content }}
-                            {% if form.content.errors %}
-                            <div class="text-danger small">{{ form.content.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 첨부파일 -->
-                        <div class="mb-3">
-                            <label class="form-label">첨부파일</label>
-                            <div id="attachment-container">
-                                <div class="attachment-item mb-2">
-                                    <input type="file" class="form-control" name="attachments" multiple>
+                    <div class="card-body p-4">
+                        <form method="post" enctype="multipart/form-data" id="postForm">
+                            {% csrf_token %}
+                            
+                            <!-- 카테고리 및 게시글 유형 -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="id_category" class="form-label">
+                                            <i class="fas fa-folder text-primary"></i>
+                                            카테고리
+                                        </label>
+                                        <select name="category" class="form-select" id="id_category" required>
+                                            <option value="">카테고리를 선택하세요</option>
+                                            {% for category in form.category.field.queryset %}
+                                            <option value="{{ category.pk }}" 
+                                                    data-icon="{{ category.icon }}" 
+                                                    data-color="{{ category.color }}">
+                                                {{ category.icon }} {{ category.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.category.errors %}
+                                        <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.post_type.id_for_label }}" class="form-label">
+                                            <i class="fas fa-tag text-success"></i>
+                                            게시글 유형
+                                        </label>
+                                        {{ form.post_type|add_class:"form-select" }}
+                                        {% if form.post_type.errors %}
+                                        <div class="text-danger small mt-1">{{ form.post_type.errors }}</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle"></i> 
-                                최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.
-                            </small>
-                        </div>
-                        
-                        <!-- 공지사항 설정 (관리자만) -->
-                        {% if user.is_staff %}
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.is_pinned }}
-                                <label class="form-check-label" for="{{ form.is_pinned.id_for_label }}">
-                                    공지사항으로 설정
+                            
+                            <!-- 제목 -->
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">
+                                    <i class="fas fa-heading text-info"></i>
+                                    제목
                                 </label>
+                                {{ form.title|add_class:"form-control"|attr:"placeholder:게시글 제목을 입력하세요" }}
+                                {% if form.title.errors %}
+                                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                                {% endif %}
                             </div>
-                        </div>
-                        {% endif %}
+                            
+                            <!-- 관련 과목 -->
+                            {% if form.subject.field.queryset %}
+                            <div class="form-group">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                                    <i class="fas fa-book text-warning"></i>
+                                    관련 과목 (선택사항)
+                                </label>
+                                {{ form.subject|add_class:"form-select" }}
+                                {% if form.subject.errors %}
+                                <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 태그 -->
+                            <div class="form-group">
+                                <label for="{{ form.tags_input.id_for_label }}" class="form-label">
+                                    <i class="fas fa-hashtag text-purple"></i>
+                                    태그 (선택사항)
+                                </label>
+                                {{ form.tags_input|add_class:"form-control"|attr:"placeholder:태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)" }}
+                                <small class="text-muted">최대 10개까지 입력 가능합니다.</small>
+                                {% if form.tags_input.errors %}
+                                <div class="text-danger small mt-1">{{ form.tags_input.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 내용 -->
+                            <div class="form-group">
+                                <label for="{{ form.content.id_for_label }}" class="form-label">
+                                    <i class="fas fa-align-left text-secondary"></i>
+                                    내용
+                                </label>
+                                {{ form.content|add_class:"form-control"|attr:"placeholder:내용을 입력하세요..." }}
+                                {% if form.content.errors %}
+                                <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 첨부파일 -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-paperclip text-dark"></i>
+                                    첨부파일 (선택사항)
+                                </label>
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                    <p class="mb-2">파일을 드래그하거나 클릭하여 업로드</p>
+                                    <input type="file" class="d-none" name="attachments" multiple id="fileInput" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+                                    <small class="text-muted">최대 5개 파일, 각 파일 최대 10MB</small>
+                                </div>
+                                <div id="fileList" class="mt-2"></div>
+                            </div>
+                            
+                            <!-- 공지사항 설정 (관리자만) -->
+                            {% if user.is_staff %}
+                            <div class="form-group">
+                                <div class="form-check">
+                                    {{ form.is_pinned }}
+                                    <label class="form-check-label" for="{{ form.is_pinned.id_for_label }}">
+                                        <i class="fas fa-thumbtack text-danger"></i>
+                                        공지사항으로 설정
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-create btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>게시글 작성
+                                </button>
+                            </div>
+                        </form>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>게시글 작성
-                            </button>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-arrow-left"></i> 목록으로
+                            </a>
+                            <a href="{% url 'community:index' %}" class="btn btn-outline-info">
+                                <i class="fas fa-home"></i> 커뮤니티 홈
+                            </a>
                         </div>
-                    </form>
-                    
-                    <div class="text-center mt-4">
-                        <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-arrow-left"></i> 목록으로
-                        </a>
-                        <a href="{% url 'community:index' %}" class="btn btn-outline-info">
-                            <i class="fas fa-home"></i> 커뮤니티 홈
-                        </a>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 작성 가이드 -->
-            <div class="card border-info mt-3">
-                <div class="card-body">
-                    <h6 class="card-title text-info">
-                        <i class="fas fa-lightbulb me-2"></i>작성 가이드
-                    </h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-primary">카테고리별 가이드</h6>
-                            <ul class="small">
-                                <li><strong>📚 학습자료:</strong> 강의 자료, 요약 노트 등</li>
-                                <li><strong>📝 시험정보:</strong> 시험 일정, 출제 경향 등</li>
-                                <li><strong>💪 체력평가:</strong> 운동 팁, 평가 정보 등</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-success">작성 팁</h6>
-                            <ul class="small">
-                                <li>명확하고 구체적인 제목 작성</li>
-                                <li>내용을 단락별로 구분하여 작성</li>
-                                <li>관련 자료가 있다면 첨부파일 활용</li>
-                            </ul>
+                
+                <!-- 작성 가이드 -->
+                <div class="card guide-card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>작성 가이드
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-2">📚 카테고리별 가이드</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>학습자료:</strong> 강의 자료, 요약 노트 등</li>
+                                    <li><strong>시험정보:</strong> 시험 일정, 출제 경향 등</li>
+                                    <li><strong>체력평가:</strong> 운동 팁, 평가 정보 등</li>
+                                    <li><strong>자유게시판:</strong> 자유로운 소통 공간</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-2">💡 작성 팁</h6>
+                                <ul class="small mb-0">
+                                    <li>명확하고 구체적인 제목 작성</li>
+                                    <li>내용을 단락별로 구분하여 작성</li>
+                                    <li>관련 자료가 있다면 첨부파일 활용</li>
+                                    <li>적절한 태그로 검색성 향상</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -123,42 +316,123 @@
 </div>
 
 <script>
-// 폼 검증
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('postForm');
     const titleField = document.getElementById('id_title');
     const contentField = document.getElementById('id_content');
+    const categoryField = document.getElementById('id_category');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
     
+    // 파일 업로드 영역 클릭 이벤트
+    if (fileUploadArea && fileInput) {
+        fileUploadArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // 드래그 앤 드롭 기능
+        fileUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        fileUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+        
+        fileUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            displayFileList(files);
+        });
+        
+        // 파일 선택 시 목록 표시
+        fileInput.addEventListener('change', function() {
+            displayFileList(this.files);
+        });
+    }
+    
+    function displayFileList(files) {
+        if (!fileList) return;
+        
+        fileList.innerHTML = '';
+        
+        if (files.length === 0) return;
+        
+        const listContainer = document.createElement('div');
+        listContainer.className = 'mt-2';
+        
+        Array.from(files).forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center';
+            fileItem.innerHTML = `
+                <i class="fas fa-file me-2"></i>
+                <span class="me-auto">${file.name} (${formatFileSize(file.size)})</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            listContainer.appendChild(fileItem);
+        });
+        
+        fileList.appendChild(listContainer);
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // 폼 검증
     if (form) {
         form.addEventListener('submit', function(e) {
             let isValid = true;
+            let errorMessage = '';
             
+            // 카테고리 검증
+            if (categoryField && !categoryField.value) {
+                errorMessage = '카테고리를 선택해주세요.';
+                categoryField.focus();
+                isValid = false;
+            }
             // 제목 검증
-            if (titleField && titleField.value.trim().length < 5) {
-                alert('제목은 최소 5자 이상 입력해주세요.');
+            else if (titleField && titleField.value.trim().length < 5) {
+                errorMessage = '제목은 최소 5자 이상 입력해주세요.';
                 titleField.focus();
                 isValid = false;
             }
-            
             // 내용 검증
-            if (contentField && contentField.value.trim().length < 10) {
-                alert('내용은 최소 10자 이상 입력해주세요.');
+            else if (contentField && contentField.value.trim().length < 10) {
+                errorMessage = '내용은 최소 10자 이상 입력해주세요.';
                 contentField.focus();
                 isValid = false;
             }
             
             if (!isValid) {
                 e.preventDefault();
+                alert(errorMessage);
             }
         });
     }
     
-    // 파일 업로드 검증
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function() {
+    // 파일 크기 검증
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
             const files = this.files;
             const maxSize = 10 * 1024 * 1024; // 10MB
+            const maxFiles = 5;
+            
+            if (files.length > maxFiles) {
+                alert(`최대 ${maxFiles}개 파일까지 업로드 가능합니다.`);
+                this.value = '';
+                return;
+            }
             
             for (let file of files) {
                 if (file.size > maxSize) {
@@ -168,23 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-    });
+    }
 });
 </script>
-
-<style>
-.form-control, .form-select {
-    border-radius: 0.375rem;
-    border: 1px solid #ced4da;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-textarea.form-control {
-    min-height: 200px;
-}
-</style>
 {% endblock %}
