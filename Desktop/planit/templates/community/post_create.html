@@ -544,9 +544,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 categoryField.focus();
                 isValid = false;
             }
-            // 제목 검증
-            else if (titleField && titleField.value.trim().length < 5) {
-                errorMessage = '제목은 최소 5자 이상 입력해주세요.';
+            // 제목 검증 (빈 값만 체크)
+            else if (titleField && titleField.value.trim().length === 0) {
+                errorMessage = '제목을 입력해주세요.';
                 titleField.focus();
                 isValid = false;
             }
