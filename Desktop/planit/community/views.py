@@ -134,6 +134,21 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         kwargs['user'] = self.request.user
         return kwargs
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # 사용자가 접근 가능한 카테고리 목록 추가
+        categories = Category.objects.filter(is_active=True)
+        if not user.is_staff:
+            categories = categories.filter(
+                Q(department_restricted=False) |
+                Q(allowed_departments__icontains=user.department)
+            )
+        
+        context['categories'] = categories.order_by('order', 'name')
+        return context
+    
     def form_valid(self, form):
         form.instance.author = self.request.user
         response = super().form_valid(form)
