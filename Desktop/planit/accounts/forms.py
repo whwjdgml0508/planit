@@ -47,7 +47,7 @@ class CustomUserCreationForm(UserCreationForm):
         max_length=15,
         required=False,
         label='전화번호',
-        widget=forms.TextInput(attrs={'placeholder': '010-1234-5678'})
+        widget=forms.TextInput(attrs={'placeholder': '010-1234-5678 (선택사항)'})
     )
     
     class Meta:
@@ -107,12 +107,17 @@ class CustomUserCreationForm(UserCreationForm):
     
     def clean_student_id(self):
         student_id = self.cleaned_data.get('student_id')
+        print(f"[DEBUG] student_id 검증: {student_id}")
         if student_id and not student_id.isdigit():
+            print(f"[DEBUG] 학번 숫자 검증 실패: {student_id}")
             raise forms.ValidationError('학번은 숫자만 입력 가능합니다.')
         if student_id and len(student_id) != 7:
+            print(f"[DEBUG] 학번 길이 검증 실패: {student_id} (길이: {len(student_id)})")
             raise forms.ValidationError('학번은 7자리여야 합니다.')
         if student_id and User.objects.filter(student_id=student_id).exists():
+            print(f"[DEBUG] 중복 학번 검증 실패: {student_id}")
             raise forms.ValidationError('이미 사용 중인 학번입니다.')
+        print(f"[DEBUG] student_id 검증 통과: {student_id}")
         return student_id
     
     def clean_email(self):

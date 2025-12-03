@@ -47,6 +47,8 @@ class RegisterView(CreateView):
     
     def form_valid(self, form):
         try:
+            logger.info(f"회원가입 시도 - 사용자명: {form.cleaned_data.get('username')}, 학번: {form.cleaned_data.get('student_id')}")
+            
             # 사용자 저장
             user = form.save()
             logger.info(f"사용자 저장됨 - ID: {user.id}, 사용자명: {user.username}, 학번: {user.student_id}")
@@ -68,7 +70,7 @@ class RegisterView(CreateView):
             return redirect(self.success_url)
             
         except Exception as e:
-            logger.error(f"회원가입 중 오류 발생 - {str(e)}")
+            logger.error(f"회원가입 중 오류 발생 - {str(e)}", exc_info=True)
             messages.error(self.request, f'회원가입 중 오류가 발생했습니다: {str(e)}')
             return super().form_invalid(form)
     

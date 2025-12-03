@@ -45,7 +45,7 @@ class User(AbstractUser):
     phone_number = models.CharField(
         max_length=15,
         blank=True,
-        validators=[RegexValidator(r'^\d{3}-\d{4}-\d{4}$', '전화번호 형식: 010-1234-5678')],
+        null=True,
         verbose_name='전화번호'
     )
     profile_image = models.ImageField(
