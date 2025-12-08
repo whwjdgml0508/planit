@@ -3,40 +3,233 @@
 
 {% block title %}과목 추가 - PlanIt{% endblock %}
 
+{% block extra_css %}
+<style>
+    .gradient-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .subject-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .form-section h5 {
+        color: #667eea;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .color-picker-wrapper {
+        position: relative;
+    }
+    
+    input[type="color"] {
+        width: 100%;
+        height: 50px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="color"]:hover {
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+    
+    .timetable-grid {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .timetable-grid table {
+        margin-bottom: 0;
+    }
+    
+    .timetable-grid th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: center;
+        border: none;
+    }
+    
+    .timetable-grid td {
+        padding: 0.75rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+    
+    .timetable-grid td:hover {
+        background: #f8f9fa;
+    }
+    
+    .time-slot-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #667eea;
+    }
+    
+    .period-label {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem;
+        text-align: center;
+        border: none;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    .help-card {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border: none;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .help-card h6 {
+        color: #495057;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .help-card ul {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .help-card li {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .icon-label {
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div class="card shadow-lg border-0 mt-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-plus me-2"></i>새 과목 추가
-                    </h4>
+        <div class="col-md-10 col-lg-9">
+            <div class="card subject-card mt-4">
+                <div class="gradient-header">
+                    <h3 class="text-white mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-book-medical icon-label"></i>
+                        새 과목 추가 (개선된 방식)
+                    </h3>
+                    <p class="text-white-50 mb-0 mt-2">과목 정보를 입력하고 시간표에 추가하세요</p>
                 </div>
                 <div class="card-body p-4">
                     {% crispy form %}
                     
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'timetable:index' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>취소
+                    <div class="d-flex justify-content-between gap-3 mt-4">
+                        <a href="{% url 'timetable:index' %}" class="btn btn-cancel flex-fill">
+                            <i class="fas fa-times me-2"></i>취소
                         </a>
                     </div>
                 </div>
             </div>
             
             <!-- 도움말 -->
-            <div class="card border-info mt-3">
-                <div class="card-body">
-                    <h6 class="card-title text-info">
-                        <i class="fas fa-lightbulb me-2"></i>과목 추가 도움말
-                    </h6>
-                    <ul class="card-text small mb-0">
-                        <li>과목명과 교수명은 필수 입력 사항입니다</li>
-                        <li>요일과 교시를 여러 개 선택하면 해당하는 모든 시간에 과목이 배치됩니다</li>
-                        <li>색상은 시간표에서 과목을 구분하는 데 사용됩니다</li>
-                        <li>같은 시간에 다른 과목이 있으면 충돌 알림이 표시됩니다</li>
-                    </ul>
-                </div>
+            <div class="help-card">
+                <h6>
+                    <i class="fas fa-lightbulb me-2"></i>💡 과목 추가 가이드
+                </h6>
+                <ul>
+                    <li><strong>과목명</strong>과 <strong>교수명</strong>은 필수 입력 사항입니다</li>
+                    <li>요일과 교시를 여러 개 선택하면 해당하는 모든 시간에 과목이 배치됩니다</li>
+                    <li><strong>색상</strong>은 시간표에서 과목을 구분하는 데 사용됩니다</li>
+                    <li>같은 시간에 다른 과목이 있으면 <span class="text-danger">충돌 알림</span>이 표시됩니다</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -66,13 +259,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 색상 랜덤 생성
+    // 색상 랜덤 생성 (더 다양한 색상)
     const colorInput = document.querySelector('input[name="color"]');
     if (colorInput && !colorInput.value) {
-        const colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+        const colors = [
+            '#667eea', '#764ba2', '#f093fb', '#f5576c',
+            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+            '#fa709a', '#fee140', '#30cfd0', '#330867',
+            '#a8edea', '#fed6e3', '#ffecd2', '#fcb69f'
+        ];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         colorInput.value = randomColor;
     }
+    
+    // 폼 라벨에 아이콘 추가
+    const labelIcons = {
+        'name': '<i class="fas fa-book me-2"></i>',
+        'professor': '<i class="fas fa-chalkboard-teacher me-2"></i>',
+        'credits': '<i class="fas fa-star me-2"></i>',
+        'subject_type': '<i class="fas fa-tag me-2"></i>',
+        'evaluation_method': '<i class="fas fa-clipboard-check me-2"></i>',
+        'classroom': '<i class="fas fa-door-open me-2"></i>',
+        'note': '<i class="fas fa-sticky-note me-2"></i>',
+        'color': '<i class="fas fa-palette me-2"></i>',
+        'days': '<i class="fas fa-calendar-week me-2"></i>',
+        'periods': '<i class="fas fa-clock me-2"></i>',
+        'location': '<i class="fas fa-map-marker-alt me-2"></i>'
+    };
+    
+    Object.keys(labelIcons).forEach(fieldName => {
+        const label = document.querySelector(`label[for="id_${fieldName}"]`);
+        if (label && !label.querySelector('.fas')) {
+            label.innerHTML = labelIcons[fieldName] + label.textContent;
+        }
+    });
+    
+    // 체크박스 스타일 개선
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('time-slot-checkbox');
+    });
 });
 </script>
 {% endblock %}

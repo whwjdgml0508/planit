@@ -25,9 +25,12 @@
                     </div>
                     {% endif %}
                     
-                    {% crispy form %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% crispy form form.helper %}
+                    </form>
                     
-                    <div class="d-flex justify-content-between mt-4">
+                    <div class="d-flex justify-content-between mt-4" style="display:none!important;">
                         <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>취소
                         </a>

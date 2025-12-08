@@ -276,12 +276,51 @@ Internet → Nginx (Port 80) → Gunicorn (Port 8000) → Django Application
 
 #### 🎯 향후 개발 계획
 
+## 🔧 트러블슈팅
+
+### Server Error (500) 발생 시
+
+**증상**: 특정 페이지 접속 시 "Server Error (500)" 발생
+
+**원인**: templatetags 디렉토리의 파일들이 서버에 복사되지 않음
+
+**해결 방법**:
+
+1. **안전 배포 스크립트 사용** (권장):
+```powershell
+.\deploy_safe.ps1
+```
+
+2. **수동 복사**:
+```powershell
+# timetable templatetags 복사
+scp -i ~/.ssh/ec2-kafa-2-key.pem -r timetable/templatetags/* ubuntu@35.163.12.109:/home/ubuntu/planit/timetable/templatetags/
+
+# planner templatetags 복사
+scp -i ~/.ssh/ec2-kafa-2-key.pem -r planner/templatetags/* ubuntu@35.163.12.109:/home/ubuntu/planit/planner/templatetags/
+
+# 서버 재시작
+ssh -i ~/.ssh/ec2-kafa-2-key.pem ubuntu@35.163.12.109 "sudo systemctl restart planit"
+```
+
+3. **서버 로그 확인**:
+```bash
+ssh -i ~/.ssh/ec2-kafa-2-key.pem ubuntu@35.163.12.109 "sudo journalctl -u planit -n 50"
+```
+
+### 주요 체크리스트
+- [ ] templatetags 디렉토리에 `__init__.py` 파일 존재
+- [ ] templatetags 디렉토리의 모든 `.py` 파일 복사됨
+- [ ] 서버 재시작 후 정상 작동 확인
+- [ ] 주요 페이지 HTTP 200 응답 확인
+
 ## 🚀 향후 개발 계획
 
-###
 - 콘텐츠 기능 강화: 파일 공유, 통합 검색
 - 커뮤니티 기능: 오류 수정
 - 프로필 설정
+- HTTPS 적용 및 SSL 인증서 설정
+- CI/CD 파이프라인 구축
 
 ## 라이선스
 이 프로젝트는 교육 목적으로 개발되었습니다.

@@ -154,24 +154,32 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            HTML('<h5 class="mb-3">📚 과목 정보</h5>'),
-            Field('name', placeholder='과목명', css_class='mb-3'),
+            HTML('<div class="form-section"><h5><i class="fas fa-book me-2"></i>📚 과목 정보</h5>'),
             Row(
                 Column(
-                    Field('professor', placeholder='교수명'),
+                    Field('name', placeholder='과목명 입력', css_class='mb-3'),
+                    css_class='col-md-9'
+                ),
+                Column(
+                    Field('credits', css_class='mb-3'),
+                    css_class='col-md-3'
+                ),
+            ),
+            Row(
+                Column(
+                    Field('professor', placeholder='교수명 입력'),
                     css_class='col-md-6'
                 ),
                 Column(
-                    Field('credits'),
+                    Field('subject_type'),
                     css_class='col-md-6'
                 ),
                 css_class='mb-3'
             ),
-            Field('subject_type', css_class='mb-3'),
             Field('evaluation_method', placeholder='예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%', css_class='mb-3'),
             Row(
                 Column(
-                    Field('classroom', placeholder='강의실'),
+                    Field('classroom', placeholder='강의실 입력'),
                     css_class='col-md-8'
                 ),
                 Column(
@@ -181,9 +189,10 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
                 css_class='mb-3'
             ),
             Field('note', placeholder='과목에 대한 메모를 입력하세요', css_class='mb-3'),
+            HTML('</div>'),
             
-            HTML('<hr class="my-4">'),
-            HTML('<h5 class="mb-3">📅 시간표 정보</h5>'),
+            HTML('<div class="form-section mt-4"><h5><i class="fas fa-calendar-alt me-2"></i>📅 시간표 선택</h5>'),
+            HTML('<p class="text-muted small mb-3"><i class="fas fa-info-circle me-1"></i>원하는 요일과 교시를 모두 선택하세요. 선택한 모든 시간에 과목이 배치됩니다.</p>'),
             
             Row(
                 Column(
@@ -196,9 +205,10 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
                 ),
                 css_class='mb-3'
             ),
-            Field('location', placeholder='장소', css_class='mb-3'),
+            Field('location', placeholder='강의실 또는 장소 입력', css_class='mb-3'),
+            HTML('</div>'),
             
-            Submit('submit', '과목 및 시간표 저장', css_class='btn btn-primary btn-lg w-100 mt-4')
+            Submit('submit', '✓ 과목 및 시간표 저장', css_class='btn btn-submit w-100 mt-4')
         )
 
 class SemesterForm(forms.ModelForm):

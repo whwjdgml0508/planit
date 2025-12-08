@@ -158,7 +158,7 @@ textarea.form-control {
                                         </label>
                                         <select name="category" class="form-select" id="id_category" required>
                                             <option value="">카테고리를 선택하세요</option>
-                                            {% for category in categories %}
+                                            {% for category in form.category.field.queryset %}
                                             <option value="{{ category.pk }}" 
                                                     data-icon="{{ category.icon }}" 
                                                     data-color="{{ category.color }}">
@@ -177,11 +177,7 @@ textarea.form-control {
                                             <i class="fas fa-tag text-success"></i>
                                             게시글 유형
                                         </label>
-                                        <select name="post_type" class="form-select" id="id_post_type">
-                                            {% for value, label in form.post_type.field.choices %}
-                                            <option value="{{ value }}">{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        {{ form.post_type|add_class:"form-select" }}
                                         {% if form.post_type.errors %}
                                         <div class="text-danger small mt-1">{{ form.post_type.errors }}</div>
                                         {% endif %}
@@ -195,7 +191,7 @@ textarea.form-control {
                                     <i class="fas fa-heading text-info"></i>
                                     제목
                                 </label>
-                                <input type="text" name="title" class="form-control" id="id_title" placeholder="게시글 제목을 입력하세요" required>
+                                {{ form.title|add_class:"form-control"|attr:"placeholder:게시글 제목을 입력하세요" }}
                                 {% if form.title.errors %}
                                 <div class="text-danger small mt-1">{{ form.title.errors }}</div>
                                 {% endif %}
@@ -208,12 +204,7 @@ textarea.form-control {
                                     <i class="fas fa-book text-warning"></i>
                                     관련 과목 (선택사항)
                                 </label>
-                                <select name="subject" class="form-select" id="id_subject">
-                                    <option value="">과목 선택 (선택사항)</option>
-                                    {% for subject in form.subject.field.queryset %}
-                                    <option value="{{ subject.pk }}">{{ subject.name }}</option>
-                                    {% endfor %}
-                                </select>
+                                {{ form.subject|add_class:"form-select" }}
                                 {% if form.subject.errors %}
                                 <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
                                 {% endif %}
@@ -226,7 +217,7 @@ textarea.form-control {
                                     <i class="fas fa-hashtag text-purple"></i>
                                     태그 (선택사항)
                                 </label>
-                                <input type="text" name="tags_input" class="form-control" id="id_tags_input" placeholder="태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)">
+                                {{ form.tags_input|add_class:"form-control"|attr:"placeholder:태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)" }}
                                 <small class="text-muted">최대 10개까지 입력 가능합니다.</small>
                                 {% if form.tags_input.errors %}
                                 <div class="text-danger small mt-1">{{ form.tags_input.errors }}</div>
@@ -239,7 +230,7 @@ textarea.form-control {
                                     <i class="fas fa-align-left text-secondary"></i>
                                     내용
                                 </label>
-                                <textarea name="content" class="form-control" id="id_content" placeholder="내용을 입력하세요..." rows="10" required></textarea>
+                                {{ form.content|add_class:"form-control"|attr:"placeholder:내용을 입력하세요..." }}
                                 {% if form.content.errors %}
                                 <div class="text-danger small mt-1">{{ form.content.errors }}</div>
                                 {% endif %}
@@ -251,29 +242,13 @@ textarea.form-control {
                                     <i class="fas fa-paperclip text-dark"></i>
                                     첨부파일 (선택사항)
                                 </label>
-                                
                                 <div class="file-upload-area" id="fileUploadArea">
                                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                     <p class="mb-2">파일을 드래그하거나 클릭하여 업로드</p>
+                                    <input type="file" class="d-none" name="attachments" multiple id="fileInput" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
                                     <small class="text-muted">최대 5개 파일, 각 파일 최대 10MB</small>
                                 </div>
-                                
-                                <!-- 실제 파일 input (숨김) -->
-                                <input type="file" name="attachments" id="fileInput" class="d-none" 
-                                       multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
-                                
-                                <!-- 파일 목록 표시 -->
                                 <div id="fileList" class="mt-2"></div>
-                                
-                                <!-- 파일 관리 버튼 -->
-                                <div class="mt-2" id="fileButtons" style="display: none;">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="addMoreBtn">
-                                        <i class="fas fa-plus me-1"></i>파일 추가
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="clearAllBtn">
-                                        <i class="fas fa-trash me-1"></i>모두 제거
-                                    </button>
-                                </div>
                             </div>
                             
                             <!-- 공지사항 설정 (관리자만) -->
@@ -349,186 +324,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileUploadArea = document.getElementById('fileUploadArea');
     const fileInput = document.getElementById('fileInput');
     const fileList = document.getElementById('fileList');
-    const fileButtons = document.getElementById('fileButtons');
-    const addMoreBtn = document.getElementById('addMoreBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
     
-    let selectedFiles = [];
-    
-    // 파일 업로드 영역 클릭
-    if (fileUploadArea) {
-        fileUploadArea.addEventListener('click', function(e) {
-            e.preventDefault();
+    // 파일 업로드 영역 클릭 이벤트
+    if (fileUploadArea && fileInput) {
+        fileUploadArea.addEventListener('click', function() {
             fileInput.click();
         });
         
-        // 드래그 앤 드롭
+        // 드래그 앤 드롭 기능
         fileUploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             this.classList.add('dragover');
         });
         
         fileUploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             this.classList.remove('dragover');
         });
         
         fileUploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             this.classList.remove('dragover');
             
-            const droppedFiles = Array.from(e.dataTransfer.files);
-            handleFiles(droppedFiles);
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            displayFileList(files);
+        });
+        
+        // 파일 선택 시 목록 표시
+        fileInput.addEventListener('change', function() {
+            displayFileList(this.files);
         });
     }
     
-    let isUpdatingInput = false; // 무한 루프 방지 플래그
-    
-    // 파일 input change 이벤트
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            console.log('File input changed, files:', this.files.length, 'isUpdatingInput:', isUpdatingInput);
-            
-            // updateFileInput에서 발생한 change 이벤트는 무시
-            if (isUpdatingInput) {
-                console.log('Ignoring change event from updateFileInput');
-                return;
-            }
-            
-            if (this.files.length > 0) {
-                const newFiles = Array.from(this.files);
-                console.log('New files array:', newFiles.map(f => f.name));
-                handleFiles(newFiles, false); // 기존 파일에 추가
-            }
-        });
-    }
-    
-    // 파일 추가 버튼
-    if (addMoreBtn) {
-        addMoreBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
-        });
-    }
-    
-    // 모두 제거 버튼
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            selectedFiles = [];
-            updateFileInput();
-            updateFileDisplay();
-        });
-    }
-    
-    function handleFiles(newFiles, replaceAll = false) {
-        console.log('handleFiles called with', newFiles.length, 'files, replaceAll:', replaceAll);
-        
-        // replaceAll이 true면 기존 파일 무시, false면 합치기
-        const allFiles = replaceAll ? newFiles : [...selectedFiles, ...newFiles];
-        
-        // 파일 개수 제한
-        if (allFiles.length > 5) {
-            alert('최대 5개 파일까지 업로드 가능합니다.');
-            return;
-        }
-        
-        // 파일 검증
-        let validFiles = [];
-        for (let file of allFiles) {
-            if (validateFile(file)) {
-                validFiles.push(file);
-            } else {
-                return; // 검증 실패 시 중단
-            }
-        }
-        
-        selectedFiles = validFiles;
-        console.log('Valid files:', selectedFiles.length);
-        updateFileInput();
-        updateFileDisplay();
-    }
-    
-    function validateFile(file) {
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        
-        if (file.size > maxSize) {
-            alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
-            return false;
-        }
-        
-        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.zip'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        if (!allowedTypes.includes(fileExtension)) {
-            alert(`파일 "${file.name}"은 지원하지 않는 형식입니다.`);
-            return false;
-        }
-        
-        return true;
-    }
-    
-    function updateFileInput() {
-        // DataTransfer를 사용하여 파일 input 업데이트
-        isUpdatingInput = true; // 플래그 설정
-        
-        const dt = new DataTransfer();
-        selectedFiles.forEach(file => {
-            dt.items.add(file);
-        });
-        fileInput.files = dt.files;
-        console.log('File input updated, files:', fileInput.files.length);
-        
-        // 다음 이벤트 루프에서 플래그 해제
-        setTimeout(() => {
-            isUpdatingInput = false;
-            console.log('isUpdatingInput flag reset');
-        }, 0);
-    }
-    
-    function updateFileDisplay() {
+    function displayFileList(files) {
         if (!fileList) return;
         
         fileList.innerHTML = '';
         
-        if (selectedFiles.length === 0) {
-            fileButtons.style.display = 'none';
-            return;
-        }
-        
-        fileButtons.style.display = 'block';
+        if (files.length === 0) return;
         
         const listContainer = document.createElement('div');
         listContainer.className = 'mt-2';
         
-        selectedFiles.forEach((file, index) => {
+        Array.from(files).forEach((file, index) => {
             const fileItem = document.createElement('div');
-            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center mb-2';
+            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center';
             fileItem.innerHTML = `
                 <i class="fas fa-file me-2"></i>
                 <span class="me-auto">${file.name} (${formatFileSize(file.size)})</span>
-                <button type="button" class="btn-close" data-index="${index}"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
-            // 개별 파일 제거
-            const closeBtn = fileItem.querySelector('.btn-close');
-            closeBtn.addEventListener('click', function() {
-                removeFile(parseInt(this.dataset.index));
-            });
-            
             listContainer.appendChild(fileItem);
         });
         
         fileList.appendChild(listContainer);
-    }
-    
-    function removeFile(index) {
-        selectedFiles.splice(index, 1);
-        updateFileInput();
-        updateFileDisplay();
     }
     
     function formatFileSize(bytes) {
@@ -551,15 +401,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 categoryField.focus();
                 isValid = false;
             }
-            // 제목 검증 (빈 값만 체크)
-            else if (titleField && titleField.value.trim().length === 0) {
-                errorMessage = '제목을 입력해주세요.';
+            // 제목 검증
+            else if (titleField && titleField.value.trim().length < 5) {
+                errorMessage = '제목은 최소 5자 이상 입력해주세요.';
                 titleField.focus();
                 isValid = false;
             }
-            // 내용 검증 (빈 값만 체크)
-            else if (contentField && contentField.value.trim().length === 0) {
-                errorMessage = '내용을 입력해주세요.';
+            // 내용 검증
+            else if (contentField && contentField.value.trim().length < 10) {
+                errorMessage = '내용은 최소 10자 이상 입력해주세요.';
                 contentField.focus();
                 isValid = false;
             }
@@ -567,8 +417,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isValid) {
                 e.preventDefault();
                 alert(errorMessage);
-            } else {
-                console.log('Form submitting with', fileInput.files.length, 'files');
+            }
+        });
+    }
+    
+    // 파일 크기 검증
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const files = this.files;
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const maxFiles = 5;
+            
+            if (files.length > maxFiles) {
+                alert(`최대 ${maxFiles}개 파일까지 업로드 가능합니다.`);
+                this.value = '';
+                return;
+            }
+            
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
+                    this.value = '';
+                    break;
+                }
             }
         });
     }
