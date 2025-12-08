@@ -484,7 +484,7 @@ class ImprovedSubjectCreateView(LoginRequiredMixin, CreateView):
         context.update({
             'days': days,
             'periods': periods,
-            'page_title': '새 과목 추가 (개선된 방식)'
+            'page_title': '새 과목 추가'
         })
         
         return context
