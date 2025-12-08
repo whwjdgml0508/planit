@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div, Submit, HTML, Row, Column
 from crispy_forms.bootstrap import PrependedText
@@ -36,8 +37,8 @@ class PostForm(forms.ModelForm):
             if not user.is_staff:
                 # 일반 사용자는 학과 제한이 있는 카테고리 필터링
                 categories = categories.filter(
-                    models.Q(department_restricted=False) |
-                    models.Q(allowed_departments__icontains=user.department)
+                    Q(department_restricted=False) |
+                    Q(allowed_departments__icontains=user.department)
                 )
             self.fields['category'].queryset = categories
         
@@ -180,8 +181,8 @@ class PostSearchForm(forms.Form):
             categories = Category.objects.filter(
                 is_active=True
             ).filter(
-                models.Q(department_restricted=False) |
-                models.Q(allowed_departments__icontains=user.department)
+                Q(department_restricted=False) |
+                Q(allowed_departments__icontains=user.department)
             )
             self.fields['category'].queryset = categories
         
