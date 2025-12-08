@@ -104,16 +104,127 @@
                 </div>
             </div>
             
-            <!-- 댓글 섹션 (향후 구현) -->
+            <!-- 댓글 섹션 -->
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h6 class="mb-0">
-                        <i class="fas fa-comments me-2"></i>댓글 (준비중)
+                        <i class="fas fa-comments me-2"></i>댓글 ({{ post.comments.count }})
                     </h6>
                 </div>
-                <div class="card-body text-center text-muted">
-                    <i class="fas fa-tools fa-2x mb-2"></i>
-                    <p>댓글 기능은 곧 추가될 예정입니다.</p>
+                <div class="card-body">
+                    <!-- 댓글 작성 폼 -->
+                    {% if user.is_authenticated %}
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" name="comment_submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>댓글 작성
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        댓글을 작성하려면 <a href="{% url 'accounts:login' %}?next={{ request.path }}">로그인</a>이 필요합니다.
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 댓글 목록 -->
+                    <div class="comments-list">
+                        {% for comment in post.comments.all %}
+                        {% if not comment.parent %}
+                        <div class="comment mb-3 pb-3 border-bottom" id="comment-{{ comment.id }}">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    {% if comment.author.profile_image %}
+                                    <img src="{{ comment.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40">
+                                    {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                                            <small class="text-muted ms-2">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                        </div>
+                                        {% if comment.author == user %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteComment('{{ comment.id }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-2">{{ comment.content|linebreaks }}</p>
+                                    <button class="btn btn-sm btn-outline-secondary reply-toggle" data-comment-id="{{ comment.id }}">
+                                        <i class="fas fa-reply me-1"></i>답글 ({{ comment.replies.count }})
+                                    </button>
+                                    
+                                    <!-- 답글 작성 폼 (숨김) -->
+                                    {% if user.is_authenticated %}
+                                    <div class="reply-form-container mt-3" id="reply-form-{{ comment.id }}" style="display: none;">
+                                        <form method="post" class="ms-4">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                            <div class="mb-2">
+                                                <textarea name="content" class="form-control" rows="2" placeholder="답글을 입력하세요..." required></textarea>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="button" class="btn btn-sm btn-secondary me-1" onclick="hideReplyForm('{{ comment.id }}')">취소</button>
+                                                <button type="submit" name="reply_submit" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-paper-plane me-1"></i>답글 작성
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- 답글 목록 -->
+                                    <div class="replies ms-4 mt-3" id="replies-{{ comment.id }}">
+                                        {% for reply in comment.replies.all %}
+                                        <div class="reply mb-3 pb-2 border-bottom">
+                                            <div class="d-flex">
+                                                <div class="me-2">
+                                                    {% if reply.author.profile_image %}
+                                                    <img src="{{ reply.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="32" height="32">
+                                                    {% else %}
+                                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                        <i class="fas fa-user text-white small"></i>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                                        <div>
+                                                            <strong class="small">{{ reply.author.get_full_name|default:reply.author.username }}</strong>
+                                                            <small class="text-muted ms-2">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+                                                        </div>
+                                                        {% if reply.author == user %}
+                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteComment('{{ reply.id }}')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                    <p class="small mb-0">{{ reply.content|linebreaks }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% empty %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-comments fa-2x mb-2"></i>
+                            <p>첫 댓글을 작성해보세요!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -275,6 +386,61 @@ function submitReport() {
         } else {
             alert('신고 접수 중 오류가 발생했습니다.');
         }
+    });
+}
+
+// 답글 토글
+document.addEventListener('DOMContentLoaded', function() {
+    const replyToggles = document.querySelectorAll('.reply-toggle');
+    replyToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            const replies = document.getElementById(`replies-${commentId}`);
+            
+            if (replyForm.style.display === 'none') {
+                replyForm.style.display = 'block';
+                if (replies) replies.style.display = 'block';
+            } else {
+                replyForm.style.display = 'none';
+            }
+        });
+    });
+});
+
+// 답글 폼 숨기기
+function hideReplyForm(commentId) {
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+    if (replyForm) {
+        replyForm.style.display = 'none';
+    }
+}
+
+// 댓글 삭제
+function deleteComment(commentId) {
+    if (!confirm('정말 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    fetch(`/community/comment/${commentId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('댓글이 삭제되었습니다.');
+            window.location.reload();
+        } else {
+            alert(data.message || '댓글 삭제 중 오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('댓글 삭제 중 오류가 발생했습니다.');
     });
 }
 </script>

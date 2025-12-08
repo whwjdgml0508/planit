@@ -22,4 +22,7 @@ urlpatterns = [
     
     # 신고 관련 URL
     path('report/', views.ReportCreateView.as_view(), name='report_create'),
+    
+    # 댓글 관련 URL
+    path('comment/<uuid:pk>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),
 ]

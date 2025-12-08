@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -120,6 +120,16 @@ class PostListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_form'] = PostSearchForm(self.request.GET, user=self.request.user)
+        
+        # 카테고리 목록 추가
+        user = self.request.user
+        categories = Category.objects.filter(is_active=True)
+        if not user.is_staff:
+            categories = categories.filter(
+                Q(department_restricted=False) |
+                Q(allowed_departments__icontains=user.department)
+            )
+        context['categories'] = categories.order_by('order', 'name')
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -156,10 +166,24 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         # 첨부파일 처리
         files = self.request.FILES.getlist('attachments')
         for file in files:
+            # 파일 유형 결정
+            ext = file.name.split('.')[-1].lower() if '.' in file.name else ''
+            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']:
+                file_type = 'IMAGE'
+            elif ext in ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'hwp']:
+                file_type = 'DOCUMENT'
+            elif ext in ['zip', 'rar', '7z', 'tar', 'gz']:
+                file_type = 'ARCHIVE'
+            else:
+                file_type = 'OTHER'
+            
             attachment = Attachment(
                 post=self.object,
                 uploader=self.request.user,
-                file=file
+                file=file,
+                original_name=file.name,
+                file_size=file.size,
+                file_type=file_type
             )
             attachment.save()
         
@@ -367,3 +391,20 @@ class ReportCreateView(LoginRequiredMixin, CreateView):
         
         messages.success(self.request, '신고가 접수되었습니다. 검토 후 조치하겠습니다.')
         return super().form_valid(form)
+
+class CommentDeleteView(LoginRequiredMixin, View):
+    """댓글 삭제 뷰"""
+    
+    def post(self, request, *args, **kwargs):
+        comment_id = kwargs.get('pk')
+        comment = get_object_or_404(Comment, id=comment_id)
+        
+        # 작성자만 삭제 가능
+        if comment.author != request.user:
+            return JsonResponse({'success': False, 'message': '권한이 없습니다.'}, status=403)
+        
+        post = comment.post
+        comment.delete()
+        
+        messages.success(request, '댓글이 삭제되었습니다.')
+        return JsonResponse({'success': True, 'redirect_url': post.get_absolute_url()})
