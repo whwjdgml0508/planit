@@ -23,21 +23,30 @@
                         
                         <!-- 과목 정보 섹션 -->
                         <div class="mb-5">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-book me-2"></i>과목 정보
-                            </h5>
+                            <div class="section-divider mb-4">
+                                <h5 class="section-title">
+                                    <i class="fas fa-book me-2"></i>과목 정보
+                                </h5>
+                            </div>
                             
                             <div class="row">
-                                <div class="col-md-8">
+                                <div class="col-md-9">
                                     <div class="mb-3">
-                                        {{ form.name.label_tag }}
-                                        {{ form.name }}
+                                        <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-book text-primary me-2"></i>과목명
+                                        </label>
+                                        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                                               class="form-control form-control-lg" placeholder="예: 운영체제" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="mb-3">
-                                        {{ form.color.label_tag }}
-                                        {{ form.color }}
+                                        <label for="{{ form.color.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-palette text-danger me-2"></i>색상
+                                        </label>
+                                        <input type="color" name="{{ form.color.name }}" id="{{ form.color.id_for_label }}" 
+                                               class="form-control form-control-color form-control-lg" value="#007bff" 
+                                               title="과목 색상을 선택하세요" style="height: 50px;">
                                     </div>
                                 </div>
                             </div>
@@ -45,20 +54,36 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        {{ form.professor.label_tag }}
-                                        {{ form.professor }}
+                                        <label for="{{ form.professor.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-chalkboard-teacher text-success me-2"></i>교수명
+                                        </label>
+                                        <input type="text" name="{{ form.professor.name }}" id="{{ form.professor.id_for_label }}" 
+                                               class="form-control" placeholder="예: 홍길동" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        {{ form.credits.label_tag }}
-                                        {{ form.credits }}
+                                        <label for="{{ form.credits.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-star text-warning me-2"></i>학점
+                                        </label>
+                                        <select name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" class="form-select">
+                                            <option value="1">1학점</option>
+                                            <option value="2">2학점</option>
+                                            <option value="3" selected>3학점</option>
+                                            <option value="4">4학점</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        {{ form.subject_type.label_tag }}
-                                        {{ form.subject_type }}
+                                        <label for="{{ form.subject_type.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-tag text-info me-2"></i>과목 구분
+                                        </label>
+                                        <select name="{{ form.subject_type.name }}" id="{{ form.subject_type.id_for_label }}" class="form-select">
+                                            <option value="전공">전공</option>
+                                            <option value="교양">교양</option>
+                                            <option value="기타">기타</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -66,29 +91,41 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        {{ form.classroom.label_tag }}
-                                        {{ form.classroom }}
+                                        <label for="{{ form.classroom.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
+                                        </label>
+                                        <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
+                                               class="form-control" placeholder="예: 공학관 301호" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        {{ form.evaluation_method.label_tag }}
-                                        {{ form.evaluation_method }}
+                                        <label for="{{ form.evaluation_method.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-clipboard-check text-primary me-2"></i>평가 방법
+                                        </label>
+                                        <input type="text" name="{{ form.evaluation_method.name }}" id="{{ form.evaluation_method.id_for_label }}" 
+                                               class="form-control" placeholder="예: 중간 30%, 기말 30%, 과제 40%" maxlength="200">
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="mb-3">
-                                {{ form.note.label_tag }}
-                                {{ form.note }}
+                                <label for="{{ form.note.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note text-warning me-2"></i>메모
+                                </label>
+                                <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
+                                          class="form-control" rows="3" 
+                                          placeholder="과목에 대한 추가 정보나 메모를 입력하세요"></textarea>
                             </div>
                         </div>
                         
                         <!-- 시간표 선택 섹션 -->
                         <div class="mb-5">
-                            <h5 class="text-success mb-3">
-                                <i class="fas fa-calendar-alt me-2"></i>시간표 선택
-                            </h5>
+                            <div class="section-divider mb-4">
+                                <h5 class="section-title text-success">
+                                    <i class="fas fa-calendar-alt me-2"></i>시간표 선택
+                                </h5>
+                            </div>
                             <p class="text-muted mb-4">
                                 <i class="fas fa-info-circle me-1"></i>
                                 원하는 시간대를 클릭하여 선택하세요. 여러 시간대를 동시에 선택할 수 있습니다.
@@ -175,14 +212,22 @@
                             <div class="row mt-4">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        {{ form.timeslot_location.label_tag }}
-                                        {{ form.timeslot_location }}
+                                        <label for="{{ form.timeslot_location.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-location-arrow text-danger me-2"></i>장소
+                                        </label>
+                                        <input type="text" name="{{ form.timeslot_location.name }}" 
+                                               id="{{ form.timeslot_location.id_for_label }}" 
+                                               class="form-control" placeholder="예: 공학관 301호" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        {{ form.timeslot_note.label_tag }}
-                                        {{ form.timeslot_note }}
+                                        <label for="{{ form.timeslot_note.id_for_label }}" class="form-label fw-bold">
+                                            <i class="fas fa-comment-dots text-info me-2"></i>시간표 메모
+                                        </label>
+                                        <input type="text" name="{{ form.timeslot_note.name }}" 
+                                               id="{{ form.timeslot_note.id_for_label }}" 
+                                               class="form-control" placeholder="예: 격주 수업" maxlength="200">
                                     </div>
                                 </div>
                             </div>
@@ -378,9 +423,51 @@
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
     transform: translateY(-1px);
+}
+
+.form-control-lg {
+    padding: 14px 18px;
+    font-size: 1.05rem;
+}
+
+/* 색상 선택기 스타일 */
+.form-control-color {
+    width: 100%;
+    cursor: pointer;
+    border: 3px solid #e9ecef;
+}
+
+.form-control-color:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+/* 레이블 스타일 */
+.form-label {
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.form-label i {
+    font-size: 1rem;
+}
+
+/* 섹션 구분선 */
+.section-divider {
+    border-bottom: 3px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: #667eea;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0;
 }
 
 /* 카드 스타일 개선 */
