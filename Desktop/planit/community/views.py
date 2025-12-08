@@ -236,6 +236,13 @@ class PostDetailView(LoginRequiredMixin, DetailView):
         # 사용자가 좋아요 했는지 확인
         context['user_liked'] = post.is_liked_by(self.request.user)
         
+        # 같은 카테고리의 관련 게시글 (최신순 5개, 현재 글 제외)
+        related_posts = Post.objects.filter(
+            category=post.category,
+            is_active=True
+        ).exclude(id=post.id).select_related('author').order_by('-created_at')[:5]
+        context['related_posts'] = related_posts
+        
         return context
     
     def post(self, request, *args, **kwargs):

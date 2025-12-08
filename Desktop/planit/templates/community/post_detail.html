@@ -264,13 +264,32 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <!-- 향후 관련 게시글 표시 -->
-                        <div class="text-center text-muted py-3">
-                            <i class="fas fa-tools mb-2"></i>
-                            <p class="small mb-0">관련 게시글 기능 준비중</p>
+                    {% if related_posts %}
+                        <div class="list-group list-group-flush">
+                            {% for related in related_posts %}
+                                <a href="{% url 'community:post_detail' related.pk %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1 text-truncate" style="max-width: 70%;">{{ related.title }}</h6>
+                                        <small class="text-muted">{{ related.created_at|date:"m/d" }}</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ related.author.username }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye me-1"></i>{{ related.views }}
+                                            <i class="fas fa-heart ms-2 me-1"></i>{{ related.get_like_count }}
+                                        </small>
+                                    </div>
+                                </a>
+                            {% endfor %}
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-inbox mb-2"></i>
+                            <p class="small mb-0">같은 카테고리의 다른 글이 없습니다</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
