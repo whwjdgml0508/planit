@@ -29,14 +29,14 @@
                                 </h5>
                             </div>
                             
-                            <div class="row">
+                            <div class="row align-items-end">
                                 <div class="col-md-9">
                                     <div class="mb-3">
                                         <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
                                             <i class="fas fa-book text-primary me-2"></i>과목명
                                         </label>
                                         <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
-                                               class="form-control form-control-lg" placeholder="예: 운영체제" required>
+                                               class="form-control modern-input" placeholder="예: 운영체제" required>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -61,7 +61,7 @@
                                             <i class="fas fa-chalkboard-teacher text-success me-2"></i>교수명
                                         </label>
                                         <input type="text" name="{{ form.professor.name }}" id="{{ form.professor.id_for_label }}" 
-                                               class="form-control" placeholder="예: 홍길동" maxlength="100">
+                                               class="form-control modern-input" placeholder="예: 홍길동" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -69,7 +69,7 @@
                                         <label for="{{ form.credits.id_for_label }}" class="form-label fw-bold">
                                             <i class="fas fa-star text-warning me-2"></i>학점
                                         </label>
-                                        <select name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" class="form-select">
+                                        <select name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" class="form-select modern-select">
                                             <option value="1">1학점</option>
                                             <option value="2">2학점</option>
                                             <option value="3" selected>3학점</option>
@@ -82,7 +82,7 @@
                                         <label for="{{ form.subject_type.id_for_label }}" class="form-label fw-bold">
                                             <i class="fas fa-tag text-info me-2"></i>과목 구분
                                         </label>
-                                        <select name="{{ form.subject_type.name }}" id="{{ form.subject_type.id_for_label }}" class="form-select">
+                                        <select name="{{ form.subject_type.name }}" id="{{ form.subject_type.id_for_label }}" class="form-select modern-select">
                                             <option value="전공">전공</option>
                                             <option value="교양">교양</option>
                                             <option value="기타">기타</option>
@@ -98,7 +98,7 @@
                                             <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
                                         </label>
                                         <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
-                                               class="form-control" placeholder="예: 공학관 301호" maxlength="100">
+                                               class="form-control modern-input" placeholder="예: 공학관 301호" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -107,7 +107,7 @@
                                             <i class="fas fa-clipboard-check text-primary me-2"></i>평가 방법
                                         </label>
                                         <input type="text" name="{{ form.evaluation_method.name }}" id="{{ form.evaluation_method.id_for_label }}" 
-                                               class="form-control" placeholder="예: 중간 30%, 기말 30%, 과제 40%" maxlength="200">
+                                               class="form-control modern-input" placeholder="예: 중간 30%, 기말 30%, 과제 40%" maxlength="200">
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                                     <i class="fas fa-sticky-note text-warning me-2"></i>메모
                                 </label>
                                 <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
-                                          class="form-control" rows="3" 
+                                          class="form-control modern-textarea" rows="3" 
                                           placeholder="과목에 대한 추가 정보나 메모를 입력하세요"></textarea>
                             </div>
                         </div>
@@ -220,7 +220,7 @@
                                         </label>
                                         <input type="text" name="{{ form.timeslot_location.name }}" 
                                                id="{{ form.timeslot_location.id_for_label }}" 
-                                               class="form-control" placeholder="예: 공학관 301호" maxlength="100">
+                                               class="form-control modern-input" placeholder="예: 공학관 301호" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -230,7 +230,7 @@
                                         </label>
                                         <input type="text" name="{{ form.timeslot_note.name }}" 
                                                id="{{ form.timeslot_note.id_for_label }}" 
-                                               class="form-control" placeholder="예: 격주 수업" maxlength="200">
+                                               class="form-control modern-input" placeholder="예: 격주 수업" maxlength="200">
                                     </div>
                                 </div>
                             </div>
@@ -434,6 +434,88 @@
 .form-control-lg {
     padding: 14px 18px;
     font-size: 1.05rem;
+}
+
+/* Modern Input 스타일 - 통일된 디자인 */
+.modern-input {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-input:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Select 스타일 */
+.modern-select {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    padding-right: 40px;
+}
+
+.modern-select:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Textarea 스타일 */
+.modern-textarea {
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modern-textarea:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-textarea:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
 }
 
 /* 색상 선택기 스타일 */
