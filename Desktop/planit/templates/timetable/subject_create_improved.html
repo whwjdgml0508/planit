@@ -98,7 +98,7 @@
                                             <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
                                         </label>
                                         <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
-                                               class="form-control modern-input" placeholder="예: 강의실명" maxlength="100">
+                                               class="form-control modern-input" placeholder="강의실명" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -117,7 +117,7 @@
                                     <i class="fas fa-sticky-note text-warning me-2"></i>메모
                                 </label>
                                 <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
-                                          class="form-control modern-textarea" rows="3" 
+                                          class="form-control modern-textarea" rows="6" 
                                           placeholder="과목에 대한 추가 정보나 메모를 입력하세요"></textarea>
                             </div>
                         </div>
@@ -211,19 +211,6 @@
                                 </div>
                             </div>
                             
-                            <!-- 시간표 추가 정보 -->
-                            <div class="row mt-4">
-                                <div class="col-md-12">
-                                    <div class="mb-3">
-                                        <label for="{{ form.timeslot_note.id_for_label }}" class="form-label fw-bold">
-                                            <i class="fas fa-comment-dots text-info me-2"></i>시간표 메모
-                                        </label>
-                                        <input type="text" name="{{ form.timeslot_note.name }}" 
-                                               id="{{ form.timeslot_note.id_for_label }}" 
-                                               class="form-control modern-input" placeholder="예: 격주 수업" maxlength="200">
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- 제출 버튼 -->
@@ -755,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 selected.push({
                     day: day,
                     period: period,
-                    text: `${dayNames[day]}요일 ${periodNames[period]} (${timeRanges[period]})`
+                    text: `${dayNames[day]} ${periodNames[period]} (${timeRanges[period]})`
                 });
             }
         });
