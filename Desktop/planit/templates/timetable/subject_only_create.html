@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
 {% block title %}과목 추가 - PlanIt{% endblock %}
 
@@ -8,23 +7,129 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-lg border-0 mt-4">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="fas fa-book fa-2x"></i>
+                <div class="card-header gradient-header">
+                    <h3 class="mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-book icon-label"></i>과목 추가
+                    </h3>
+                    <p class="mb-0 mt-2 text-white-50">
+                        새로운 과목을 등록하세요
+                    </p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- 과목명 -->
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-book text-primary me-2"></i>과목명
+                            </label>
+                            <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                                   class="form-control modern-input" placeholder="예: 운영체제" required>
                         </div>
-                        <h2 class="fw-bold">과목 추가</h2>
-                        <p class="text-muted">새로운 과목을 등록하세요</p>
-                    </div>
-                    
-                    {% crispy form %}
+                        
+                        <!-- 교수명과 학점 -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.professor.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-chalkboard-teacher text-success me-2"></i>교수명
+                                    </label>
+                                    <input type="text" name="{{ form.professor.name }}" id="{{ form.professor.id_for_label }}" 
+                                           class="form-control modern-input" placeholder="예: 홍길동" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.credits.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-star text-warning me-2"></i>학점
+                                    </label>
+                                    <select name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" class="form-select modern-select">
+                                        <option value="1">1학점</option>
+                                        <option value="2">2학점</option>
+                                        <option value="3" selected>3학점</option>
+                                        <option value="4">4학점</option>
+                                        <option value="5">5학점</option>
+                                        <option value="6">6학점</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 과목 구분과 색상 -->
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    <label for="{{ form.subject_type.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-tag text-info me-2"></i>과목 구분
+                                    </label>
+                                    <select name="{{ form.subject_type.name }}" id="{{ form.subject_type.id_for_label }}" class="form-select modern-select">
+                                        <option value="MAJOR" selected>전공</option>
+                                        <option value="GENERAL">교양</option>
+                                        <option value="MILITARY">군사학</option>
+                                        <option value="PHYSICAL">체육</option>
+                                        <option value="OTHER">기타</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.color.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-palette text-danger me-2"></i>색상
+                                    </label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" name="{{ form.color.name }}" id="{{ form.color.id_for_label }}" 
+                                               class="color-picker-input" value="#007bff" 
+                                               title="과목 색상을 선택하세요">
+                                        <div class="color-picker-preview" id="color-preview"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 평가 방식 -->
+                        <div class="mb-3">
+                            <label for="{{ form.evaluation_method.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-clipboard-check text-primary me-2"></i>평가 방식
+                            </label>
+                            <textarea name="{{ form.evaluation_method.name }}" id="{{ form.evaluation_method.id_for_label }}" 
+                                      class="form-control modern-textarea" rows="2" 
+                                      placeholder="예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%"></textarea>
+                        </div>
+                        
+                        <!-- 강의실 -->
+                        <div class="mb-3">
+                            <label for="{{ form.classroom.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
+                            </label>
+                            <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
+                                   class="form-control modern-input" placeholder="강의실명" maxlength="50">
+                        </div>
+                        
+                        <!-- 메모 -->
+                        <div class="mb-3">
+                            <label for="{{ form.note.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-sticky-note text-warning me-2"></i>메모
+                            </label>
+                            <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
+                                      class="form-control modern-textarea" rows="3" 
+                                      placeholder="과목에 대한 메모를 입력하세요"></textarea>
+                        </div>
+                        
+                        <!-- 제출 버튼 -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>저장
+                            </button>
+                        </div>
+                    </form>
                     
                     <div class="text-center mt-4">
                         <a href="{% url 'timetable:subject_list' %}" class="btn btn-outline-secondary me-2">
                             <i class="fas fa-arrow-left"></i> 목록으로
                         </a>
-                        <a href="{% url 'timetable:subject_create_with_timetable' %}" class="btn btn-outline-info">
+                        <a href="{% url 'timetable:subject_create_improved' %}" class="btn btn-outline-info">
                             <i class="fas fa-calendar-plus"></i> 시간표와 함께 추가
                         </a>
                     </div>
@@ -46,4 +151,244 @@
         </div>
     </div>
 </div>
+
+<style>
+/* 그라디언트 헤더 */
+.gradient-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.icon-label {
+    font-size: 1.3rem;
+}
+
+/* Modern Input 스타일 */
+.modern-input {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-input:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Select 스타일 */
+.modern-select {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.modern-select:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Textarea 스타일 */
+.modern-textarea {
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    resize: vertical;
+}
+
+.modern-textarea:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-textarea:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* 색상 선택기 스타일 */
+.color-picker-wrapper {
+    position: relative;
+    width: 100%;
+    height: 50px;
+}
+
+.color-picker-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.color-picker-preview {
+    width: 100%;
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.color-picker-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 100%);
+    pointer-events: none;
+}
+
+.color-picker-preview::after {
+    content: '\f576';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.color-picker-wrapper:hover .color-picker-preview {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+}
+
+.color-picker-wrapper:hover .color-picker-preview::after {
+    opacity: 1;
+}
+
+/* 레이블 스타일 */
+.form-label {
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.form-label i {
+    font-size: 1rem;
+}
+
+/* 카드 스타일 */
+.card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 버튼 스타일 */
+.btn {
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary:hover, .btn-outline-secondary:hover, .btn-outline-info:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 색상 선택기 프리뷰 업데이트
+    const colorInput = document.querySelector('.color-picker-input');
+    const colorPreview = document.getElementById('color-preview');
+    
+    if (colorInput && colorPreview) {
+        // 초기 색상 설정
+        colorPreview.style.background = `linear-gradient(135deg, ${colorInput.value} 0%, ${adjustColor(colorInput.value, -20)} 100%)`;
+        
+        // 색상 변경 이벤트
+        colorInput.addEventListener('input', function() {
+            const color = this.value;
+            const darkerColor = adjustColor(color, -20);
+            colorPreview.style.background = `linear-gradient(135deg, ${color} 0%, ${darkerColor} 100%)`;
+        });
+    }
+    
+    // 색상 밝기 조정 함수
+    function adjustColor(color, percent) {
+        const num = parseInt(color.replace("#",""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
+    }
+});
+</script>
 {% endblock %}
