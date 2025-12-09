@@ -108,10 +108,15 @@ class Task(models.Model):
         return f"{self.title} ({self.get_status_display()})"
     
     def save(self, *args, **kwargs):
+        # 진행률이 100%가 되면 자동으로 완료 상태로 변경
+        if self.progress >= 100 and self.status != 'COMPLETED':
+            self.status = 'COMPLETED'
+            self.completed_at = timezone.now()
         # 완료 상태로 변경될 때 완료일시 설정
-        if self.status == 'COMPLETED' and not self.completed_at:
+        elif self.status == 'COMPLETED' and not self.completed_at:
             self.completed_at = timezone.now()
             self.progress = 100
+        # 완료 상태가 아니면 완료일시 초기화
         elif self.status != 'COMPLETED':
             self.completed_at = None
             

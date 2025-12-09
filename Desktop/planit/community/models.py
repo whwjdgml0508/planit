@@ -14,7 +14,7 @@ class Category(models.Model):
         ('EXAM', '시험 정보'),
         ('LECTURE', '강의 특성'),
         ('FITNESS', '체력평가'),
-        ('ENGLISH', '영어 상식'),
+        ('ENGLISH', '영어상식'),
         ('PROJECT', '프로젝트'),
         ('QNA', '질문답변'),
         ('FREE', '자유게시판'),

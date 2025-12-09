@@ -50,10 +50,10 @@ CATEGORIES = [
         'order': 4,
     },
     {
-        'name': '🌍 영어 상식',
+        'name': '🌍 영어상식',
         'slug': 'english',
         'category_type': 'ENGLISH',
-        'description': '영어 상식을 공유하는 게시판입니다.',
+        'description': '영어 학습 팁, 토익/토플 정보, 영어 관련 자료를 공유합니다',
         'icon': 'fas fa-globe',
         'color': '#17a2b8',
         'order': 5,

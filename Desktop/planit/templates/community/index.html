@@ -114,8 +114,7 @@
                             </div>
                             <h5 class="card-title fw-bold">{{ category.name }}</h5>
                             <p class="card-text text-muted small">{{ category.description|truncatewords:10 }}</p>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="badge bg-primary">{{ category.get_category_type_display }}</span>
+                            <div class="d-flex justify-content-center align-items-center mt-3">
                                 <small class="text-muted">
                                     <i class="fas fa-file-alt me-1"></i>{{ category.post_count }}개 게시글
                                 </small>
