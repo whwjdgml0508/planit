@@ -1,19 +1,18 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}{{ page_title }} - PlanIt{% endblock %}
+{% block title %}과목 추가 - PlanIt{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow-lg border-0">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-4">
                 <div class="card-header gradient-header">
                     <h3 class="mb-0 d-flex align-items-center gap-2">
-                        <i class="fas fa-book-medical icon-label"></i>새 과목 추가
+                        <i class="fas fa-book icon-label"></i>과목 추가
                     </h3>
                     <p class="mb-0 mt-2 text-white-50">
-                        과목 정보를 입력하고 시간표에서 원하는 시간대를 선택하세요
+                        새로운 과목을 등록하세요
                     </p>
                 </div>
                 
@@ -121,112 +120,36 @@
                                     <i class="fas fa-sticky-note text-warning me-2"></i>메모
                                 </label>
                                 <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
-                                          class="form-control modern-textarea" rows="6" 
-                                          placeholder="과목에 대한 추가 정보나 메모를 입력하세요"></textarea>
+                                          class="form-control modern-textarea" rows="3" 
+                                          placeholder="과목에 대한 메모를 입력하세요"></textarea>
                             </div>
-                        </div>
-                        
-                        <!-- 시간표 선택 섹션 -->
-                        <div class="mb-5">
-                            <div class="section-divider mb-4">
-                                <h5 class="section-title text-success">
-                                    <i class="fas fa-calendar-alt me-2"></i>시간표 선택
-                                </h5>
-                            </div>
-                            <p class="text-muted mb-4">
-                                <i class="fas fa-info-circle me-1"></i>
-                                원하는 시간대를 클릭하여 선택하세요. 여러 시간대를 동시에 선택할 수 있습니다.
-                            </p>
-                            
-                            <!-- 시간표 그리드 -->
-                            <div class="timetable-grid-container">
-                                <div class="table-responsive">
-                                    <table class="table table-sm timetable-selection-table">
-                                        <thead>
-                                            <tr class="table-primary">
-                                                <th class="text-center time-header">교시</th>
-                                                {% for day_code, day_name in days %}
-                                                <th class="text-center day-header">{{ day_name }}</th>
-                                                {% endfor %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for period_num, period_name in periods %}
-                                            <tr>
-                                                <td class="text-center period-info">
-                                                    <div class="period-number">{{ period_num }}교시</div>
-                                                    <div class="period-time">
-                                                        {% if period_num == 1 %}08:10-09:00
-                                                        {% elif period_num == 2 %}09:10-10:00
-                                                        {% elif period_num == 3 %}10:10-11:00
-                                                        {% elif period_num == 4 %}11:10-12:00
-                                                        {% elif period_num == 5 %}13:00-13:50
-                                                        {% elif period_num == 6 %}14:00-14:50
-                                                        {% elif period_num == 7 %}15:10-16:00
-                                                        {% elif period_num == 8 %}16:10-17:00
-                                                        {% endif %}
-                                                    </div>
-                                                </td>
-                                                {% for day_code, day_name in days %}
-                                                <td class="time-slot-cell" data-day="{{ day_code }}" data-period="{{ period_num }}">
-                                                    {% with field_name="slot_"|add:day_code|add:"_"|add:period_num %}
-                                                    <input type="checkbox" 
-                                                           name="{{ field_name }}" 
-                                                           id="id_{{ field_name }}"
-                                                           class="time-slot-checkbox"
-                                                           data-day="{{ day_code }}" 
-                                                           data-period="{{ period_num }}"
-                                                           value="on">
-                                                    <label for="id_{{ field_name }}" class="time-slot-button">
-                                                        <div class="slot-content">
-                                                            <i class="fas fa-plus slot-icon"></i>
-                                                            <span class="slot-text">선택</span>
-                                                        </div>
-                                                    </label>
-                                                    {% endwith %}
-                                                </td>
-                                                {% endfor %}
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- 선택된 시간대 표시 -->
-                            <div class="mt-4">
-                                <div class="alert alert-info d-flex align-items-center" id="selected-slots-info" style="display: none;">
-                                    <div class="me-3">
-                                        <i class="fas fa-check-circle fa-2x text-success"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-2 fw-bold">선택된 시간대</h6>
-                                        <div id="selected-slots-list"></div>
-                                    </div>
-                                </div>
-                                
-                                <!-- 도움말 -->
-                                <div class="mt-3 p-3 help-tip rounded-3">
-                                    <small>
-                                        <i class="fas fa-lightbulb me-1"></i>
-                                        <strong>팁:</strong> 
-                                        시간표 셀을 클릭하여 선택하거나 해제할 수 있습니다. 여러 시간대를 동시에 선택 가능합니다.
-                                    </small>
-                                </div>
-                            </div>
-                            
                         </div>
                         
                         <!-- 제출 버튼 -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'timetable:index' %}" class="btn btn-secondary btn-lg me-md-2">
-                                <i class="fas fa-times me-2"></i>취소
-                            </a>
+                        <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i>과목 및 시간표 저장
+                                <i class="fas fa-save me-2"></i>저장
                             </button>
                         </div>
                     </form>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'timetable:subject_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> 목록으로
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 안내 정보 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-info-circle me-2"></i>안내
+                    </h6>
+                    <p class="card-text small mb-0">
+                        과목만 먼저 등록하고, 나중에 <strong>시간표 관리</strong>에서 원하는 시간에 배치할 수 있습니다.
+                    </p>
                 </div>
             </div>
         </div>
@@ -234,190 +157,20 @@
 </div>
 
 <style>
-/* 전체 테이블 스타일 */
-.timetable-selection-table {
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.timetable-grid-container {
-    border-radius: 12px;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
 /* 그라디언트 헤더 */
 .gradient-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 2rem;
     border: none;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
 }
 
 .icon-label {
     font-size: 1.3rem;
 }
 
-/* 헤더 스타일 */
-.time-header, .day-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
-    padding: 15px 8px;
-    border: none;
-    font-size: 0.95rem;
-}
-
-.time-header {
-    width: 120px;
-}
-
-/* 교시 정보 스타일 */
-.period-info {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    padding: 15px 8px;
-    border: none;
-    width: 120px;
-}
-
-.period-number {
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-}
-
-.period-time {
-    font-size: 0.75rem;
-    opacity: 0.9;
-}
-
-/* 시간표 셀 스타일 */
-.time-slot-cell {
-    padding: 8px;
-    border: 1px solid #e9ecef;
-    background-color: #fafafa;
-    transition: all 0.3s ease;
-    position: relative;
-    width: 140px;
-}
-
-.time-slot-cell:hover {
-    background-color: #f0f8ff;
-    transform: translateY(-1px);
-}
-
-/* 체크박스 숨기기 */
-.time-slot-checkbox {
-    display: none;
-}
-
-/* 시간표 버튼 스타일 */
-.time-slot-button {
-    display: block;
-    width: 100%;
-    height: 70px;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.time-slot-button:hover {
-    border-color: #007bff;
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-}
-
-.slot-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 8px;
-}
-
-.slot-icon {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
-    color: #6c757d;
-    transition: all 0.3s ease;
-}
-
-.slot-text {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #6c757d;
-    transition: all 0.3s ease;
-}
-
-/* 선택된 상태 */
-.time-slot-checkbox:checked + .time-slot-button {
-    border-color: #28a745;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
-}
-
-.time-slot-checkbox:checked + .time-slot-button .slot-icon {
-    color: white;
-    transform: rotate(45deg) scale(1.1);
-}
-
-.time-slot-checkbox:checked + .time-slot-button .slot-text {
-    color: white;
-    font-weight: 600;
-}
-
-.time-slot-checkbox:checked + .time-slot-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 100%);
-    pointer-events: none;
-}
-
-/* 선택된 시간대 표시 */
-.alert-info {
-    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-    border: 1px solid #b6d7ff;
-    border-radius: 12px;
-    padding: 15px;
-}
-
-/* 폼 컨트롤 스타일 */
-.form-control, .form-select {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 12px 16px;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-    transform: translateY(-1px);
-}
-
-.form-control-lg {
-    padding: 14px 18px;
-    font-size: 1.05rem;
-}
-
-/* Modern Input 스타일 - 통일된 디자인 */
+/* Modern Input 스타일 */
 .modern-input {
     height: 50px;
     border-radius: 12px;
@@ -645,33 +398,8 @@
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover, .btn-outline-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-    .time-slot-button {
-        height: 50px;
-    }
-    
-    .slot-icon {
-        font-size: 1rem;
-    }
-    
-    .slot-text {
-        font-size: 0.7rem;
-    }
-    
-    .period-info {
-        padding: 10px 4px;
-    }
-    
-    .time-header, .day-header {
-        padding: 10px 4px;
-        font-size: 0.85rem;
-    }
 }
 </style>
 
@@ -702,133 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const B = (num & 0x0000FF) + amt;
         return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
     }
-    
-    const checkboxes = document.querySelectorAll('.time-slot-checkbox');
-    const selectedSlotsInfo = document.getElementById('selected-slots-info');
-    const selectedSlotsList = document.getElementById('selected-slots-list');
-    
-    const dayNames = {
-        'MON': '월',
-        'TUE': '화',
-        'WED': '수',
-        'THU': '목',
-        'FRI': '금'
-    };
-    
-    const periodNames = {
-        1: '1교시',
-        2: '2교시',
-        3: '3교시',
-        4: '4교시',
-        5: '5교시',
-        6: '6교시',
-        7: '7교시',
-        8: '8교시'
-    };
-    
-    const timeRanges = {
-        1: '08:10-09:00',
-        2: '09:10-10:00',
-        3: '10:10-11:00',
-        4: '11:10-12:00',
-        5: '13:00-13:50',
-        6: '14:00-14:50',
-        7: '15:10-16:00',
-        8: '16:10-17:00'
-    };
-    
-    function updateSelectedSlots() {
-        const selected = [];
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                const day = checkbox.dataset.day;
-                const period = parseInt(checkbox.dataset.period);
-                selected.push({
-                    day: day,
-                    period: period,
-                    text: `${dayNames[day]} ${periodNames[period]} (${timeRanges[period]})`
-                });
-            }
-        });
-        
-        if (selected.length > 0) {
-            selectedSlotsInfo.style.display = 'block';
-            selectedSlotsList.innerHTML = selected.map(slot => 
-                `<span class="badge bg-success me-2 mb-1">${slot.text}</span>`
-            ).join('');
-        } else {
-            selectedSlotsInfo.style.display = 'none';
-        }
-        
-        // 선택된 시간대 개수 표시
-        const countText = selected.length > 0 ? ` (${selected.length}개 선택됨)` : '';
-        const titleElement = document.querySelector('h5:contains("시간표 선택")');
-        if (titleElement) {
-            const baseText = '시간표 선택';
-            titleElement.innerHTML = `<i class="fas fa-calendar-alt me-2"></i>${baseText}${countText}`;
-        }
-    }
-    
-    // 체크박스 이벤트 리스너 추가
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function(e) {
-            updateSelectedSlots();
-            
-            // 선택/해제 시 애니메이션 효과
-            const button = this.nextElementSibling;
-            if (this.checked) {
-                button.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    button.style.transform = '';
-                }, 150);
-            }
-        });
-    });
-    
-    // 라벨 클릭 시에도 체크박스 상태 변경 (중복 방지)
-    document.querySelectorAll('.time-slot-button').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const checkbox = this.previousElementSibling;
-            checkbox.checked = !checkbox.checked;
-            checkbox.dispatchEvent(new Event('change'));
-        });
-    });
-    
-    // 초기 상태 업데이트
-    updateSelectedSlots();
-    
-    // 폼 제출 시 검증
-    document.getElementById('improved-subject-form').addEventListener('submit', function(e) {
-        // 과목명 검증
-        const nameField = document.querySelector('input[name="name"]');
-        if (!nameField || nameField.value.trim() === '') {
-            e.preventDefault();
-            alert('과목명을 입력해주세요.');
-            if (nameField) nameField.focus();
-            return false;
-        }
-        
-        // 시간표 선택 검증
-        const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-        
-        if (selectedCount === 0) {
-            e.preventDefault();
-            alert('시간표를 최소 1개 이상 선택해주세요.\n\n아래 시간표 그리드에서 원하는 시간대를 클릭하여 선택하세요.');
-            // 시간표 섹션으로 스크롤
-            document.querySelector('.timetable-grid-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return false;
-        }
-        
-        // 제출 확인
-        const subjectName = nameField.value.trim();
-        const confirmMessage = `"${subjectName}" 과목을 ${selectedCount}개의 시간대에 추가하시겠습니까?`;
-        if (!confirm(confirmMessage)) {
-            e.preventDefault();
-            return false;
-        }
-    });
-    
 });
 </script>
 {% endblock %}

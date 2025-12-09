@@ -429,62 +429,13 @@ def get_timetable_data(request):
         })
 
 class ImprovedSubjectCreateView(LoginRequiredMixin, CreateView):
-    """개선된 과목 생성 뷰 - 시간표 그리드 선택 방식"""
+    """과목만 생성하는 뷰 (시간표 없이) - subject_create와 동일"""
     model = Subject
-    form_class = ImprovedSubjectWithTimeSlotsForm
+    form_class = SubjectForm
     template_name = 'timetable/subject_create_improved.html'
-    success_url = reverse_lazy('timetable:index')
+    success_url = reverse_lazy('timetable:subject_list')
     
     def form_valid(self, form):
-        try:
-            with transaction.atomic():
-                # 과목 저장
-                form.instance.user = self.request.user
-                subject = form.save()
-                
-                # 선택된 시간대들 저장
-                selected_slots = form.get_selected_slots()
-                location = form.cleaned_data.get('timeslot_location', '')
-                note = form.cleaned_data.get('timeslot_note', '')
-                
-                if not selected_slots:
-                    messages.warning(self.request, '시간표를 선택하지 않았습니다. 나중에 추가할 수 있습니다.')
-                else:
-                    for slot_data in selected_slots:
-                        TimeSlot.objects.create(
-                            subject=subject,
-                            day=slot_data['day'],
-                            period=slot_data['period'],
-                            location=location,
-                            note=note
-                        )
-                    
-                    messages.success(
-                        self.request, 
-                        f'"{subject.name}" 과목과 {len(selected_slots)}개의 시간표가 성공적으로 추가되었습니다.'
-                    )
-                
-                return redirect(self.success_url)
-                
-        except Exception as e:
-            messages.error(self.request, f'과목 생성 중 오류가 발생했습니다: {str(e)}')
-            return super().form_invalid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, '입력 내용을 확인해주세요.')
-        return super().form_invalid(form)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # 시간표 그리드 데이터 생성
-        days = TimeSlot.DAY_CHOICES
-        periods = TimeSlot.PERIOD_CHOICES
-        
-        context.update({
-            'days': days,
-            'periods': periods,
-            'page_title': '새 과목 추가'
-        })
-        
-        return context
+        form.instance.user = self.request.user
+        messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
+        return super().form_valid(form)
