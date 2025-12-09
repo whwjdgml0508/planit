@@ -98,7 +98,7 @@
                                             <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
                                         </label>
                                         <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
-                                               class="form-control modern-input" placeholder="예: 공학관 301호" maxlength="100">
+                                               class="form-control modern-input" placeholder="예: 강의실명" maxlength="100">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -142,7 +142,7 @@
                                             <tr class="table-primary">
                                                 <th class="text-center time-header">교시</th>
                                                 {% for day_code, day_name in days %}
-                                                <th class="text-center day-header">{{ day_name }}요일</th>
+                                                <th class="text-center day-header">{{ day_name }}</th>
                                                 {% endfor %}
                                             </tr>
                                         </thead>
@@ -213,17 +213,7 @@
                             
                             <!-- 시간표 추가 정보 -->
                             <div class="row mt-4">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="{{ form.timeslot_location.id_for_label }}" class="form-label fw-bold">
-                                            <i class="fas fa-location-arrow text-danger me-2"></i>장소
-                                        </label>
-                                        <input type="text" name="{{ form.timeslot_location.name }}" 
-                                               id="{{ form.timeslot_location.id_for_label }}" 
-                                               class="form-control modern-input" placeholder="예: 공학관 301호" maxlength="100">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label for="{{ form.timeslot_note.id_for_label }}" class="form-label fw-bold">
                                             <i class="fas fa-comment-dots text-info me-2"></i>시간표 메모
@@ -819,16 +809,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 폼 제출 시 검증
     document.getElementById('improved-subject-form').addEventListener('submit', function(e) {
+        // 과목명 검증
+        const nameField = document.querySelector('input[name="name"]');
+        if (!nameField || nameField.value.trim() === '') {
+            e.preventDefault();
+            alert('과목명을 입력해주세요.');
+            if (nameField) nameField.focus();
+            return false;
+        }
+        
+        // 시간표 선택 검증
         const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
         
         if (selectedCount === 0) {
             e.preventDefault();
-            alert('시간표를 최소 1개 이상 선택해주세요.');
+            alert('시간표를 최소 1개 이상 선택해주세요.\n\n아래 시간표 그리드에서 원하는 시간대를 클릭하여 선택하세요.');
+            // 시간표 섹션으로 스크롤
+            document.querySelector('.timetable-grid-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
         
         // 제출 확인
-        const confirmMessage = `${selectedCount}개의 시간대에 과목을 추가하시겠습니까?`;
+        const subjectName = nameField.value.trim();
+        const confirmMessage = `"${subjectName}" 과목을 ${selectedCount}개의 시간대에 추가하시겠습니까?`;
         if (!confirm(confirmMessage)) {
             e.preventDefault();
             return false;
