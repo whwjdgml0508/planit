@@ -31,7 +31,7 @@
                             <img src="{{ post.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                             {% else %}
                             <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 32px;">
-                                {{ post.author.get_avatar_url }}
+                                {{ post.author.get_avatar_emoji }}
                             </div>
                             {% endif %}
                         </div>
@@ -127,7 +127,7 @@
                     </form>
                     {% else %}
                     <div class="alert alert-info">
-                        댓글을 작성하려면 <a href="{% url 'accounts:login' %}?next={{ request.path }}">로그인</a>이 필요합니다.
+                        댓글을 작성하려면 <a href="{% url 'accounts:login' %}?next={{ request.path }}" target="_self">로그인</a>이 필요합니다.
                     </div>
                     {% endif %}
                     
@@ -142,7 +142,7 @@
                                     <img src="{{ comment.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                                     {% else %}
                                     <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 32px;">
-                                        {{ comment.author.get_avatar_url }}
+                                        {{ comment.author.get_avatar_emoji }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -192,7 +192,7 @@
                                                     <img src="{{ reply.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
                                                     {% else %}
                                                     <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 24px;">
-                                                        {{ reply.author.get_avatar_url }}
+                                                        {{ reply.author.get_avatar_emoji }}
                                                     </div>
                                                     {% endif %}
                                                 </div>
@@ -243,7 +243,7 @@
                     <img src="{{ post.author.profile_image.url }}" alt="프로필" class="rounded-circle mb-3" width="80" height="80" style="object-fit: cover;">
                     {% else %}
                     <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px; font-size: 64px;">
-                        {{ post.author.get_avatar_url }}
+                        {{ post.author.get_avatar_emoji }}
                     </div>
                     {% endif %}
                     

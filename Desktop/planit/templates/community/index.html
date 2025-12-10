@@ -149,6 +149,15 @@
                 <div class="card-body">
                     {% for notice in notices %}
                     <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="me-3">
+                            {% if notice.author.profile_image %}
+                                <img src="{{ notice.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 32px;">
+                                    {{ notice.author.get_avatar_emoji }}
+                                </div>
+                            {% endif %}
+                        </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-1">
                                 {% if notice.is_pinned %}
@@ -189,7 +198,16 @@
                     {% if recent_posts %}
                         {% for post in recent_posts %}
                         <div class="post-card p-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3">
+                                    {% if post.author.profile_image %}
+                                        <img src="{{ post.author.profile_image.url }}" alt="프로필" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 32px;">
+                                            {{ post.author.get_avatar_emoji }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-2">
                                         <a href="{{ post.get_absolute_url }}" class="text-decoration-none">

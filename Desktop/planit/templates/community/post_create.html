@@ -109,23 +109,38 @@ textarea.form-control {
 }
 
 .file-upload-area {
-    border: 2px dashed #cbd5e0;
-    border-radius: 12px;
-    padding: 2rem;
+    border: 3px dashed #cbd5e0;
+    border-radius: 15px;
+    padding: 3rem 2rem;
     text-align: center;
-    background: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
     transition: all 0.3s ease;
-    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
-.file-upload-area:hover {
-    border-color: #667eea;
-    background: #edf2f7;
+.file-upload-area::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
 }
 
 .file-upload-area.dragover {
     border-color: #667eea;
-    background: #e6fffa;
+    background: linear-gradient(135deg, #e6fffa 0%, #d4f4ff 100%);
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 </style>
 {% endblock %}
@@ -252,26 +267,28 @@ textarea.form-control {
                                     첨부파일 (선택사항)
                                 </label>
                                 
-                                <div class="file-upload-area" id="fileUploadArea">
-                                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                    <p class="mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-                                    <small class="text-muted">최대 5개 파일, 각 파일 최대 10MB</small>
+                                <!-- 숨겨진 파일 input -->
+                                <input type="file" id="fileInput" name="attachments" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" style="display: none;">
+                                
+                                <div class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-2 fw-bold fs-5">파일을 드래그하거나 클릭하여 업로드</p>
+                                    <small class="text-muted d-block mb-2">최대 5개 파일, 각 파일 최대 10MB</small>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            이미지, PDF, 문서, 압축파일 지원
+                                        </small>
+                                    </div>
                                 </div>
                                 
-                                <!-- 실제 파일 input (숨김) -->
-                                <input type="file" name="attachments" id="fileInput" class="d-none" 
-                                       multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
-                                
                                 <!-- 파일 목록 표시 -->
-                                <div id="fileList" class="mt-2"></div>
+                                <div id="fileList" class="mt-3"></div>
                                 
                                 <!-- 파일 관리 버튼 -->
-                                <div class="mt-2" id="fileButtons" style="display: none;">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="addMoreBtn">
-                                        <i class="fas fa-plus me-1"></i>파일 추가
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="clearAllBtn">
-                                        <i class="fas fa-trash me-1"></i>모두 제거
+                                <div class="mt-2 text-center" id="fileButtons" style="display: none;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearAllBtn">
+                                        <i class="fas fa-trash me-1"></i>모든 파일 제거
                                     </button>
                                 </div>
                             </div>
@@ -328,7 +345,7 @@ textarea.form-control {
                                 <ul class="small mb-0">
                                     <li>명확하고 구체적인 제목 작성</li>
                                     <li>내용을 단락별로 구분하여 작성</li>
-                                    <li>관련 자료가 있다면 첨부파일 활용</li>
+                                    <li>파일은 드래그앤드롭으로 업로드 (최대 5개)</li>
                                     <li>적절한 태그로 검색성 향상</li>
                                 </ul>
                             </div>
@@ -347,70 +364,63 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentField = document.getElementById('id_content');
     const categoryField = document.getElementById('id_category');
     const fileUploadArea = document.getElementById('fileUploadArea');
-    const fileInput = document.getElementById('fileInput');
     const fileList = document.getElementById('fileList');
     const fileButtons = document.getElementById('fileButtons');
-    const addMoreBtn = document.getElementById('addMoreBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
+    const fileInput = document.getElementById('fileInput');
     
     let selectedFiles = [];
     
-    // 파일 업로드 영역 클릭
+    // 클릭 이벤트 - 파일 선택 창 열기
     if (fileUploadArea) {
         fileUploadArea.addEventListener('click', function(e) {
             e.preventDefault();
             fileInput.click();
         });
-        
-        // 드래그 앤 드롭
+    }
+    
+    // 파일 선택 이벤트
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const chosenFiles = Array.from(e.target.files);
+            if (chosenFiles.length > 0) {
+                handleFiles(chosenFiles, true); // 새로운 파일로 교체
+            }
+        });
+    }
+    
+    // 드래그앤드롭 이벤트 처리
+    if (fileUploadArea) {
+        // 드래그 오버
         fileUploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             e.stopPropagation();
             this.classList.add('dragover');
+            this.style.borderColor = '#667eea';
+            this.style.backgroundColor = '#e6fffa';
         });
         
+        // 드래그 리브
         fileUploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
             e.stopPropagation();
             this.classList.remove('dragover');
+            this.style.borderColor = '#cbd5e0';
+            this.style.backgroundColor = '#f8fafc';
         });
         
+        // 드롭
         fileUploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
             e.stopPropagation();
             this.classList.remove('dragover');
+            this.style.borderColor = '#cbd5e0';
+            this.style.backgroundColor = '#f8fafc';
             
             const droppedFiles = Array.from(e.dataTransfer.files);
-            handleFiles(droppedFiles);
-        });
-    }
-    
-    let isUpdatingInput = false; // 무한 루프 방지 플래그
-    
-    // 파일 input change 이벤트
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            console.log('File input changed, files:', this.files.length, 'isUpdatingInput:', isUpdatingInput);
-            
-            // updateFileInput에서 발생한 change 이벤트는 무시
-            if (isUpdatingInput) {
-                console.log('Ignoring change event from updateFileInput');
-                return;
+            if (droppedFiles.length > 0) {
+                handleFiles(droppedFiles, true); // 새로운 파일로 교체
             }
-            
-            if (this.files.length > 0) {
-                const newFiles = Array.from(this.files);
-                console.log('New files array:', newFiles.map(f => f.name));
-                handleFiles(newFiles, false); // 기존 파일에 추가
-            }
-        });
-    }
-    
-    // 파일 추가 버튼
-    if (addMoreBtn) {
-        addMoreBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
         });
     }
     
@@ -419,7 +429,6 @@ document.addEventListener('DOMContentLoaded', function() {
         clearAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
             selectedFiles = [];
-            updateFileInput();
             updateFileDisplay();
         });
     }
@@ -448,7 +457,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectedFiles = validFiles;
         console.log('Valid files:', selectedFiles.length);
-        updateFileInput();
         updateFileDisplay();
     }
     
@@ -469,24 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return true;
-    }
-    
-    function updateFileInput() {
-        // DataTransfer를 사용하여 파일 input 업데이트
-        isUpdatingInput = true; // 플래그 설정
-        
-        const dt = new DataTransfer();
-        selectedFiles.forEach(file => {
-            dt.items.add(file);
-        });
-        fileInput.files = dt.files;
-        console.log('File input updated, files:', fileInput.files.length);
-        
-        // 다음 이벤트 루프에서 플래그 해제
-        setTimeout(() => {
-            isUpdatingInput = false;
-            console.log('isUpdatingInput flag reset');
-        }, 0);
     }
     
     function updateFileDisplay() {
@@ -527,7 +517,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function removeFile(index) {
         selectedFiles.splice(index, 1);
-        updateFileInput();
         updateFileDisplay();
     }
     
@@ -539,9 +528,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
-    // 폼 검증
+    // 폼 검증 및 제출
     if (form) {
         form.addEventListener('submit', function(e) {
+            e.preventDefault(); // 기본 제출 방지
+            
             let isValid = true;
             let errorMessage = '';
             
@@ -565,11 +556,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!isValid) {
-                e.preventDefault();
                 alert(errorMessage);
-            } else {
+                return;
+            }
+            
+            // 파일이 있으면 숨겨진 input에 파일 설정
+            if (selectedFiles.length > 0 && fileInput) {
+                const dt = new DataTransfer();
+                selectedFiles.forEach(file => {
+                    dt.items.add(file);
+                });
+                fileInput.files = dt.files;
                 console.log('Form submitting with', fileInput.files.length, 'files');
             }
+            
+            // 폼 제출
+            form.submit();
         });
     }
 });

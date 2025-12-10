@@ -180,18 +180,30 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
         return self.request.user
     
     def form_valid(self, form):
+        user = form.save(commit=False)
+        
         # 프로필 이미지 삭제 처리
         if self.request.POST.get('profile_image-clear') == 'on':
-            user = form.save(commit=False)
             if user.profile_image:
                 user.profile_image.delete(save=False)
                 user.profile_image = None
             user.save()
             messages.success(self.request, '프로필 이미지가 제거되었습니다.')
+            logger.info(f"프로필 이미지 제거 - 사용자: {user.username}")
             return redirect(self.success_url)
         
+        # 새 프로필 이미지 업로드 처리
+        if 'profile_image' in self.request.FILES:
+            # 기존 이미지가 있으면 삭제
+            if user.profile_image:
+                user.profile_image.delete(save=False)
+            user.profile_image = self.request.FILES['profile_image']
+            logger.info(f"프로필 이미지 업로드 - 사용자: {user.username}, 파일: {user.profile_image.name}")
+        
+        user.save()
         messages.success(self.request, '프로필이 성공적으로 업데이트되었습니다.')
-        return super().form_valid(form)
+        logger.info(f"프로필 업데이트 성공 - 사용자: {user.username}")
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
         messages.error(self.request, '프로필 업데이트 중 오류가 발생했습니다.')

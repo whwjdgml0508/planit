@@ -24,6 +24,17 @@ class User(AbstractUser):
         (4, '4학년'),
     ]
     
+    AVATAR_CHOICES = [
+        ('default', '기본 아바타'),
+        ('student_male', '남학생'),
+        ('student_female', '여학생'),
+        ('soldier', '군인'),
+        ('pilot', '조종사'),
+        ('engineer', '엔지니어'),
+        ('scientist', '과학자'),
+        ('astronaut', '우주비행사'),
+    ]
+    
     # 추가 필드
     student_id = models.CharField(
         max_length=10, 
@@ -53,6 +64,12 @@ class User(AbstractUser):
         blank=True,
         null=True,
         verbose_name='프로필 이미지'
+    )
+    avatar_choice = models.CharField(
+        max_length=20,
+        choices=AVATAR_CHOICES,
+        default='default',
+        verbose_name='아바타 선택'
     )
     bio = models.TextField(
         max_length=500,
@@ -86,3 +103,34 @@ class User(AbstractUser):
             'SYSTEM': '시공',
         }
         return dept_short.get(self.department, '기타')
+    
+    def get_avatar_url(self):
+        """아바타 이미지 URL 또는 이모지 반환"""
+        if self.profile_image:
+            return self.profile_image.url
+        # 아바타 선택에 따른 기본 이미지 반환
+        avatar_map = {
+            'default': '👤',
+            'student_male': '👨‍🎓',
+            'student_female': '👩‍🎓',
+            'soldier': '🪖',
+            'pilot': '👨‍✈️',
+            'engineer': '👨‍🔧',
+            'scientist': '👨‍🔬',
+            'astronaut': '👨‍🚀',
+        }
+        return avatar_map.get(self.avatar_choice, '👤')
+    
+    def get_avatar_emoji(self):
+        """아바타 이모지만 반환 (프로필 이미지 무시)"""
+        avatar_map = {
+            'default': '👤',
+            'student_male': '👨‍🎓',
+            'student_female': '👩‍🎓',
+            'soldier': '🪖',
+            'pilot': '👨‍✈️',
+            'engineer': '👨‍🔧',
+            'scientist': '👨‍🔬',
+            'astronaut': '👨‍🚀',
+        }
+        return avatar_map.get(self.avatar_choice, '👤')

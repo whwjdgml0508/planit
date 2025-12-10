@@ -3,124 +3,389 @@
 
 {% block title %}게시글 수정 - PlanIt{% endblock %}
 
+{% block extra_css %}
+<style>
+.post-create-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.create-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.create-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+.create-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    background: white;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+textarea.form-control {
+    min-height: 200px;
+    resize: vertical;
+}
+
+.btn-create {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.guide-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 15px;
+    border: none;
+    margin-top: 1.5rem;
+}
+
+.file-upload-area {
+    border: 3px dashed #cbd5e0;
+    border-radius: 15px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.file-upload-area::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.file-upload-area.dragover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #e6fffa 0%, #d4f4ff 100%);
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* 기존 첨부파일 스타일 */
+.existing-attachments {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.attachment-item {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.attachment-item:hover {
+    border-color: #667eea;
+    transform: translateX(5px);
+}
+
+.attachment-item:last-child {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div class="card shadow-lg border-0 mt-4">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 80px; height: 80px;">
+<div class="post-create-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card create-card">
+                    <div class="create-header">
+                        <div class="create-icon">
                             <i class="fas fa-edit fa-2x"></i>
                         </div>
-                        <h2 class="fw-bold">게시글 수정</h2>
-                        <p class="text-muted">게시글 내용을 수정하세요</p>
+                        <h2 class="fw-bold mb-2">게시글 수정</h2>
+                        <p class="mb-0 opacity-90">게시글 내용을 수정하세요</p>
                     </div>
                     
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <!-- 카테고리 선택 -->
-                        <div class="mb-3">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">카테고리</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}
-                            <div class="text-danger small">{{ form.category.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 제목 -->
-                        <div class="mb-3">
-                            <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
-                            {{ form.title }}
-                            {% if form.title.errors %}
-                            <div class="text-danger small">{{ form.title.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 내용 -->
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">내용</label>
-                            {{ form.content }}
-                            {% if form.content.errors %}
-                            <div class="text-danger small">{{ form.content.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 기존 첨부파일 -->
-                        {% if post.attachments.exists %}
-                        <div class="mb-3">
-                            <label class="form-label">기존 첨부파일</label>
-                            <div class="list-group">
-                                {% for attachment in post.attachments.all %}
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-file me-2"></i>{{ attachment.file.name|slice:"10:" }}
-                                        <small class="text-muted ms-2">({{ attachment.file.size|filesizeformat }})</small>
+                    <div class="card-body p-4">
+                        <form method="post" enctype="multipart/form-data" id="postForm">
+                            {% csrf_token %}
+                            
+                            <!-- 카테고리 및 게시글 유형 -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="id_category" class="form-label">
+                                            <i class="fas fa-folder text-primary"></i>
+                                            카테고리
+                                        </label>
+                                        <select name="category" class="form-select" id="id_category" required>
+                                            <option value="">카테고리를 선택하세요</option>
+                                            {% for category in categories %}
+                                            <option value="{{ category.pk }}" 
+                                                    data-icon="{{ category.icon }}" 
+                                                    data-color="{{ category.color }}"
+                                                    {% if post.category.pk == category.pk %}selected{% endif %}>
+                                                {{ category.icon }} {{ category.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.category.errors %}
+                                        <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                                        {% endif %}
                                     </div>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" 
-                                            onclick="removeAttachment('{{ attachment.pk }}')">
-                                        <i class="fas fa-times"></i>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.post_type.id_for_label }}" class="form-label">
+                                            <i class="fas fa-tag text-success"></i>
+                                            게시글 유형
+                                        </label>
+                                        <select name="post_type" class="form-select" id="id_post_type">
+                                            {% for value, label in form.post_type.field.choices %}
+                                            <option value="{{ value }}" {% if post.post_type == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.post_type.errors %}
+                                        <div class="text-danger small mt-1">{{ form.post_type.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 제목 -->
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">
+                                    <i class="fas fa-heading text-info"></i>
+                                    제목
+                                </label>
+                                <input type="text" name="title" class="form-control" id="id_title" placeholder="게시글 제목을 입력하세요" value="{{ post.title }}" required>
+                                {% if form.title.errors %}
+                                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 관련 과목 -->
+                            {% if form.subject.field.queryset %}
+                            <div class="form-group">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                                    <i class="fas fa-book text-warning"></i>
+                                    관련 과목 (선택사항)
+                                </label>
+                                <select name="subject" class="form-select" id="id_subject">
+                                    <option value="">과목 선택 (선택사항)</option>
+                                    {% for subject in form.subject.field.queryset %}
+                                    <option value="{{ subject.pk }}" {% if post.subject.pk == subject.pk %}selected{% endif %}>{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.subject.errors %}
+                                <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 태그 -->
+                            <div class="form-group">
+                                <label for="{{ form.tags_input.id_for_label }}" class="form-label">
+                                    <i class="fas fa-hashtag text-purple"></i>
+                                    태그 (선택사항)
+                                </label>
+                                <input type="text" name="tags_input" class="form-control" id="id_tags_input" placeholder="태그를 쉼표로 구분하여 입력하세요 (예: 중간고사, 수학, 팁)" value="{{ post.tags|join:', ' }}">
+                                <small class="text-muted">최대 10개까지 입력 가능합니다.</small>
+                                {% if form.tags_input.errors %}
+                                <div class="text-danger small mt-1">{{ form.tags_input.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 내용 -->
+                            <div class="form-group">
+                                <label for="{{ form.content.id_for_label }}" class="form-label">
+                                    <i class="fas fa-align-left text-secondary"></i>
+                                    내용
+                                </label>
+                                <textarea name="content" class="form-control" id="id_content" placeholder="내용을 입력하세요..." rows="10" required>{{ post.content }}</textarea>
+                                {% if form.content.errors %}
+                                <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 기존 첨부파일 -->
+                            {% if post.attachments.exists %}
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-paperclip text-dark"></i>
+                                    기존 첨부파일
+                                </label>
+                                <div class="existing-attachments">
+                                    {% for attachment in post.attachments.all %}
+                                    <div class="attachment-item" id="attachment-{{ attachment.pk }}">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-file me-2 text-primary"></i>
+                                            <span class="me-auto">{{ attachment.original_name }} ({{ attachment.file_size|filesizeformat }})</span>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAttachment('{{ attachment.pk }}')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 첨부파일 -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-paperclip text-dark"></i>
+                                    새 첨부파일 추가 (선택사항)
+                                </label>
+                                
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-2 fw-bold fs-5">파일을 드래그하여 업로드</p>
+                                    <small class="text-muted d-block mb-2">최대 5개 파일, 각 파일 최대 10MB</small>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            이미지, PDF, 문서, 압축파일 지원
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- 파일 목록 표시 -->
+                                <div id="fileList" class="mt-3"></div>
+                                
+                                <!-- 파일 관리 버튼 -->
+                                <div class="mt-2 text-center" id="fileButtons" style="display: none;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearAllBtn">
+                                        <i class="fas fa-trash me-1"></i>모든 파일 제거
                                     </button>
                                 </div>
-                                {% endfor %}
                             </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- 새 첨부파일 -->
-                        <div class="mb-3">
-                            <label class="form-label">새 첨부파일 추가</label>
-                            <input type="file" class="form-control" name="new_attachments" multiple>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle"></i> 
-                                최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.
-                            </small>
-                        </div>
-                        
-                        <!-- 공지사항 설정 (관리자만) -->
-                        {% if user.is_staff %}
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.is_pinned }}
-                                <label class="form-check-label" for="{{ form.is_pinned.id_for_label }}">
-                                    공지사항으로 설정
-                                </label>
+                            
+                            <!-- 공지사항 설정 (관리자만) -->
+                            {% if user.is_staff %}
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_pinned" class="form-check-input" id="id_is_pinned" {% if post.is_pinned %}checked{% endif %}>
+                                    <label class="form-check-label" for="id_is_pinned">
+                                        <i class="fas fa-thumbtack text-danger"></i>
+                                        공지사항으로 설정
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        {% endif %}
+                            {% endif %}
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-create btn-lg">
+                                    <i class="fas fa-save me-2"></i>수정 완료
+                                </button>
+                            </div>
+                        </form>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-warning btn-lg">
-                                <i class="fas fa-save me-2"></i>수정 완료
-                            </button>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'community:post_detail' post.pk %}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-arrow-left"></i> 게시글로 돌아가기
+                            </a>
+                            <a href="{% url 'community:post_list' %}" class="btn btn-outline-info">
+                                <i class="fas fa-list"></i> 목록으로
+                            </a>
                         </div>
-                    </form>
-                    
-                    <div class="text-center mt-4">
-                        <a href="{% url 'community:post_detail' post.pk %}" class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-arrow-left"></i> 게시글로 돌아가기
-                        </a>
-                        <a href="{% url 'community:post_list' %}" class="btn btn-outline-info">
-                            <i class="fas fa-list"></i> 목록으로
-                        </a>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 수정 안내 -->
-            <div class="card border-warning mt-3">
-                <div class="card-body">
-                    <h6 class="card-title text-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>수정 안내
-                    </h6>
-                    <ul class="small mb-0">
-                        <li>게시글 수정 후에는 "수정됨" 표시가 나타납니다</li>
-                        <li>첨부파일을 삭제한 후에는 복구할 수 없습니다</li>
-                        <li>새로운 첨부파일을 추가할 수 있습니다</li>
-                        <li>카테고리 변경 시 해당 카테고리 규칙을 확인해주세요</li>
-                    </ul>
+                
+                <!-- 수정 가이드 -->
+                <div class="card guide-card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>수정 안내
+                        </h6>
+                        <ul class="small mb-0">
+                            <li>게시글 수정 후에는 "수정됨" 표시가 나타납니다</li>
+                            <li>첨부파일을 삭제한 후에는 복구할 수 없습니다</li>
+                            <li>새로운 첨부파일을 추가할 수 있습니다 (최대 5개)</li>
+                            <li>카테고리 변경 시 해당 카테고리 규칙을 확인해주세요</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -140,80 +405,234 @@ function removeAttachment(attachmentId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
+                // 해당 첨부파일 항목 제거
+                const attachmentElement = document.getElementById(`attachment-${attachmentId}`);
+                if (attachmentElement) {
+                    attachmentElement.remove();
+                }
+                
+                // 모든 첨부파일이 제거되었는지 확인
+                const existingAttachments = document.querySelector('.existing-attachments');
+                if (existingAttachments && existingAttachments.children.length === 0) {
+                    existingAttachments.parentElement.remove();
+                }
             } else {
                 alert('파일 삭제 중 오류가 발생했습니다.');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('파일 삭제 중 오류가 발생했습니다.');
         });
     }
 }
 
-// 폼 검증
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('postForm');
     const titleField = document.getElementById('id_title');
     const contentField = document.getElementById('id_content');
+    const categoryField = document.getElementById('id_category');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileList = document.getElementById('fileList');
+    const fileButtons = document.getElementById('fileButtons');
+    const clearAllBtn = document.getElementById('clearAllBtn');
     
+    let selectedFiles = [];
+    
+    // 드래그앤드롭 이벤트만 처리
+    if (fileUploadArea) {
+        // 드래그 오버
+        fileUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('dragover');
+            this.style.borderColor = '#667eea';
+            this.style.backgroundColor = '#e6fffa';
+        });
+        
+        // 드래그 리브
+        fileUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+            this.style.borderColor = '#cbd5e0';
+            this.style.backgroundColor = '#f8fafc';
+        });
+        
+        // 드롭
+        fileUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+            this.style.borderColor = '#cbd5e0';
+            this.style.backgroundColor = '#f8fafc';
+            
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            if (droppedFiles.length > 0) {
+                handleFiles(droppedFiles, true); // 새로운 파일로 교체
+            }
+        });
+    }
+    
+    // 모두 제거 버튼
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectedFiles = [];
+            updateFileDisplay();
+        });
+    }
+    
+    function handleFiles(newFiles, replaceAll = false) {
+        console.log('handleFiles called with', newFiles.length, 'files, replaceAll:', replaceAll);
+        
+        // replaceAll이 true면 기존 파일 무시, false면 합치기
+        const allFiles = replaceAll ? newFiles : [...selectedFiles, ...newFiles];
+        
+        // 파일 개수 제한
+        if (allFiles.length > 5) {
+            alert('최대 5개 파일까지 업로드 가능합니다.');
+            return;
+        }
+        
+        // 파일 검증
+        let validFiles = [];
+        for (let file of allFiles) {
+            if (validateFile(file)) {
+                validFiles.push(file);
+            } else {
+                return; // 검증 실패 시 중단
+            }
+        }
+        
+        selectedFiles = validFiles;
+        console.log('Valid files:', selectedFiles.length);
+        updateFileDisplay();
+    }
+    
+    function validateFile(file) {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        
+        if (file.size > maxSize) {
+            alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
+            return false;
+        }
+        
+        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.zip'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            alert(`파일 "${file.name}"은 지원하지 않는 형식입니다.`);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function updateFileDisplay() {
+        if (!fileList) return;
+        
+        fileList.innerHTML = '';
+        
+        if (selectedFiles.length === 0) {
+            fileButtons.style.display = 'none';
+            return;
+        }
+        
+        fileButtons.style.display = 'block';
+        
+        const listContainer = document.createElement('div');
+        listContainer.className = 'mt-2';
+        
+        selectedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center mb-2';
+            fileItem.innerHTML = `
+                <i class="fas fa-file me-2"></i>
+                <span class="me-auto">${file.name} (${formatFileSize(file.size)})</span>
+                <button type="button" class="btn-close" data-index="${index}"></button>
+            `;
+            
+            // 개별 파일 제거
+            const closeBtn = fileItem.querySelector('.btn-close');
+            closeBtn.addEventListener('click', function() {
+                removeFile(parseInt(this.dataset.index));
+            });
+            
+            listContainer.appendChild(fileItem);
+        });
+        
+        fileList.appendChild(listContainer);
+    }
+    
+    function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        updateFileDisplay();
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // 폼 검증 및 제출
     if (form) {
         form.addEventListener('submit', function(e) {
-            let isValid = true;
+            e.preventDefault(); // 기본 제출 방지
             
-            // 제목 검증
-            if (titleField && titleField.value.trim().length < 5) {
-                alert('제목은 최소 5자 이상 입력해주세요.');
+            let isValid = true;
+            let errorMessage = '';
+            
+            // 카테고리 검증
+            if (categoryField && !categoryField.value) {
+                errorMessage = '카테고리를 선택해주세요.';
+                categoryField.focus();
+                isValid = false;
+            }
+            // 제목 검증 (빈 값만 체크)
+            else if (titleField && titleField.value.trim().length === 0) {
+                errorMessage = '제목을 입력해주세요.';
                 titleField.focus();
                 isValid = false;
             }
-            
-            // 내용 검증
-            if (contentField && contentField.value.trim().length < 10) {
-                alert('내용은 최소 10자 이상 입력해주세요.');
+            // 내용 검증 (빈 값만 체크)
+            else if (contentField && contentField.value.trim().length === 0) {
+                errorMessage = '내용을 입력해주세요.';
                 contentField.focus();
                 isValid = false;
             }
             
             if (!isValid) {
-                e.preventDefault();
+                alert(errorMessage);
+                return;
             }
-        });
-    }
-    
-    // 파일 업로드 검증
-    const fileInput = document.querySelector('input[name="new_attachments"]');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const files = this.files;
-            const maxSize = 10 * 1024 * 1024; // 10MB
             
-            for (let file of files) {
-                if (file.size > maxSize) {
-                    alert(`파일 "${file.name}"이 너무 큽니다. 최대 10MB까지 업로드 가능합니다.`);
-                    this.value = '';
-                    break;
-                }
+            // 파일이 있으면 동적으로 input 생성하여 추가
+            if (selectedFiles.length > 0) {
+                const dt = new DataTransfer();
+                selectedFiles.forEach(file => {
+                    dt.items.add(file);
+                });
+                
+                // 동적으로 파일 input 생성
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'new_attachments';
+                fileInput.multiple = true;
+                fileInput.style.display = 'none';
+                fileInput.files = dt.files;
+                
+                form.appendChild(fileInput);
+                console.log('Form submitting with', fileInput.files.length, 'files');
             }
+            
+            // 폼 제출
+            form.submit();
         });
     }
 });
 </script>
-
-<style>
-.form-control, .form-select {
-    border-radius: 0.375rem;
-    border: 1px solid #ced4da;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-textarea.form-control {
-    min-height: 200px;
-}
-
-.list-group-item {
-    border-left: 4px solid #ffc107;
-}
-</style>
 {% endblock %}
