@@ -509,7 +509,7 @@
                 <span>오늘의 목표</span>
             </div>
             <textarea class="goal-input" id="daily-goal" 
-                      placeholder="오늘의 목표를 적어보세요...">{{ daily_planner.daily_goal }}</textarea>
+                      placeholder="오늘의 목표를 적어보세요..."></textarea>
         </div>
 
         <!-- 메인 컨텐츠 -->
@@ -644,7 +644,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">달성시간:</span>
-                        <span class="stat-value">{{ total_study_hours|floatformat:1 }}시간</span>
+                        <span class="stat-value" id="achieved-hours">{{ total_study_hours|floatformat:1 }}시간</span>
                     </div>
                 </div>
             </div>
@@ -844,10 +844,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // 일일 목표 로드
+            // 일일 목표 로드 - localStorage에 저장된 값이 있으면 사용, 없으면 빈 값
             const dailyGoalElement = document.getElementById('daily-goal');
-            if (dailyGoalElement && data.dailyGoal) {
-                dailyGoalElement.value = data.dailyGoal;
+            if (dailyGoalElement) {
+                dailyGoalElement.value = data.dailyGoal || '';
             }
             
             console.log('데이터 로드됨:', dateKey);
@@ -866,6 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 cell.title = '';
             });
             
+            // localStorage에 데이터가 없으면 목표도 빈 값으로 초기화
             const dailyGoalElement = document.getElementById('daily-goal');
             if (dailyGoalElement) {
                 dailyGoalElement.value = '';
@@ -1134,7 +1135,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 초기 데이터 로드
+    // 서버에서 받은 초기 목표값 설정
+    const serverDailyGoal = `{{ daily_planner.daily_goal|escapejs }}`;
+    if (dailyGoalElement && serverDailyGoal) {
+        dailyGoalElement.value = serverDailyGoal;
+    }
+    
+    // 초기 데이터 로드 (localStorage에서 로드하여 덮어쓰기)
     loadData();
     
     // 초기 이벤트 리스너 등록
@@ -1247,10 +1254,28 @@ function updateStudyStats() {
     const studyMinutes = filledCells.length * 10;
     const studyHours = (studyMinutes / 60).toFixed(1);
     
+    console.log('📊 통계 업데이트:', {
+        '채워진 셀 수': filledCells.length,
+        '학습 분': studyMinutes,
+        '학습 시간': studyHours
+    });
+    
     // 학습 시간 카드 업데이트
     const studyHoursCard = document.querySelector('.stat-card.green .stat-number');
     if (studyHoursCard) {
         studyHoursCard.textContent = `${studyHours}h`;
+        console.log('✅ 학습시간 카드 업데이트:', studyHours + 'h');
+    } else {
+        console.warn('⚠️ 학습시간 카드를 찾을 수 없음');
+    }
+    
+    // 하단 달성시간 업데이트
+    const achievedHoursElement = document.getElementById('achieved-hours');
+    if (achievedHoursElement) {
+        achievedHoursElement.textContent = `${studyHours}시간`;
+        console.log('✅ 달성시간 업데이트:', studyHours + '시간');
+    } else {
+        console.warn('⚠️ 달성시간 요소를 찾을 수 없음');
     }
     
     // 목표 달성률 계산 및 업데이트
