@@ -90,7 +90,6 @@ class ProfileView(LoginRequiredMixin, DetailView):
         return self.request.user
     
     def get_context_data(self, **kwargs):
-        from datetime import datetime, timedelta
         from django.db.models import Sum
         from timetable.models import Subject
         from planner.models import Task, StudySession
@@ -149,7 +148,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         ).count()
         
         # 이번주 학습시간 계산 (월요일부터 일요일까지)
-        today = datetime.now().date()
+        today = timezone.now().date()
         # 이번주 월요일 찾기
         start_of_week = today - timedelta(days=today.weekday())
         # 이번주 일요일 찾기
