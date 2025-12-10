@@ -7,10 +7,6 @@ from django.views.generic import CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.views import View
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Sum, Q
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 
 User = get_user_model()
@@ -92,55 +88,6 @@ class ProfileView(LoginRequiredMixin, DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.get_object()
-        
-        # 등록된 과목 수 (timetable.Subject)
-        from timetable.models import Subject
-        total_subjects = Subject.objects.filter(user=user).count()
-        
-        # 완료된 과제 수 (planner.Task)
-        from planner.models import Task, StudySession
-        completed_tasks = Task.objects.filter(
-            user=user,
-            status='COMPLETED'
-        ).count()
-        
-        # 커뮤니티 게시글 수 (community.Post)
-        from community.models import Post
-        community_posts = Post.objects.filter(
-            author=user,
-            is_active=True
-        ).count()
-        
-        # 이번 주 학습시간 계산 (planner.StudySession)
-        # 이번 주의 시작(월요일)과 끝(일요일) 계산
-        today = timezone.now().date()
-        start_of_week = today - timedelta(days=today.weekday())  # 월요일
-        end_of_week = start_of_week + timedelta(days=6)  # 일요일
-        
-        # 이번 주의 학습 세션 총 시간 계산
-        study_sessions = StudySession.objects.filter(
-            user=user,
-            start_time__date__gte=start_of_week,
-            start_time__date__lte=end_of_week,
-            end_time__isnull=False,  # 완료된 세션만
-            duration_minutes__isnull=False  # duration_minutes가 있는 세션만
-        )
-        
-        # 총 학습 시간 계산
-        total_minutes = study_sessions.aggregate(
-            total=Sum('duration_minutes')
-        )['total'] or 0
-        
-        study_hours = round(total_minutes / 60, 1)  # 분을 시간으로 변환
-        
-        # 사용자 통계 정보 추가
-        context.update({
-            'total_subjects': total_subjects,
-            'completed_tasks': completed_tasks,
-            'community_posts': community_posts,
-            'study_hours': study_hours,
-        })
         return context
 
 class ProfileEditView(LoginRequiredMixin, UpdateView):
