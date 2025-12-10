@@ -204,7 +204,7 @@ class GoalForm(forms.ModelForm):
                 ),
             ),
             HTML('<hr class="my-3">'),
-            HTML('<h6 class="mb-3">목표 수치 설정 (최소 하나는 입력해주세요)</h6>'),
+            HTML('<h6 class="mb-3">목표 수치 설정 (선택사항)</h6>'),
             Row(
                 Column(
                     Field('target_hours'),
@@ -224,8 +224,8 @@ class GoalForm(forms.ModelForm):
         self.fields['goal_type'].label = '목표 유형'
         self.fields['start_date'].label = '시작일'
         self.fields['end_date'].label = '종료일'
-        self.fields['target_hours'].label = '목표 학습시간 (시간)'
-        self.fields['target_tasks'].label = '목표 과제 수'
+        self.fields['target_hours'].label = '목표 학습시간 (시간, 선택사항)'
+        self.fields['target_tasks'].label = '목표 과제 수 (선택사항)'
         
         # 기본값 설정
         if not self.instance.pk:
@@ -242,55 +242,7 @@ class GoalForm(forms.ModelForm):
         if start_date and end_date and start_date >= end_date:
             raise forms.ValidationError('종료일은 시작일보다 늦어야 합니다.')
         
-        if not target_hours and not target_tasks:
-            raise forms.ValidationError('목표 학습시간 또는 목표 과제 수 중 최소 하나는 입력해야 합니다.')
-        
         return cleaned_data
-
-class TaskQuickAddForm(forms.ModelForm):
-    """빠른 과제 추가 폼"""
-    
-    class Meta:
-        model = Task
-        fields = ['title', 'category', 'priority', 'due_date']
-        widgets = {
-            'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
-        self.helper.form_class = 'form-inline'
-        self.helper.layout = Layout(
-            Row(
-                Column(
-                    Field('title', placeholder='과제 제목'),
-                    css_class='col-md-4'
-                ),
-                Column(
-                    Field('category'),
-                    css_class='col-md-2'
-                ),
-                Column(
-                    Field('priority'),
-                    css_class='col-md-2'
-                ),
-                Column(
-                    Field('due_date'),
-                    css_class='col-md-3'
-                ),
-                Column(
-                    Submit('submit', '추가', css_class='btn btn-primary'),
-                    css_class='col-md-1'
-                ),
-            )
-        )
-        
-        # 필드 라벨 제거 (인라인 폼이므로)
-        for field in self.fields:
-            self.fields[field].label = ''
 
 class TaskFilterForm(forms.Form):
     """과제 필터링 폼"""
