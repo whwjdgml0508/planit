@@ -54,6 +54,46 @@
         </div>
     </div>
     
+    <!-- 통계 카드 -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <i class="fas fa-book fa-2x mb-3"></i>
+                    <h2 class="fw-bold mb-0">{{ subject_count }}</h2>
+                    <p class="mb-0">등록된 과목</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-white">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h2 class="fw-bold mb-0">{{ completed_task_count }}</h2>
+                    <p class="mb-0">완료한 과제</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-white">
+                    <i class="fas fa-comments fa-2x mb-3"></i>
+                    <h2 class="fw-bold mb-0">{{ post_count }}</h2>
+                    <p class="mb-0">커뮤니티 게시글</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <div class="card-body text-white">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <h2 class="fw-bold mb-0">{{ weekly_study_hours }}h</h2>
+                    <p class="mb-0">이번주 학습시간</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 상세 정보 -->
     <div class="row">
         <div class="col-md-6">
@@ -102,14 +142,51 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>최근 활동
+                        <i class="fas fa-chart-line me-2"></i>빠른 시작
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-chart-bar fa-3x mb-3 opacity-50"></i>
-                        <p>활동 데이터를 수집 중입니다.</p>
-                        <p class="small">시간표, 플래너, 커뮤니티 기능을 사용하시면<br>여기에 활동 통계가 표시됩니다.</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{% url 'timetable:semester_list' %}" class="text-decoration-none">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt fa-2x text-primary mb-2"></i>
+                                        <h6 class="card-title">시간표 관리</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'planner:task_list' %}" class="text-decoration-none">
+                                <div class="card border-success h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-tasks fa-2x text-success mb-2"></i>
+                                        <h6 class="card-title">학습 플래너</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'community:index' %}" class="text-decoration-none">
+                                <div class="card border-info h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                        <h6 class="card-title">커뮤니티</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'accounts:profile_edit' %}" class="text-decoration-none">
+                                <div class="card border-warning h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-edit fa-2x text-warning mb-2"></i>
+                                        <h6 class="card-title">프로필 수정</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

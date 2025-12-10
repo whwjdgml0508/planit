@@ -7,6 +7,9 @@ from django.views.generic import CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Sum
+from django.utils import timezone
+from datetime import timedelta
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 
 User = get_user_model()
@@ -87,7 +90,84 @@ class ProfileView(LoginRequiredMixin, DetailView):
         return self.request.user
     
     def get_context_data(self, **kwargs):
+        from datetime import datetime, timedelta
+        from django.db.models import Sum
+        from timetable.models import Subject
+        from planner.models import Task, StudySession
+        from community.models import Post
+        
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # 최근 30일 기준
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        # 커뮤니티 활동 통계
+        context['posts_count'] = user.posts.filter(is_active=True).count()
+        context['recent_posts_count'] = user.posts.filter(
+            is_active=True,
+            created_at__gte=thirty_days_ago
+        ).count()
+        context['comments_count'] = user.comments.filter(is_active=True).count()
+        context['recent_comments_count'] = user.comments.filter(
+            is_active=True,
+            created_at__gte=thirty_days_ago
+        ).count()
+        
+        # 플래너 활동 통계
+        context['tasks_count'] = user.tasks.count()
+        context['completed_tasks_count'] = user.tasks.filter(status='COMPLETED').count()
+        context['recent_completed_tasks'] = user.tasks.filter(
+            status='COMPLETED',
+            completed_at__gte=thirty_days_ago
+        ).count()
+        
+        # 학습 세션 통계
+        study_sessions = user.study_sessions.filter(
+            start_time__gte=thirty_days_ago,
+            end_time__isnull=False
+        )
+        total_minutes = study_sessions.aggregate(
+            total=Sum('duration_minutes')
+        )['total'] or 0
+        context['study_hours'] = round(total_minutes / 60, 1)
+        context['study_sessions_count'] = study_sessions.count()
+        
+        # 등록된 과목 수
+        context['subject_count'] = Subject.objects.filter(user=user).count()
+        
+        # 완료한 과제 수
+        context['completed_task_count'] = Task.objects.filter(
+            user=user,
+            status='COMPLETED'
+        ).count()
+        
+        # 커뮤니티 게시글 수
+        context['post_count'] = Post.objects.filter(
+            author=user,
+            is_active=True
+        ).count()
+        
+        # 이번주 학습시간 계산 (월요일부터 일요일까지)
+        today = datetime.now().date()
+        # 이번주 월요일 찾기
+        start_of_week = today - timedelta(days=today.weekday())
+        # 이번주 일요일 찾기
+        end_of_week = start_of_week + timedelta(days=6)
+        
+        # 이번주 학습 세션의 총 시간 계산 (분 단위)
+        weekly_study_minutes = StudySession.objects.filter(
+            user=user,
+            start_time__date__gte=start_of_week,
+            start_time__date__lte=end_of_week,
+            end_time__isnull=False
+        ).aggregate(
+            total=Sum('duration_minutes')
+        )['total'] or 0
+        
+        # 시간으로 변환
+        context['weekly_study_hours'] = round(weekly_study_minutes / 60, 1) if weekly_study_minutes else 0
+        
         return context
 
 class ProfileEditView(LoginRequiredMixin, UpdateView):
