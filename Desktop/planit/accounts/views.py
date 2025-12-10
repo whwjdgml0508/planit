@@ -96,7 +96,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         
         # 등록된 과목 수 (timetable.Subject)
         from timetable.models import Subject
-        total_subjects = Subject.objects.filter(user=user)
+        total_subjects = Subject.objects.filter(user=user).count()
         
         # 완료된 과제 수 (planner.Task)
         from planner.models import Task, StudySession
