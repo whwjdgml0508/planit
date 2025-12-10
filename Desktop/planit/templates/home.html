@@ -28,7 +28,7 @@
                     <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">
                         <i class="fas fa-user-plus me-2"></i>시작하기
                     </a>
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg" target="_self">
                         <i class="fas fa-sign-in-alt me-2"></i>로그인
                     </a>
                 </div>
@@ -107,56 +107,6 @@
     </div>
 </div>
 
-<!-- Statistics Section (if user is authenticated) -->
-{% if user.is_authenticated %}
-<div class="bg-light py-5">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-12 mb-4">
-                <h3 class="fw-bold">나의 학습 현황</h3>
-            </div>
-        </div>
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="card border-0 bg-primary text-white">
-                    <div class="card-body text-center">
-                        <i class="fas fa-book fa-2x mb-2"></i>
-                        <h4 class="fw-bold">{{ total_subjects|default:0 }}</h4>
-                        <p class="mb-0">등록된 과목</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-success text-white">
-                    <div class="card-body text-center">
-                        <i class="fas fa-tasks fa-2x mb-2"></i>
-                        <h4 class="fw-bold">{{ completed_tasks|default:0 }}</h4>
-                        <p class="mb-0">완료된 과제</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-info text-white">
-                    <div class="card-body text-center">
-                        <i class="fas fa-comments fa-2x mb-2"></i>
-                        <h4 class="fw-bold">{{ community_posts|default:0 }}</h4>
-                        <p class="mb-0">커뮤니티 게시글</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-warning text-white">
-                    <div class="card-body text-center">
-                        <i class="fas fa-clock fa-2x mb-2"></i>
-                        <h4 class="fw-bold">{{ study_hours|default:0 }}h</h4>
-                        <p class="mb-0">이번 주 학습시간</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <!-- Call to Action -->
 {% if not user.is_authenticated %}
