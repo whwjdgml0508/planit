@@ -63,52 +63,6 @@
         </div>
     </div>
     
-    <!-- 통계 카드 -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="{% url 'timetable:timetable_manage' %}" class="text-decoration-none">
-                <div class="card shadow-sm border-0 text-center h-100 stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
-                    <div class="card-body text-white">
-                        <i class="fas fa-book fa-2x mb-3"></i>
-                        <h2 class="fw-bold mb-0">{{ subject_count }}</h2>
-                        <p class="mb-0">등록된 과목</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="{% url 'planner:daily_planner' %}" class="text-decoration-none">
-                <div class="card shadow-sm border-0 text-center h-100 stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
-                    <div class="card-body text-white">
-                        <i class="fas fa-check-circle fa-2x mb-3"></i>
-                        <h2 class="fw-bold mb-0">{{ completed_task_count }}</h2>
-                        <p class="mb-0">완료한 과제</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="{% url 'community:post_list' %}?author={{ profile_user.id }}" class="text-decoration-none">
-                <div class="card shadow-sm border-0 text-center h-100 stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
-                    <div class="card-body text-white">
-                        <i class="fas fa-comments fa-2x mb-3"></i>
-                        <h2 class="fw-bold mb-0">{{ post_count }}</h2>
-                        <p class="mb-0">커뮤니티 게시글</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                <div class="card-body text-white">
-                    <i class="fas fa-clock fa-2x mb-3"></i>
-                    <h2 class="fw-bold mb-0">{{ weekly_study_hours }}h</h2>
-                    <p class="mb-0">이번주 학습시간</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- 상세 정보 -->
     <div class="row">
         <div class="col-md-6">
