@@ -56,10 +56,20 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             end_time__isnull=False
         )
         
-        # 이번 주 총 학습시간
-        total_study_minutes = week_sessions.aggregate(
+        # 이번 주 총 학습시간 (StudySession)
+        session_study_minutes = week_sessions.aggregate(
             total=Sum('duration_minutes')
         )['total'] or 0
+        
+        # 이번 주 총 학습시간 (TimeBlock - 일일 플래너)
+        timeblock_study_minutes = TimeBlock.objects.filter(
+            daily_planner__user=user,
+            daily_planner__date__range=[week_start, week_end],
+            block_type='STUDY'
+        ).count() * 10  # 각 블록은 10분
+        
+        # 총 학습시간 합산
+        total_study_minutes = session_study_minutes + timeblock_study_minutes
         
         # 활성 목표
         active_goals = Goal.objects.filter(
