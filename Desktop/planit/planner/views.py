@@ -8,7 +8,7 @@ from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
 from datetime import datetime, timedelta
 from .models import Task, StudySession, Goal, DailyPlanner, TimeBlock, TodoItem
-from .forms import TaskForm, StudySessionForm, GoalForm, TaskQuickAddForm, TaskFilterForm
+from .forms import TaskForm, StudySessionForm, GoalForm, TaskFilterForm
 
 class PlannerView(LoginRequiredMixin, TemplateView):
     """플래너 대시보드 뷰"""
@@ -57,9 +57,15 @@ class PlannerView(LoginRequiredMixin, TemplateView):
         )
         
         # 이번 주 총 학습시간 (StudySession)
-        session_study_minutes = week_sessions.aggregate(
-            total=Sum('duration_minutes')
-        )['total'] or 0
+        # duration_minutes가 NULL인 경우를 대비해 직접 계산
+        session_study_minutes = 0
+        for session in week_sessions:
+            if session.duration_minutes:
+                session_study_minutes += session.duration_minutes
+            elif session.start_time and session.end_time:
+                # duration_minutes가 없으면 직접 계산
+                duration = session.end_time - session.start_time
+                session_study_minutes += int(duration.total_seconds() / 60)
         
         # 이번 주 총 학습시간 (TimeBlock - 일일 플래너)
         timeblock_study_minutes = TimeBlock.objects.filter(
@@ -96,7 +102,6 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'total_study_hours': float(total_study_minutes) / 60.0,
             'active_goals': active_goals,
             'task_stats': task_stats,
-            'quick_add_form': TaskQuickAddForm(),
         })
         return context
 
@@ -231,27 +236,6 @@ class TaskToggleView(LoginRequiredMixin, TemplateView):
             'new_status_class': task.get_status_badge_class()
         })
 
-class TaskQuickAddView(LoginRequiredMixin, CreateView):
-    """빠른 과제 추가 뷰 (AJAX)"""
-    model = Task
-    form_class = TaskQuickAddForm
-    
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        task = form.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'"{task.title}" 과제가 추가되었습니다.',
-            'task_id': str(task.id)
-        })
-    
-    def form_invalid(self, form):
-        return JsonResponse({
-            'success': False,
-            'errors': form.errors
-        })
-
 class StudySessionListView(LoginRequiredMixin, ListView):
     """학습 세션 목록 뷰"""
     model = StudySession
@@ -377,18 +361,14 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
             status__in=['TODO', 'IN_PROGRESS']
         ).count()
         
-        # 목표 달성률 계산
-        target_hours = float(daily_planner.target_study_hours)
+        # 통계 데이터
         actual_hours = float(total_study_minutes) / 60.0
-        achievement_rate = min(100.0, (actual_hours / target_hours * 100.0)) if target_hours > 0 else 0.0
         
         stats = {
             'completed_todos': completed_todos,
             'total_todos': total_todos,
             'study_hours': actual_hours,
             'overdue_tasks': overdue_tasks,
-            'achievement_rate': round(achievement_rate, 1),
-            'target_hours': target_hours,
         }
         
         context.update({
