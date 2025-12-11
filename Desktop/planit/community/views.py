@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView, View
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse, HttpResponse
@@ -84,6 +84,11 @@ class PostListView(LoginRequiredMixin, ListView):
             category__in=accessible_categories
         ).select_related('author', 'category', 'subject').prefetch_related('likes')
         
+        # 작성자 필터링 (프로필에서 넘어온 경우)
+        author_id = self.request.GET.get('author')
+        if author_id:
+            queryset = queryset.filter(author_id=author_id)
+        
         # 검색 처리
         search_form = PostSearchForm(self.request.GET, user=user)
         if search_form.is_valid():
@@ -130,6 +135,17 @@ class PostListView(LoginRequiredMixin, ListView):
                 Q(allowed_departments__icontains=user.department)
             )
         context['categories'] = categories.order_by('order', 'name')
+        
+        # 작성자 필터링 정보 추가
+        author_id = self.request.GET.get('author')
+        if author_id:
+            from accounts.models import User
+            try:
+                author = User.objects.get(id=author_id)
+                context['filtered_author'] = author
+            except User.DoesNotExist:
+                pass
+        
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -289,9 +305,50 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
         kwargs['user'] = self.request.user
         return kwargs
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # 사용자가 접근 가능한 카테고리 목록 추가
+        categories = Category.objects.filter(is_active=True)
+        if not user.is_staff:
+            categories = categories.filter(
+                Q(department_restricted=False) |
+                Q(allowed_departments__icontains=user.department)
+            )
+        
+        context['categories'] = categories.order_by('order', 'name')
+        return context
+    
     def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        # 새 첨부파일 처리
+        files = self.request.FILES.getlist('new_attachments')
+        for file in files:
+            # 파일 유형 결정
+            ext = file.name.split('.')[-1].lower() if '.' in file.name else ''
+            if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']:
+                file_type = 'IMAGE'
+            elif ext in ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'hwp']:
+                file_type = 'DOCUMENT'
+            elif ext in ['zip', 'rar', '7z', 'tar', 'gz']:
+                file_type = 'ARCHIVE'
+            else:
+                file_type = 'OTHER'
+            
+            attachment = Attachment(
+                post=self.object,
+                uploader=self.request.user,
+                file=file,
+                original_name=file.name,
+                file_size=file.size,
+                file_type=file_type
+            )
+            attachment.save()
+        
         messages.success(self.request, f'"{self.object.title}" 게시글이 수정되었습니다.')
-        return super().form_valid(form)
+        return response
 
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     """게시글 삭제 뷰"""
@@ -366,38 +423,87 @@ class AttachmentDownloadView(LoginRequiredMixin, TemplateView):
     """첨부파일 다운로드 뷰"""
     
     def get(self, request, *args, **kwargs):
+        import mimetypes
+        from urllib.parse import quote
+        
         attachment_id = kwargs.get('pk')
         attachment = get_object_or_404(Attachment, id=attachment_id)
         
         # 다운로드 수 증가
         attachment.increment_download()
         
-        # 파일 응답
-        response = HttpResponse(attachment.file.read(), content_type='application/octet-stream')
-        response['Content-Disposition'] = f'attachment; filename="{attachment.original_name}"'
+        # 파일 열기
+        attachment.file.open('rb')
+        
+        # MIME 타입 결정
+        content_type, _ = mimetypes.guess_type(attachment.original_name)
+        if not content_type:
+            content_type = 'application/octet-stream'
+        
+        # 파일 응답 생성
+        response = HttpResponse(attachment.file.read(), content_type=content_type)
+        
+        # 파일 닫기
+        attachment.file.close()
+        
+        # 한글 파일명 인코딩 처리
+        encoded_filename = quote(attachment.original_name)
+        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        response['Content-Length'] = attachment.file_size
+        
         return response
 
-class ReportCreateView(LoginRequiredMixin, CreateView):
-    """신고 생성 뷰"""
-    model = Report
-    form_class = ReportForm
-    template_name = 'community/report_create.html'
-    success_url = reverse_lazy('community:index')
+class ReportCreateView(LoginRequiredMixin, View):
+    """신고 생성 뷰 (AJAX)"""
     
-    def form_valid(self, form):
-        form.instance.reporter = self.request.user
-        
-        # 게시글 또는 댓글 신고 처리
-        post_id = self.request.GET.get('post')
-        comment_id = self.request.GET.get('comment')
-        
-        if post_id:
-            form.instance.post = get_object_or_404(Post, id=post_id)
-        elif comment_id:
-            form.instance.comment = get_object_or_404(Comment, id=comment_id)
-        
-        messages.success(self.request, '신고가 접수되었습니다. 검토 후 조치하겠습니다.')
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        try:
+            # POST 데이터에서 정보 추출
+            post_id = request.POST.get('post_id')
+            comment_id = request.POST.get('comment_id')
+            report_type = request.POST.get('report_type')
+            reason = request.POST.get('reason')
+            
+            # 필수 필드 검증
+            if not report_type or not reason:
+                return JsonResponse({
+                    'success': False,
+                    'message': '신고 유형과 사유를 모두 입력해주세요.'
+                }, status=400)
+            
+            # 신고 대상 검증
+            if not post_id and not comment_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': '신고 대상이 지정되지 않았습니다.'
+                }, status=400)
+            
+            # 신고 생성
+            report = Report(
+                reporter=request.user,
+                report_type=report_type,
+                reason=reason
+            )
+            
+            if post_id:
+                post = get_object_or_404(Post, id=post_id)
+                report.post = post
+            elif comment_id:
+                comment = get_object_or_404(Comment, id=comment_id)
+                report.comment = comment
+            
+            report.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': '신고가 접수되었습니다. 검토 후 조치하겠습니다.'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'신고 접수 중 오류가 발생했습니다: {str(e)}'
+            }, status=500)
 
 class CommentDeleteView(LoginRequiredMixin, View):
     """댓글 삭제 뷰"""
@@ -415,3 +521,100 @@ class CommentDeleteView(LoginRequiredMixin, View):
         
         messages.success(request, '댓글이 삭제되었습니다.')
         return JsonResponse({'success': True, 'redirect_url': post.get_absolute_url()})
+
+class ReportListView(UserPassesTestMixin, ListView):
+    """관리자용 신고 목록 뷰"""
+    model = Report
+    template_name = 'community/report_list.html'
+    context_object_name = 'reports'
+    paginate_by = 20
+    
+    def test_func(self):
+        return self.request.user.is_staff
+    
+    def get_queryset(self):
+        queryset = Report.objects.select_related(
+            'reporter', 'post', 'comment', 'reviewed_by'
+        ).order_by('-created_at')
+        
+        # 상태 필터링
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # 신고 유형 필터링
+        report_type = self.request.GET.get('report_type')
+        if report_type:
+            queryset = queryset.filter(report_type=report_type)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['status_choices'] = Report.REPORT_STATUS
+        context['type_choices'] = Report.REPORT_TYPES
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_type'] = self.request.GET.get('report_type', '')
+        
+        # 통계 정보
+        context['pending_count'] = Report.objects.filter(status='PENDING').count()
+        context['reviewing_count'] = Report.objects.filter(status='REVIEWING').count()
+        context['resolved_count'] = Report.objects.filter(status='RESOLVED').count()
+        context['rejected_count'] = Report.objects.filter(status='REJECTED').count()
+        
+        return context
+
+class ReportDetailView(UserPassesTestMixin, DetailView):
+    """관리자용 신고 상세 뷰"""
+    model = Report
+    template_name = 'community/report_detail.html'
+    context_object_name = 'report'
+    
+    def test_func(self):
+        return self.request.user.is_staff
+
+class ReportUpdateStatusView(UserPassesTestMixin, View):
+    """신고 상태 업데이트 뷰 (AJAX)"""
+    
+    def test_func(self):
+        return self.request.user.is_staff
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            report_id = kwargs.get('pk')
+            report = get_object_or_404(Report, id=report_id)
+            
+            status = request.POST.get('status')
+            admin_note = request.POST.get('admin_note', '')
+            
+            if status not in dict(Report.REPORT_STATUS).keys():
+                return JsonResponse({
+                    'success': False,
+                    'message': '유효하지 않은 상태입니다.'
+                }, status=400)
+            
+            report.status = status
+            report.reviewed_by = request.user
+            report.reviewed_at = timezone.now()
+            if admin_note:
+                report.admin_note = admin_note
+            report.save()
+            
+            # 신고가 해결됨으로 처리되고 게시글/댓글 삭제 옵션이 선택된 경우
+            delete_content = request.POST.get('delete_content') == 'true'
+            if status == 'RESOLVED' and delete_content:
+                if report.post:
+                    report.post.delete()
+                elif report.comment:
+                    report.comment.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': '신고 처리가 완료되었습니다.'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'처리 중 오류가 발생했습니다: {str(e)}'
+            }, status=500)

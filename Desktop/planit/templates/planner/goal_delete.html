@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}목표 삭제 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-trash me-2"></i>목표 삭제</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        정말로 이 목표를 삭제하시겠습니까?
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>{{ object.title }}</h5>
+                        {% if object.description %}
+                        <p class="text-muted">{{ object.description }}</p>
+                        {% endif %}
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ object.start_date }} ~ {{ object.end_date }}
+                        </small>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="fas fa-trash me-2"></i>삭제
+                            </button>
+                            <a href="{% url 'planner:goal_list' %}" class="btn btn-secondary flex-fill">
+                                <i class="fas fa-times me-2"></i>취소
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

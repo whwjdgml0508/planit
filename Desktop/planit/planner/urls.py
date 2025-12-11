@@ -9,7 +9,6 @@ urlpatterns = [
     # 과제 관련 URL
     path('tasks/', views.TaskListView.as_view(), name='task_list'),
     path('tasks/create/', views.TaskCreateView.as_view(), name='task_create'),
-    path('tasks/quick-add/', views.TaskQuickAddView.as_view(), name='task_quick_add'),
     path('tasks/<uuid:pk>/', views.TaskDetailView.as_view(), name='task_detail'),
     path('tasks/<uuid:pk>/edit/', views.TaskUpdateView.as_view(), name='task_edit'),
     path('tasks/<uuid:pk>/delete/', views.TaskDeleteView.as_view(), name='task_delete'),
@@ -21,6 +20,8 @@ urlpatterns = [
     # 목표 관련 URL
     path('goals/', views.GoalListView.as_view(), name='goal_list'),
     path('goals/create/', views.GoalCreateView.as_view(), name='goal_create'),
+    path('goals/<uuid:pk>/edit/', views.GoalUpdateView.as_view(), name='goal_edit'),
+    path('goals/<uuid:pk>/delete/', views.GoalDeleteView.as_view(), name='goal_delete'),
     
     # 일일 플래너
     path('daily/', views.DailyPlannerView.as_view(), name='daily_planner'),

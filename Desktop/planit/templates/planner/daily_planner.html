@@ -509,7 +509,7 @@
                 <span>오늘의 목표</span>
             </div>
             <textarea class="goal-input" id="daily-goal" 
-                      placeholder="오늘의 목표를 적어보세요..."></textarea>
+                      placeholder="오늘의 목표를 적어보세요...">{{ daily_planner.daily_goal }}</textarea>
         </div>
 
         <!-- 메인 컨텐츠 -->
@@ -636,17 +636,6 @@
                     <div class="timetable-row"><div class="hour-label">05:00</div><div class="time-cell" data-hour="05" data-minute="0"></div><div class="time-cell" data-hour="05" data-minute="1"></div><div class="time-cell" data-hour="05" data-minute="2"></div><div class="time-cell" data-hour="05" data-minute="3"></div><div class="time-cell" data-hour="05" data-minute="4"></div><div class="time-cell" data-hour="05" data-minute="5"></div></div>
                 </div>
 
-                <!-- 학습 통계 -->
-                <div class="study-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">목표시간:</span>
-                        <span class="stat-value">{{ daily_planner.target_study_hours }}시간</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">달성시간:</span>
-                        <span class="stat-value" id="achieved-hours">{{ total_study_hours|floatformat:1 }}시간</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -844,10 +833,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // 일일 목표 로드 - localStorage에 저장된 값이 있으면 사용, 없으면 빈 값
+            // 일일 목표 로드
             const dailyGoalElement = document.getElementById('daily-goal');
-            if (dailyGoalElement) {
-                dailyGoalElement.value = data.dailyGoal || '';
+            if (dailyGoalElement && data.dailyGoal) {
+                dailyGoalElement.value = data.dailyGoal;
             }
             
             console.log('데이터 로드됨:', dateKey);
@@ -866,7 +855,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 cell.title = '';
             });
             
-            // localStorage에 데이터가 없으면 목표도 빈 값으로 초기화
             const dailyGoalElement = document.getElementById('daily-goal');
             if (dailyGoalElement) {
                 dailyGoalElement.value = '';
@@ -1135,13 +1123,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 서버에서 받은 초기 목표값 설정
-    const serverDailyGoal = `{{ daily_planner.daily_goal|escapejs }}`;
-    if (dailyGoalElement && serverDailyGoal) {
-        dailyGoalElement.value = serverDailyGoal;
+    // 데이터베이스에서 시간 블록 로드
+    function loadTimeBlocksFromDatabase() {
+        {% if time_blocks %}
+        console.log('데이터베이스에서 시간 블록 로드 중...');
+        {% for hour, blocks in time_blocks.items %}
+            {% for minute_block, block in blocks.items %}
+                {% if block %}
+                const cell_{{ hour }}_{{ minute_block }} = document.querySelector('[data-hour="{{ hour }}"][data-minute="{{ minute_block }}"]');
+                if (cell_{{ hour }}_{{ minute_block }}) {
+                    cell_{{ hour }}_{{ minute_block }}.classList.add('filled');
+                    cell_{{ hour }}_{{ minute_block }}.style.setProperty('background-color', '{{ block.color }}', 'important');
+                    cell_{{ hour }}_{{ minute_block }}.title = '{{ hour }}:{{ minute_block }}0 - {% if block.subject %}{{ block.subject.name }}{% else %}학습{% endif %}';
+                }
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        console.log('✅ 데이터베이스 시간 블록 로드 완료');
+        updateStudyStats();
+        {% endif %}
     }
     
-    // 초기 데이터 로드 (localStorage에서 로드하여 덮어쓰기)
+    // 초기 데이터베이스 로드
+    loadTimeBlocksFromDatabase();
+    
+    // 초기 데이터 로드
     loadData();
     
     // 초기 이벤트 리스너 등록
@@ -1190,14 +1196,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 시간 블록 토글 함수
 function toggleTimeBlock(hour, minute) {
-    console.log(`toggleTimeBlock 호출: ${hour}:${minute}`); // 디버깅용
+    console.log(`toggleTimeBlock 호출: ${hour}:${minute}`);
     
     const cell = document.querySelector(`[data-hour="${hour}"][data-minute="${minute}"]`);
-    console.log('찾은 셀:', cell); // 디버깅용
+    console.log('찾은 셀:', cell);
     
     const subjectSelect = document.getElementById('subject-select');
     const selectedSubject = subjectSelect.value;
-    console.log('선택된 과목:', selectedSubject); // 디버깅용
+    console.log('선택된 과목:', selectedSubject);
     
     if (!selectedSubject) {
         alert('먼저 과목을 선택해주세요!');
@@ -1207,32 +1213,96 @@ function toggleTimeBlock(hour, minute) {
     const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
     const subjectColor = selectedOption.dataset.color;
     const subjectName = selectedOption.text;
-    console.log('과목 색상:', subjectColor, '과목명:', subjectName); // 디버깅용
+    console.log('과목 색상:', subjectColor, '과목명:', subjectName);
     
-    if (cell.classList.contains('filled')) {
-        // 제거
-        console.log('셀 제거 중...'); // 디버깅용
-        cell.classList.remove('filled');
-        cell.style.backgroundColor = '';
-        cell.title = '';
-    } else {
-        // 추가
-        console.log('셀 추가 중...', subjectColor); // 디버깅용
-        cell.classList.add('filled');
-        cell.style.setProperty('background-color', subjectColor, 'important');
-        cell.title = `${hour}:${minute}0 - ${subjectName}`;
-    }
-    
-    // 통계 업데이트 및 데이터 저장
-    updateStudyStats();
-    
-    // 현재 날짜의 데이터 저장
+    // 현재 날짜
     const currentDate = new Date(document.getElementById('date-picker').value);
     const dateKey = currentDate.getFullYear() + '-' + 
                    String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + 
                    String(currentDate.getDate()).padStart(2, '0');
     
-    // 시간표 데이터 저장
+    // CSRF 토큰 가져오기
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    if (cell.classList.contains('filled')) {
+        // 제거 - 데이터베이스에서 삭제
+        console.log('셀 제거 중...');
+        
+        fetch("{% url 'planner:remove_time_block' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'date': dateKey,
+                'hour': hour,
+                'minute_block': minute
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ 데이터베이스에서 시간 블록 삭제 완료');
+                cell.classList.remove('filled');
+                cell.style.backgroundColor = '';
+                cell.title = '';
+                updateStudyStats();
+                saveLocalStorage();
+            } else {
+                console.error('❌ 시간 블록 삭제 실패:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ 네트워크 오류:', error);
+        });
+        
+    } else {
+        // 추가 - 데이터베이스에 저장
+        console.log('셀 추가 중...', subjectColor);
+        
+        fetch("{% url 'planner:add_time_block' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'date': dateKey,
+                'hour': hour,
+                'minute_block': minute,
+                'block_type': 'STUDY',
+                'subject_id': selectedSubject !== 'default' ? selectedSubject : '',
+                'color': subjectColor
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ 데이터베이스에 시간 블록 저장 완료');
+                cell.classList.add('filled');
+                cell.style.setProperty('background-color', subjectColor, 'important');
+                cell.title = `${hour}:${minute}0 - ${subjectName}`;
+                updateStudyStats();
+                saveLocalStorage();
+            } else {
+                console.error('❌ 시간 블록 저장 실패:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ 네트워크 오류:', error);
+        });
+    }
+}
+
+// localStorage에 저장하는 별도 함수
+function saveLocalStorage() {
+    const currentDate = new Date(document.getElementById('date-picker').value);
+    const dateKey = currentDate.getFullYear() + '-' + 
+                   String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(currentDate.getDate()).padStart(2, '0');
+    
+    // 시간표 데이터 수집
     const timeBlocks = {};
     document.querySelectorAll('.time-cell.filled').forEach(filledCell => {
         const h = filledCell.dataset.hour;
@@ -1254,28 +1324,10 @@ function updateStudyStats() {
     const studyMinutes = filledCells.length * 10;
     const studyHours = (studyMinutes / 60).toFixed(1);
     
-    console.log('📊 통계 업데이트:', {
-        '채워진 셀 수': filledCells.length,
-        '학습 분': studyMinutes,
-        '학습 시간': studyHours
-    });
-    
     // 학습 시간 카드 업데이트
     const studyHoursCard = document.querySelector('.stat-card.green .stat-number');
     if (studyHoursCard) {
         studyHoursCard.textContent = `${studyHours}h`;
-        console.log('✅ 학습시간 카드 업데이트:', studyHours + 'h');
-    } else {
-        console.warn('⚠️ 학습시간 카드를 찾을 수 없음');
-    }
-    
-    // 하단 달성시간 업데이트
-    const achievedHoursElement = document.getElementById('achieved-hours');
-    if (achievedHoursElement) {
-        achievedHoursElement.textContent = `${studyHours}시간`;
-        console.log('✅ 달성시간 업데이트:', studyHours + '시간');
-    } else {
-        console.warn('⚠️ 달성시간 요소를 찾을 수 없음');
     }
     
     // 목표 달성률 계산 및 업데이트

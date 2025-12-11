@@ -21,8 +21,16 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         # 현재 학기 가져오기
         current_semester = Semester.objects.filter(user=user, is_current=True).first()
         
-        # 사용자의 모든 과목 가져오기
-        subjects = Subject.objects.filter(user=user).prefetch_related('time_slots')
+        # 현재 학기의 과목만 가져오기
+        if current_semester:
+            semester_subjects = Subject.objects.filter(
+                user=user, 
+                semester=current_semester
+            ).prefetch_related('time_slots')
+            semester_subjects_count = semester_subjects.count()
+        else:
+            semester_subjects = Subject.objects.none()
+            semester_subjects_count = 0
         
         # 시간표 데이터 구성
         timetable_data = {}
@@ -35,8 +43,8 @@ class TimetableView(LoginRequiredMixin, TemplateView):
             for period in periods:
                 timetable_data[day][period] = None
         
-        # 시간표에 과목 배치
-        for subject in subjects:
+        # 시간표에 과목 배치 (현재 학기 과목만)
+        for subject in semester_subjects:
             for time_slot in subject.time_slots.all():
                 if time_slot.day in timetable_data and time_slot.period in periods:
                     timetable_data[time_slot.day][time_slot.period] = {
@@ -46,15 +54,17 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         
         context.update({
             'current_semester': current_semester,
+            'semester_subjects': semester_subjects,  # 현재 학기 과목 목록
+            'semester_subjects_count': semester_subjects_count,  # 현재 학기 과목 개수
             'timetable_data': timetable_data,
             'days': days,
             'periods': periods,
             'day_names': {
-                'MON': '  ', 
-                'TUE': '  ', 
-                'WED': '  ', 
-                'THU': '  ', 
-                'FRI': '  '
+                'MON': '월요일', 
+                'TUE': '화요일', 
+                'WED': '수요일', 
+                'THU': '목요일', 
+                'FRI': '금요일'
             }
         })
         return context
@@ -253,11 +263,11 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
             'days': days,
             'periods': periods,
             'day_names': {
-                'MON': '월',
-                'TUE': '화', 
-                'WED': '수',
-                'THU': '목',
-                'FRI': '금'
+                'MON': '월요일',
+                'TUE': '화요일', 
+                'WED': '수요일',
+                'THU': '목요일',
+                'FRI': '금요일'
             },
             'period_times': {
                 1: '08:10-09:00',

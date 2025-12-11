@@ -22,6 +22,9 @@ urlpatterns = [
     
     # 신고 관련 URL
     path('report/', views.ReportCreateView.as_view(), name='report_create'),
+    path('reports/', views.ReportListView.as_view(), name='report_list'),
+    path('reports/<uuid:pk>/', views.ReportDetailView.as_view(), name='report_detail'),
+    path('reports/<uuid:pk>/update-status/', views.ReportUpdateStatusView.as_view(), name='report_update_status'),
     
     # 댓글 관련 URL
     path('comment/<uuid:pk>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),

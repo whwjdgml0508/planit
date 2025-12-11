@@ -271,15 +271,6 @@ class GoalListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         return Goal.objects.filter(user=self.request.user)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # 각 목표의 진행률 계산
-        for goal in context['goals']:
-            goal.progress_percentage = goal.get_progress_percentage()
-        
-        return context
 
 class GoalCreateView(LoginRequiredMixin, CreateView):
     """목표 생성 뷰"""
@@ -292,6 +283,36 @@ class GoalCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
         return super().form_valid(form)
+
+class GoalUpdateView(LoginRequiredMixin, UpdateView):
+    """목표 수정 뷰"""
+    model = Goal
+    form_class = GoalForm
+    template_name = 'planner/goal_edit.html'
+    success_url = reverse_lazy('planner:goal_list')
+    
+    def get_queryset(self):
+        return Goal.objects.filter(user=self.request.user)
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'"{form.instance.title}" 목표가 수정되었습니다.')
+        return super().form_valid(form)
+
+class GoalDeleteView(LoginRequiredMixin, DeleteView):
+    """목표 삭제 뷰"""
+    model = Goal
+    template_name = 'planner/goal_delete.html'
+    success_url = reverse_lazy('planner:goal_list')
+    
+    def get_queryset(self):
+        return Goal.objects.filter(user=self.request.user)
+    
+    def delete(self, request, *args, **kwargs):
+        goal = self.get_object()
+        goal_title = goal.title
+        result = super().delete(request, *args, **kwargs)
+        messages.success(request, f'"{goal_title}" 목표가 삭제되었습니다.')
+        return result
 
 
 class DailyPlannerView(LoginRequiredMixin, TemplateView):
@@ -363,11 +384,15 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         
         # 통계 데이터
         actual_hours = float(total_study_minutes) / 60.0
+        target_hours = daily_planner.target_study_hours
+        achievement_rate = min(100, int((actual_hours / target_hours * 100) if target_hours > 0 else 0))
         
         stats = {
             'completed_todos': completed_todos,
             'total_todos': total_todos,
             'study_hours': actual_hours,
+            'target_hours': target_hours,
+            'achievement_rate': achievement_rate,
             'overdue_tasks': overdue_tasks,
         }
         

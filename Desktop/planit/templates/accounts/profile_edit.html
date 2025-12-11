@@ -14,27 +14,193 @@
                     </h4>
                 </div>
                 <div class="card-body p-4">
-                    <!-- 현재 프로필 이미지 미리보기 -->
-                    {% if user.profile_image %}
-                    <div class="text-center mb-4">
-                        <img src="{{ user.profile_image.url }}" 
-                             alt="현재 프로필 이미지" 
-                             class="rounded-circle mb-2" 
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                        <p class="text-muted small">현재 프로필 이미지</p>
-                    </div>
-                    {% endif %}
-                    
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" id="profileForm">
                         {% csrf_token %}
-                        {% crispy form form.helper %}
+                        
+                        <!-- 프로필 이미지 업로드 섹션 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-2"></i>프로필 이미지
+                            </label>
+                            
+                            <!-- 이미지 미리보기 -->
+                            <div class="text-center p-4 mb-3" 
+                                 style="border: 2px solid #dee2e6; border-radius: 10px; background-color: #f8f9fa;">
+                                <div id="imagePreviewContainer">
+                                    {% if user.profile_image %}
+                                        <img id="imagePreview" src="{{ user.profile_image.url }}" 
+                                             alt="프로필 이미지" 
+                                             class="rounded-circle"
+                                             style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #e9ecef;">
+                                    {% else %}
+                                        <div id="avatarPreview" style="font-size: 120px; line-height: 1;">
+                                            {% if user.avatar_choice %}
+                                                {% if user.avatar_choice == 'default' %}👤
+                                                {% elif user.avatar_choice == 'student_male' %}👨‍🎓
+                                                {% elif user.avatar_choice == 'student_female' %}👩‍🎓
+                                                {% elif user.avatar_choice == 'soldier' %}🪖
+                                                {% elif user.avatar_choice == 'pilot' %}👨‍✈️
+                                                {% elif user.avatar_choice == 'engineer' %}👨‍🔧
+                                                {% elif user.avatar_choice == 'scientist' %}👨‍🔬
+                                                {% elif user.avatar_choice == 'astronaut' %}👨‍🚀
+                                                {% endif %}
+                                            {% else %}👤{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <p class="text-muted small mb-0 mt-2">현재 프로필</p>
+                            </div>
+                            
+                            <!-- 이미지 업로드 -->
+                            <div class="mb-3">
+                                <input type="file" 
+                                       name="profile_image" 
+                                       class="form-control" 
+                                       id="profileImageInput"
+                                       accept="image/*">
+                                <div class="form-text">JPG, PNG, GIF 형식 지원 (최대 5MB)</div>
+                            </div>
+                            
+                            <!-- 이미지 제거 체크박스 -->
+                            {% if user.profile_image %}
+                            <div class="form-check">
+                                <input type="checkbox" 
+                                       name="profile_image-clear" 
+                                       class="form-check-input" 
+                                       id="clearImage">
+                                <label class="form-check-label" for="clearImage">
+                                    현재 프로필 이미지 제거
+                                </label>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 프로필 아바타 선택 섹션 (이미지가 없을 때 사용) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user-circle me-2"></i>프로필 아바타 (이미지 미업로드 시)
+                            </label>
+                            
+                            <!-- 아바타 선택 드롭다운 -->
+                            <select name="avatar_choice" class="form-select" id="avatarSelect">
+                                <option value="default" {% if user.avatar_choice == 'default' %}selected{% endif %}>👤 기본 아바타</option>
+                                <option value="student_male" {% if user.avatar_choice == 'student_male' %}selected{% endif %}>👨‍🎓 남학생</option>
+                                <option value="student_female" {% if user.avatar_choice == 'student_female' %}selected{% endif %}>👩‍🎓 여학생</option>
+                                <option value="soldier" {% if user.avatar_choice == 'soldier' %}selected{% endif %}>🪖 군인</option>
+                                <option value="pilot" {% if user.avatar_choice == 'pilot' %}selected{% endif %}>👨‍✈️ 조종사</option>
+                                <option value="engineer" {% if user.avatar_choice == 'engineer' %}selected{% endif %}>👨‍🔧 엔지니어</option>
+                                <option value="scientist" {% if user.avatar_choice == 'scientist' %}selected{% endif %}>👨‍🔬 과학자</option>
+                                <option value="astronaut" {% if user.avatar_choice == 'astronaut' %}selected{% endif %}>👨‍🚀 우주비행사</option>
+                            </select>
+                            <div class="form-text">프로필 이미지를 업로드하지 않으면 선택한 아바타가 표시됩니다</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- 기본 정보 -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_last_name" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>성
+                                </label>
+                                <input type="text" 
+                                       name="last_name" 
+                                       value="{{ form.last_name.value|default:'' }}"
+                                       class="form-control" 
+                                       id="id_last_name" 
+                                       placeholder="성"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_first_name" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>이름
+                                </label>
+                                <input type="text" 
+                                       name="first_name" 
+                                       value="{{ form.first_name.value|default:'' }}"
+                                       class="form-control" 
+                                       id="id_first_name" 
+                                       placeholder="이름"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2"></i>이메일
+                            </label>
+                            <input type="email" 
+                                   name="email" 
+                                   value="{{ form.email.value|default:'' }}"
+                                   class="form-control" 
+                                   id="id_email" 
+                                   placeholder="example@email.com"
+                                   required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_department" class="form-label fw-bold">
+                                    <i class="fas fa-graduation-cap me-2"></i>학과
+                                </label>
+                                <select name="department" class="form-select" id="id_department" required>
+                                    {% for value, label in form.fields.department.choices %}
+                                    <option value="{{ value }}" {% if form.department.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_grade" class="form-label fw-bold">
+                                    <i class="fas fa-layer-group me-2"></i>학년
+                                </label>
+                                <select name="grade" class="form-select" id="id_grade" required>
+                                    {% for value, label in form.fields.grade.choices %}
+                                    <option value="{{ value }}" {% if form.grade.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_phone_number" class="form-label fw-bold">
+                                <i class="fas fa-phone me-2"></i>전화번호
+                            </label>
+                            <input type="text" 
+                                   name="phone_number" 
+                                   value="{{ form.phone_number.value|default:'' }}"
+                                   class="form-control" 
+                                   id="id_phone_number" 
+                                   placeholder="010-1234-5678">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_bio" class="form-label fw-bold">
+                                <i class="fas fa-pen me-2"></i>자기소개
+                            </label>
+                            <textarea name="bio" 
+                                      class="form-control" 
+                                      id="id_bio" 
+                                      rows="4" 
+                                      placeholder="자기소개를 입력하세요"
+                                      maxlength="500">{{ form.bio.value|default:'' }}</textarea>
+                            <div class="form-text">최대 500자</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>프로필 업데이트
+                            </button>
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>취소
+                            </a>
+                        </div>
                     </form>
-                    
-                    <div class="d-flex justify-content-between mt-4" style="display:none!important;">
-                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>취소
-                        </a>
-                    </div>
                 </div>
             </div>
             
@@ -45,7 +211,9 @@
                         <i class="fas fa-lightbulb me-2"></i>프로필 수정 도움말
                     </h6>
                     <ul class="card-text small mb-0">
-                        <li>프로필 이미지는 JPG, PNG 형식만 지원됩니다 (최대 5MB)</li>
+                        <li>프로필 이미지를 업로드하면 <strong>실제 사진</strong>이 표시됩니다</li>
+                        <li>이미지를 업로드하지 않으면 <strong>선택한 아바타 이모지</strong>가 표시됩니다</li>
+                        <li>이미지 파일은 JPG, PNG, GIF 형식을 지원하며 최대 5MB까지 가능합니다</li>
                         <li>전화번호는 010-1234-5678 형식으로 입력해주세요</li>
                         <li>자기소개는 최대 500자까지 입력 가능합니다</li>
                         <li>학과와 학년 정보는 시간표 및 커뮤니티 기능에서 활용됩니다</li>
@@ -60,37 +228,98 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 프로필 이미지 미리보기
-    const imageInput = document.querySelector('input[type="file"][name="profile_image"]');
-    if (imageInput) {
-        imageInput.addEventListener('change', function(e) {
+    const avatarSelect = document.getElementById('avatarSelect');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const phoneInput = document.getElementById('id_phone_number');
+    const profileImageInput = document.getElementById('profileImageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const clearImageCheckbox = document.getElementById('clearImage');
+    
+    // 아바타 이모지 매핑
+    const avatarEmojis = {
+        'default': '👤',
+        'student_male': '👨‍🎓',
+        'student_female': '👩‍🎓',
+        'soldier': '🪖',
+        'pilot': '👨‍✈️',
+        'engineer': '👨‍🔧',
+        'scientist': '👨‍🔬',
+        'astronaut': '👨‍🚀'
+    };
+    
+    // 프로필 이미지 업로드 시 미리보기
+    if (profileImageInput) {
+        profileImageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // 파일 크기 체크 (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('파일 크기는 5MB 이하여야 합니다.');
+                    e.target.value = '';
+                    return;
+                }
+                
+                // 이미지 파일인지 체크
+                if (!file.type.startsWith('image/')) {
+                    alert('이미지 파일만 업로드 가능합니다.');
+                    e.target.value = '';
+                    return;
+                }
+                
+                // 미리보기 표시
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // 기존 미리보기 이미지가 있다면 업데이트, 없다면 생성
-                    let preview = document.querySelector('.profile-preview');
-                    if (!preview) {
-                        preview = document.createElement('div');
-                        preview.className = 'profile-preview text-center mb-3';
-                        imageInput.parentNode.insertBefore(preview, imageInput);
-                    }
-                    
-                    preview.innerHTML = `
-                        <img src="${e.target.result}" 
-                             alt="미리보기" 
-                             class="rounded-circle mb-2" 
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                        <p class="text-muted small">새 프로필 이미지 미리보기</p>
+                    imagePreviewContainer.innerHTML = `
+                        <img id="imagePreview" src="${e.target.result}" 
+                             alt="프로필 이미지 미리보기" 
+                             class="rounded-circle"
+                             style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #e9ecef;">
                     `;
                 };
                 reader.readAsDataURL(file);
+                
+                // 이미지 제거 체크박스가 있으면 해제
+                if (clearImageCheckbox) {
+                    clearImageCheckbox.checked = false;
+                }
+            }
+        });
+    }
+    
+    // 이미지 제거 체크박스 클릭 시
+    if (clearImageCheckbox) {
+        clearImageCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // 아바타 이모지로 변경
+                const selectedAvatar = avatarSelect.value;
+                imagePreviewContainer.innerHTML = `
+                    <div id="avatarPreview" style="font-size: 120px; line-height: 1;">
+                        ${avatarEmojis[selectedAvatar] || '👤'}
+                    </div>
+                `;
+                // 파일 입력 초기화
+                if (profileImageInput) {
+                    profileImageInput.value = '';
+                }
+            }
+        });
+    }
+    
+    // 아바타 선택 시 미리보기 업데이트 (이미지가 없을 때만)
+    if (avatarSelect) {
+        avatarSelect.addEventListener('change', function() {
+            const selectedAvatar = this.value;
+            // 이미지가 업로드되지 않았거나 제거 체크박스가 선택된 경우에만 업데이트
+            if (avatarPreview || (clearImageCheckbox && clearImageCheckbox.checked)) {
+                const preview = document.getElementById('avatarPreview');
+                if (preview) {
+                    preview.textContent = avatarEmojis[selectedAvatar] || '👤';
+                }
             }
         });
     }
     
     // 전화번호 자동 포맷팅
-    const phoneInput = document.querySelector('input[name="phone_number"]');
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
@@ -102,6 +331,19 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.value = value;
         });
     }
+    
+    // 폼 제출 시 확인
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const firstName = document.getElementById('id_first_name').value.trim();
+        const lastName = document.getElementById('id_last_name').value.trim();
+        const email = document.getElementById('id_email').value.trim();
+        
+        if (!firstName || !lastName || !email) {
+            e.preventDefault();
+            alert('필수 항목을 모두 입력해주세요.');
+            return false;
+        }
+    });
 });
 </script>
 {% endblock %}

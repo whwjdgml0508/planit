@@ -176,12 +176,12 @@ class GoalForm(forms.ModelForm):
     
     class Meta:
         model = Goal
-        fields = ['title', 'description', 'goal_type', 'start_date', 'end_date',
-                 'target_hours', 'target_tasks']
+        fields = ['title', 'description', 'goal_type', 'start_date', 'end_date', 'memo']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
+            'memo': forms.Textarea(attrs={'rows': 5}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -204,17 +204,7 @@ class GoalForm(forms.ModelForm):
                 ),
             ),
             HTML('<hr class="my-3">'),
-            HTML('<h6 class="mb-3">목표 수치 설정 (선택사항)</h6>'),
-            Row(
-                Column(
-                    Field('target_hours'),
-                    css_class='col-md-6'
-                ),
-                Column(
-                    Field('target_tasks'),
-                    css_class='col-md-6'
-                ),
-            ),
+            Field('memo', placeholder='자유롭게 메모를 작성하세요'),
             Submit('submit', '목표 설정', css_class='btn btn-warning btn-lg w-100 mt-3')
         )
         
@@ -224,8 +214,7 @@ class GoalForm(forms.ModelForm):
         self.fields['goal_type'].label = '목표 유형'
         self.fields['start_date'].label = '시작일'
         self.fields['end_date'].label = '종료일'
-        self.fields['target_hours'].label = '목표 학습시간 (시간, 선택사항)'
-        self.fields['target_tasks'].label = '목표 과제 수 (선택사항)'
+        self.fields['memo'].label = '메모'
         
         # 기본값 설정
         if not self.instance.pk:
@@ -236,8 +225,6 @@ class GoalForm(forms.ModelForm):
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
-        target_hours = cleaned_data.get('target_hours')
-        target_tasks = cleaned_data.get('target_tasks')
         
         if start_date and end_date and start_date >= end_date:
             raise forms.ValidationError('종료일은 시작일보다 늦어야 합니다.')

@@ -114,6 +114,15 @@
                             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                                 <i class="fas fa-user-edit me-2"></i>프로필
                             </a></li>
+                            {% if user.is_staff %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'community:report_list' %}">
+                                <i class="fas fa-flag me-2"></i>신고 관리
+                            </a></li>
+                            <li><a class="dropdown-item" href="/admin/" target="_blank">
+                                <i class="fas fa-cog me-2"></i>관리자 페이지
+                            </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
                                 <i class="fas fa-sign-out-alt me-2"></i>로그아웃

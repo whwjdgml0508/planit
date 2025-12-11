@@ -128,6 +128,17 @@ class Task(models.Model):
             return timezone.now() > self.due_date
         return False
     
+    def is_completed(self):
+        """완료 상태인지 확인"""
+        return self.status == 'COMPLETED'
+    
+    def days_overdue(self):
+        """마감일로부터 며칠 지났는지 계산"""
+        if self.is_overdue():
+            delta = timezone.now() - self.due_date
+            return delta.days
+        return 0
+    
     def get_priority_class(self):
         """우선순위에 따른 CSS 클래스 반환"""
         priority_classes = {
@@ -248,21 +259,8 @@ class Goal(models.Model):
     start_date = models.DateField(verbose_name='시작일')
     end_date = models.DateField(verbose_name='종료일')
     
-    # 목표 수치
-    target_hours = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0.1), MaxValueValidator(999.99)],
-        verbose_name='목표 학습시간(시간)'
-    )
-    target_tasks = models.IntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(1000)],
-        verbose_name='목표 과제 수'
-    )
+    # 메모
+    memo = models.TextField(blank=True, verbose_name='메모')
     
     # 달성 여부
     is_achieved = models.BooleanField(default=False, verbose_name='달성 여부')
@@ -278,43 +276,6 @@ class Goal(models.Model):
         
     def __str__(self):
         return f"{self.title} ({self.get_goal_type_display()})"
-    
-    def get_progress_percentage(self):
-        """목표 달성률 계산"""
-        if not self.target_hours and not self.target_tasks:
-            return 0
-            
-        progress = 0
-        total_weight = 0
-        
-        if self.target_hours:
-            # 해당 기간의 실제 학습시간 계산
-            actual_hours = self.user.study_sessions.filter(
-                start_time__date__gte=self.start_date,
-                start_time__date__lte=self.end_date,
-                end_time__isnull=False
-            ).aggregate(
-                total=models.Sum('duration_minutes')
-            )['total'] or 0
-            
-            actual_hours = actual_hours / 60  # 분을 시간으로 변환
-            hours_progress = min(100, (actual_hours / float(self.target_hours)) * 100)
-            progress += hours_progress
-            total_weight += 1
-        
-        if self.target_tasks:
-            # 해당 기간의 완료된 과제 수 계산
-            completed_tasks = self.user.tasks.filter(
-                completed_at__date__gte=self.start_date,
-                completed_at__date__lte=self.end_date,
-                status='COMPLETED'
-            ).count()
-            
-            tasks_progress = min(100, (completed_tasks / self.target_tasks) * 100)
-            progress += tasks_progress
-            total_weight += 1
-        
-        return int(progress / total_weight) if total_weight > 0 else 0
 
 
 class DailyPlanner(models.Model):

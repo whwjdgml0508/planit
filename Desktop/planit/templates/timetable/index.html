@@ -8,13 +8,23 @@
 <style>
 .timetable-grid {
     min-width: 800px;
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+.timetable-grid tbody tr {
+    height: 60px !important;
+    max-height: 60px !important;
 }
 
 .timetable-cell {
-    height: 60px;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
     border: 1px solid #dee2e6;
     position: relative;
-    vertical-align: middle;
+    vertical-align: middle !important;
+    padding: 2px !important;
 }
 
 .timetable-header {
@@ -28,6 +38,15 @@
     font-weight: 500;
     text-align: center;
     font-size: 0.85rem;
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+    vertical-align: middle !important;
+    padding: 4px !important;
+    line-height: 1.2 !important;
 }
 
 .subject-block {
@@ -47,6 +66,7 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
+    overflow: hidden !important;
 }
 
 .subject-block:hover {
@@ -68,6 +88,9 @@
     border: 2px dashed #dee2e6;
     cursor: pointer;
     transition: all 0.3s ease;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
 }
 
 .empty-slot:hover {
@@ -126,7 +149,7 @@
                 <p class="mb-0">{{ current_semester.start_date }} ~ {{ current_semester.end_date }}</p>
             </div>
             <div class="col-md-4 text-md-end">
-                <span class="badge bg-light text-dark fs-6">총 {{ subjects.count }}개 과목</span>
+                <span class="badge bg-light text-dark fs-6">총 {{ semester_subjects_count }}개 과목</span>
             </div>
         </div>
     </div>
@@ -139,9 +162,9 @@
                 <table class="table table-bordered mb-0 timetable-grid">
                     <thead>
                         <tr>
-                            <th class="timetable-header" style="width: 80px;">교시</th>
-                            {% for day_code, day_name in day_names.items %}
-                            <th class="timetable-header">{{ day_name }}요일</th>
+                            <th class="timetable-header" style="width: 100px;">교시</th>
+                            {% for day in days %}
+                            <th class="timetable-header">{{ day_names|lookup:day }}</th>
                             {% endfor %}
                         </tr>
                     </thead>
@@ -149,18 +172,16 @@
                         {% for period in periods %}
                         <tr>
                             <td class="timetable-time">
-                                {{ period }}교시<br>
+                                <div>{{ period }}교시</div>
                                 <small class="text-muted">
-                                    {% if period == 1 %}09:00-09:50
-                                    {% elif period == 2 %}10:00-10:50
-                                    {% elif period == 3 %}11:00-11:50
-                                    {% elif period == 4 %}12:00-12:50
+                                    {% if period == 1 %}08:10-09:00
+                                    {% elif period == 2 %}09:10-10:00
+                                    {% elif period == 3 %}10:10-11:00
+                                    {% elif period == 4 %}11:10-12:00
                                     {% elif period == 5 %}13:00-13:50
                                     {% elif period == 6 %}14:00-14:50
-                                    {% elif period == 7 %}15:00-15:50
-                                    {% elif period == 8 %}16:00-16:50
-                                    {% elif period == 9 %}17:00-17:50
-                                    {% elif period == 10 %}18:00-18:50
+                                    {% elif period == 7 %}15:10-16:00
+                                    {% elif period == 8 %}16:10-17:00
                                     {% endif %}
                                 </small>
                             </td>
@@ -199,12 +220,12 @@
     </div>
 
     <!-- 과목 목록 -->
-    {% if subjects %}
+    {% if semester_subjects %}
     <div class="row mt-4">
         <div class="col-12">
             <h4><i class="fas fa-list me-2"></i>등록된 과목</h4>
             <div class="row g-3">
-                {% for subject in subjects %}
+                {% for subject in semester_subjects %}
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">

@@ -268,7 +268,7 @@ textarea.form-control {
                                 </label>
                                 
                                 <!-- 숨겨진 파일 input -->
-                                <input type="file" id="fileInput" name="attachments" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" style="display: none;">
+                                <input type="file" id="fileInput" name="attachments" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" multiple style="display: none;">
                                 
                                 <div class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fileInput.addEventListener('change', function(e) {
             const chosenFiles = Array.from(e.target.files);
             if (chosenFiles.length > 0) {
-                handleFiles(chosenFiles, true); // 새로운 파일로 교체
+                handleFiles(chosenFiles, false); // 기존 파일에 추가
             }
         });
     }
@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const droppedFiles = Array.from(e.dataTransfer.files);
             if (droppedFiles.length > 0) {
-                handleFiles(droppedFiles, true); // 새로운 파일로 교체
+                handleFiles(droppedFiles, false); // 기존 파일에 추가
             }
         });
     }

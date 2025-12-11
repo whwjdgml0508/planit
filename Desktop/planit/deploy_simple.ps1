@@ -10,11 +10,8 @@ Write-Host "🚀 PlanIt 서버 배포 시작..." -ForegroundColor Green
 Write-Host "📥 Git pull 실행 중..." -ForegroundColor Blue
 ssh -i $SSH_KEY_PATH $EC2_USER@$EC2_IP "cd /var/www/planit && git pull origin main"
 
-Write-Host "🗄️ 데이터베이스 마이그레이션 실행 중..." -ForegroundColor Blue
-ssh -i $SSH_KEY_PATH $EC2_USER@$EC2_IP "cd /var/www/planit && source venv/bin/activate && python manage.py migrate"
-
-Write-Host "📁 정적 파일 수집 중..." -ForegroundColor Blue
-ssh -i $SSH_KEY_PATH $EC2_USER@$EC2_IP "cd /var/www/planit && source venv/bin/activate && python manage.py collectstatic --noinput"
+Write-Host "📁 템플릿 파일 복사 중..." -ForegroundColor Blue
+ssh -i $SSH_KEY_PATH $EC2_USER@$EC2_IP "sudo cp -r /var/www/planit/Desktop/planit/templates/* /var/www/planit/templates/"
 
 Write-Host "🔄 서버 재시작 중..." -ForegroundColor Blue
 ssh -i $SSH_KEY_PATH $EC2_USER@$EC2_IP "sudo systemctl restart planit && sudo systemctl restart nginx"

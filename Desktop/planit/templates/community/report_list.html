@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}신고 관리 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-flag me-2"></i>신고 관리</h2>
+                <a href="{% url 'community:index' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>커뮤니티로
+                </a>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center border-warning">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">대기중</h5>
+                            <h2 class="mb-0">{{ pending_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-info">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">검토중</h5>
+                            <h2 class="mb-0">{{ reviewing_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-success">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">해결됨</h5>
+                            <h2 class="mb-0">{{ resolved_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-secondary">
+                        <div class="card-body">
+                            <h5 class="card-title text-secondary">기각됨</h5>
+                            <h2 class="mb-0">{{ rejected_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">상태</label>
+                            <select name="status" class="form-select">
+                                <option value="">전체</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">신고 유형</label>
+                            <select name="report_type" class="form-select">
+                                <option value="">전체</option>
+                                {% for value, label in type_choices %}
+                                <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-1"></i>필터 적용
+                            </button>
+                            <a href="{% url 'community:report_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo me-1"></i>초기화
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if reports %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>신고 대상</th>
+                                    <th>신고자</th>
+                                    <th>유형</th>
+                                    <th>상태</th>
+                                    <th>신고일시</th>
+                                    <th>처리자</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>
+                                        {% if report.post %}
+                                        <div>
+                                            <strong>게시글:</strong> 
+                                            <a href="{% url 'community:post_detail' report.post.pk %}" target="_blank">
+                                                {{ report.post.title|truncatechars:30 }}
+                                            </a>
+                                        </div>
+                                        {% elif report.comment %}
+                                        <div>
+                                            <strong>댓글:</strong> 
+                                            {{ report.comment.content|truncatechars:30 }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>{{ report.reporter.get_full_name|default:report.reporter.username }}</div>
+                                        <small class="text-muted">{{ report.reporter.get_department_display_short }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ report.get_report_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if report.status == 'PENDING' %}
+                                        <span class="badge bg-warning">{{ report.get_status_display }}</span>
+                                        {% elif report.status == 'REVIEWING' %}
+                                        <span class="badge bg-info">{{ report.get_status_display }}</span>
+                                        {% elif report.status == 'RESOLVED' %}
+                                        <span class="badge bg-success">{{ report.get_status_display }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ report.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ report.created_at|date:"Y-m-d H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if report.reviewed_by %}
+                                        <small>{{ report.reviewed_by.username }}</small>
+                                        {% else %}
+                                        <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'community:report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> 상세
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if is_paginated %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}{% if current_type %}&report_type={{ current_type }}{% endif %}">처음</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_type %}&report_type={{ current_type }}{% endif %}">이전</a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_type %}&report_type={{ current_type }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_type %}&report_type={{ current_type }}{% endif %}">다음</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_type %}&report_type={{ current_type }}{% endif %}">마지막</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>신고 내역이 없습니다.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

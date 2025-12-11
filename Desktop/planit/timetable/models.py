@@ -22,8 +22,10 @@ class Subject(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subjects')
     name = models.CharField(max_length=100, verbose_name='과목명')
     professor = models.CharField(max_length=50, blank=True, verbose_name='교수명')
-    credits = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(6)],
+    credits = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        validators=[MinValueValidator(0.5), MaxValueValidator(6)],
         default=3,
         verbose_name='학점'
     )

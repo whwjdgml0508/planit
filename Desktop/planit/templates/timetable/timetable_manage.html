@@ -117,8 +117,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 100px;">교시</th>
-                                    {% for day_code, day_name in day_names.items %}
-                                    <th class="text-center">{{ day_name }}</th>
+                                    {% for day in days %}
+                                    <th class="text-center">{{ day_names|lookup:day }}</th>
                                     {% endfor %}
                                 </tr>
                             </thead>
@@ -129,13 +129,13 @@
                                         <strong>{{ period }}교시</strong><br>
                                         <small class="text-muted">{{ period_times|get_item:period }}</small>
                                     </td>
-                                    {% for day_code, day_name in day_names.items %}
+                                    {% for day in days %}
                                     <td class="timetable-cell text-center align-middle" 
-                                        data-day="{{ day_code }}" 
+                                        data-day="{{ day }}" 
                                         data-period="{{ period }}"
                                         style="height: 80px; cursor: pointer;">
-                                        {% if timetable_data|get_item:day_code|get_item:period %}
-                                            {% with slot_data=timetable_data|get_item:day_code|get_item:period %}
+                                        {% if timetable_data|get_item:day|get_item:period %}
+                                            {% with slot_data=timetable_data|get_item:day|get_item:period %}
                                             <div class="subject-slot rounded p-2 h-100 d-flex flex-column justify-content-center"
                                                  style="background-color: {{ slot_data.subject.color }}; color: white;">
                                                 <strong style="font-size: 0.9em;">{{ slot_data.subject.name }}</strong>
@@ -143,7 +143,7 @@
                                                 <small>{{ slot_data.time_slot.location }}</small>
                                                 {% endif %}
                                                 <button class="btn btn-sm btn-outline-light mt-1 remove-btn" 
-                                                        data-day="{{ day_code }}" 
+                                                        data-day="{{ day }}" 
                                                         data-period="{{ period }}"
                                                         style="font-size: 0.7em;">
                                                     <i class="fas fa-times"></i>

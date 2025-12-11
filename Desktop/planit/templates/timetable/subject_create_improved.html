@@ -68,14 +68,9 @@
                                         <label for="{{ form.credits.id_for_label }}" class="form-label fw-bold">
                                             <i class="fas fa-star text-warning me-2"></i>학점
                                         </label>
-                                        <select name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" class="form-select modern-select">
-                                            <option value="1">1학점</option>
-                                            <option value="2">2학점</option>
-                                            <option value="3" selected>3학점</option>
-                                            <option value="4">4학점</option>
-                                            <option value="5">5학점</option>
-                                            <option value="6">6학점</option>
-                                        </select>
+                                        <input type="number" name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" 
+                                               class="form-control modern-input" value="3" min="0.5" max="6" step="0.5" 
+                                               placeholder="예: 3 또는 1.5">
                                     </div>
                                 </div>
                                 <div class="col-md-3">

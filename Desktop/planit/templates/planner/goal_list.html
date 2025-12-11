@@ -32,31 +32,16 @@
                         </small>
                     </div>
                     
-                    {% if goal.target_hours or goal.target_tasks %}
+                    {% if goal.memo %}
                     <div class="mb-3">
-                        {% if goal.target_hours %}
-                        <div class="mb-1">
-                            <i class="fas fa-clock me-1"></i>목표 학습시간: {{ goal.target_hours }}시간
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <small class="text-muted d-block mb-1"><i class="fas fa-sticky-note me-1"></i>메모</small>
+                                <p class="mb-0" style="white-space: pre-wrap;">{{ goal.memo }}</p>
+                            </div>
                         </div>
-                        {% endif %}
-                        {% if goal.target_tasks %}
-                        <div>
-                            <i class="fas fa-tasks me-1"></i>목표 과제 수: {{ goal.target_tasks }}개
-                        </div>
-                        {% endif %}
                     </div>
                     {% endif %}
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <small>진행률</small>
-                            <small>{{ goal.progress_percentage }}%</small>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar {% if goal.progress_percentage >= 80 %}bg-success{% elif goal.progress_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                 style="width: {{ goal.progress_percentage }}%"></div>
-                        </div>
-                    </div>
                     
                     {% if goal.is_achieved %}
                     <div class="alert alert-success py-2">
@@ -66,6 +51,16 @@
                         {% endif %}
                     </div>
                     {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'planner:goal_edit' goal.pk %}" class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="fas fa-edit me-1"></i>수정
+                        </a>
+                        <a href="{% url 'planner:goal_delete' goal.pk %}" class="btn btn-sm btn-outline-danger flex-fill">
+                            <i class="fas fa-trash me-1"></i>삭제
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
