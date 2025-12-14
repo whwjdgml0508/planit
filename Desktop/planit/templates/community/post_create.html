@@ -374,8 +374,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 클릭 이벤트 - 파일 선택 창 열기
     if (fileUploadArea) {
         fileUploadArea.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
+            // 드래그 중이 아닐 때만 클릭 처리
+            if (!this.classList.contains('dragover')) {
+                fileInput.click();
+            }
         });
     }
     
