@@ -268,9 +268,9 @@ textarea.form-control {
                                 </label>
                                 
                                 <!-- 숨겨진 파일 input -->
-                                <input type="file" id="fileInput" name="attachments" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" multiple style="display: none;">
+                                <input type="file" id="fileInput" name="attachments" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" multiple style="position: absolute; left: -9999px;">
                                 
-                                <div class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
+                                <label for="fileInput" class="file-upload-area" id="fileUploadArea" style="cursor: pointer; display: block;">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                                     <p class="mb-2 fw-bold fs-5">파일을 드래그하거나 클릭하여 업로드</p>
                                     <small class="text-muted d-block mb-2">최대 5개 파일, 각 파일 최대 10MB</small>
@@ -280,7 +280,7 @@ textarea.form-control {
                                             이미지, PDF, 문서, 압축파일 지원
                                         </small>
                                     </div>
-                                </div>
+                                </label>
                                 
                                 <!-- 파일 목록 표시 -->
                                 <div id="fileList" class="mt-3"></div>
@@ -371,37 +371,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let selectedFiles = [];
     
-    // 파일 선택 이벤트 - 먼저 등록
+    // 파일 선택 이벤트
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
-            alert('파일 선택됨: ' + this.files.length + '개');
-            try {
-                const files = this.files;
-                if (files && files.length > 0) {
-                    const chosenFiles = Array.from(files);
-                    handleFiles(chosenFiles, false);
-                }
-            } catch (err) {
-                alert('파일 처리 오류: ' + err.message);
+            console.log('File input changed, files:', this.files.length);
+            const files = this.files;
+            if (files && files.length > 0) {
+                const chosenFiles = Array.from(files);
+                handleFiles(chosenFiles, false);
             }
-            // 같은 파일 재선택 가능하도록 초기화
-            this.value = '';
         });
-    } else {
-        alert('fileInput 요소를 찾을 수 없습니다');
     }
     
-    // 클릭 이벤트 - 파일 선택 창 열기
-    if (fileUploadArea) {
-        fileUploadArea.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Upload area clicked');
-            if (fileInput) {
-                fileInput.click();
-            }
-        };
-    }
+    // label의 for 속성으로 파일 선택이 자동 처리됨
+    // 드래그앤드롭만 별도 처리
     
     // 드래그앤드롭 이벤트 처리
     if (fileUploadArea) {
