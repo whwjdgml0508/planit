@@ -385,9 +385,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
             const chosenFiles = Array.from(e.target.files);
+            console.log('File input change event:', chosenFiles.length, 'files selected');
             if (chosenFiles.length > 0) {
                 handleFiles(chosenFiles, false); // 기존 파일에 추가
             }
+            // 파일 입력 초기화 (같은 파일 재선택 가능하도록)
+            this.value = '';
         });
     }
     
@@ -438,27 +441,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleFiles(newFiles, replaceAll = false) {
         console.log('handleFiles called with', newFiles.length, 'files, replaceAll:', replaceAll);
         
-        // replaceAll이 true면 기존 파일 무시, false면 합치기
-        const allFiles = replaceAll ? newFiles : [...selectedFiles, ...newFiles];
+        // 파일 검증 먼저 수행
+        let validNewFiles = [];
+        let invalidCount = 0;
         
-        // 파일 개수 제한
-        if (allFiles.length > 5) {
-            alert('최대 5개 파일까지 업로드 가능합니다.');
-            return;
-        }
-        
-        // 파일 검증
-        let validFiles = [];
-        for (let file of allFiles) {
+        for (let file of newFiles) {
             if (validateFile(file)) {
-                validFiles.push(file);
+                validNewFiles.push(file);
             } else {
-                return; // 검증 실패 시 중단
+                invalidCount++;
             }
         }
         
-        selectedFiles = validFiles;
-        console.log('Valid files:', selectedFiles.length);
+        console.log('Valid new files:', validNewFiles.length, 'Invalid:', invalidCount);
+        
+        // 유효한 파일이 없으면 중단
+        if (validNewFiles.length === 0) {
+            console.log('No valid files to add');
+            return;
+        }
+        
+        // replaceAll이 true면 기존 파일 무시, false면 합치기
+        const allFiles = replaceAll ? validNewFiles : [...selectedFiles, ...validNewFiles];
+        
+        // 파일 개수 제한
+        if (allFiles.length > 5) {
+            alert('최대 5개 파일까지 업로드 가능합니다. 처음 5개 파일만 추가됩니다.');
+            selectedFiles = allFiles.slice(0, 5);
+        } else {
+            selectedFiles = allFiles;
+        }
+        
+        console.log('Total selected files:', selectedFiles.length);
         updateFileDisplay();
     }
     
