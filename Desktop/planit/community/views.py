@@ -528,6 +528,7 @@ class ReportListView(UserPassesTestMixin, ListView):
     template_name = 'community/report_list.html'
     context_object_name = 'reports'
     paginate_by = 20
+    raise_exception = True
     
     def test_func(self):
         return self.request.user.is_staff
@@ -569,12 +570,14 @@ class ReportDetailView(UserPassesTestMixin, DetailView):
     model = Report
     template_name = 'community/report_detail.html'
     context_object_name = 'report'
+    raise_exception = True
     
     def test_func(self):
         return self.request.user.is_staff
 
 class ReportUpdateStatusView(UserPassesTestMixin, View):
     """신고 상태 업데이트 뷰 (AJAX)"""
+    raise_exception = True
     
     def test_func(self):
         return self.request.user.is_staff
