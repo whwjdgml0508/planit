@@ -73,7 +73,6 @@ def sw_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('install/', TemplateView.as_view(template_name='install.html'), name='install'),
     path('manifest.json', manifest_view, name='manifest'),
     path('sw.js', sw_view, name='sw'),
     

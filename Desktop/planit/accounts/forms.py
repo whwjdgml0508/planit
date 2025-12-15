@@ -188,6 +188,12 @@ class ProfileEditForm(forms.ModelForm):
         )
         
         # 필드 라벨 설정
-        for field_name, field in self.fields.items():
-            if hasattr(User._meta.get_field(field_name), 'verbose_name'):
-                field.label = User._meta.get_field(field_name).verbose_name
+        self.fields['first_name'].label = '이름'
+        self.fields['last_name'].label = '성'
+        self.fields['email'].label = '이메일'
+        self.fields['department'].label = '학과'
+        self.fields['grade'].label = '학년'
+        self.fields['phone_number'].label = '전화번호'
+        self.fields['profile_image'].label = '프로필 이미지'
+        self.fields['avatar_choice'].label = '아바타 선택'
+        self.fields['bio'].label = '자기소개'

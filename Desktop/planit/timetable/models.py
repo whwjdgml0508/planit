@@ -20,6 +20,7 @@ class Subject(models.Model):
     # 기본 정보
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subjects')
+    semester = models.ForeignKey('Semester', on_delete=models.CASCADE, related_name='subjects', null=True, blank=True, verbose_name='학기')
     name = models.CharField(max_length=100, verbose_name='과목명')
     professor = models.CharField(max_length=50, blank=True, verbose_name='교수명')
     credits = models.DecimalField(

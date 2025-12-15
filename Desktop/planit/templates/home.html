@@ -16,13 +16,6 @@
                     학습 데이터를 통합하고 학과 커뮤니티를 연계하여<br>
                     생도 생활의 효율성과 소통을 강화하는 웹사이트
                 </p>
-                <!-- 다운로드 버튼 (항상 표시) -->
-                <div class="d-flex gap-3 mb-3">
-                    <a href="{% url 'install' %}" class="btn btn-warning btn-lg">
-                        <i class="bi bi-download me-2"></i>앱 다운로드
-                    </a>
-                </div>
-                
                 {% if not user.is_authenticated %}
                 <div class="d-flex gap-3">
                     <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">
@@ -30,15 +23,6 @@
                     </a>
                     <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg" target="_self">
                         <i class="fas fa-sign-in-alt me-2"></i>로그인
-                    </a>
-                </div>
-                {% else %}
-                <div class="d-flex gap-3">
-                    <a href="{% url 'timetable:index' %}" class="btn btn-light btn-lg">
-                        <i class="fas fa-calendar-alt me-2"></i>시간표 보기
-                    </a>
-                    <a href="{% url 'planner:index' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-tasks me-2"></i>플래너 보기
                     </a>
                 </div>
                 {% endif %}
