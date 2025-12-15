@@ -182,14 +182,10 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         # 프로필 이미지 삭제 처리
         if self.request.POST.get('profile_image-clear') == 'on':
-            user = self.request.user
+            user = form.save(commit=False)
             if user.profile_image:
                 user.profile_image.delete(save=False)
                 user.profile_image = None
-            # 폼의 다른 필드들도 저장
-            for field in form.cleaned_data:
-                if field != 'profile_image':
-                    setattr(user, field, form.cleaned_data[field])
             user.save()
             messages.success(self.request, '프로필 이미지가 제거되었습니다.')
             logger.info(f"프로필 이미지 제거 - 사용자: {user.username}")
@@ -197,11 +193,10 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
         
         # 새 프로필 이미지 업로드 처리
         if 'profile_image' in self.request.FILES:
-            user = self.request.user
             # 기존 이미지가 있으면 삭제
-            if user.profile_image:
-                user.profile_image.delete(save=False)
-            logger.info(f"프로필 이미지 업로드 - 사용자: {user.username}, 파일: {self.request.FILES['profile_image'].name}")
+            if self.request.user.profile_image:
+                self.request.user.profile_image.delete(save=False)
+            logger.info(f"프로필 이미지 업로드 - 사용자: {self.request.user.username}, 파일: {self.request.FILES['profile_image'].name}")
         
         # 폼을 통해 저장 (파일 포함)
         user = form.save()
