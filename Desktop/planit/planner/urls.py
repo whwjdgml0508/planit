@@ -33,4 +33,5 @@ urlpatterns = [
     path('ajax/add-time-block/', views.add_time_block, name='add_time_block'),
     path('ajax/remove-time-block/', views.remove_time_block, name='remove_time_block'),
     path('ajax/update-daily-goal/', views.update_daily_goal, name='update_daily_goal'),
+    path('ajax/update-goal-progress/<uuid:goal_id>/', views.update_goal_progress, name='update_goal_progress'),
 ]

@@ -384,7 +384,7 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         
         # 통계 데이터
         actual_hours = float(total_study_minutes) / 60.0
-        target_hours = daily_planner.target_study_hours
+        target_hours = float(daily_planner.target_study_hours)
         achievement_rate = min(100, int((actual_hours / target_hours * 100) if target_hours > 0 else 0))
         
         stats = {
@@ -579,5 +579,29 @@ def update_daily_goal(request):
             daily_planner.save()
         
         return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def update_goal_progress(request, goal_id):
+    """목표 진행률 업데이트 (AJAX)"""
+    if request.method == 'POST':
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+        
+        try:
+            progress = int(request.POST.get('progress', 0))
+            progress = max(0, min(100, progress))  # 0-100 범위로 제한
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'error': '유효하지 않은 진행률입니다.'})
+        
+        goal.progress = progress
+        goal.save()
+        
+        return JsonResponse({
+            'success': True,
+            'progress': goal.progress,
+            'is_achieved': goal.is_achieved,
+            'message': f'진행률이 {goal.progress}%로 업데이트되었습니다.' if goal.progress < 100 else '🎉 목표를 달성했습니다!'
+        })
     
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})

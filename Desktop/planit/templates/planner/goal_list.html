@@ -1,11 +1,38 @@
 {% extends 'base.html' %}
 
-{% block title %}학습 목표 - PlanIt{% endblock %}
+{% block title %}목표 - PlanIt{% endblock %}
+
+{% block extra_css %}
+<style>
+.progress-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.progress-control .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.progress-control .progress {
+    flex: 1;
+    height: 20px;
+}
+.progress-control .progress-text {
+    min-width: 45px;
+    text-align: center;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-bullseye me-2"></i>학습 목표</h2>
+        <h2><i class="fas fa-bullseye me-2"></i>목표</h2>
         <a href="{% url 'planner:goal_create' %}" class="btn btn-warning">
             <i class="fas fa-plus me-2"></i>새 목표 설정
         </a>
@@ -32,6 +59,31 @@
                         </small>
                     </div>
                     
+                    <!-- 진행률 컨트롤 -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-2">
+                            <i class="fas fa-chart-line me-1"></i>진행률
+                        </label>
+                        <div class="progress-control" data-goal-id="{{ goal.pk }}">
+                            <button type="button" class="btn btn-outline-secondary btn-decrease" title="10% 감소">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <div class="progress flex-grow-1">
+                                <div class="progress-bar {% if goal.progress >= 100 %}bg-success{% elif goal.progress >= 50 %}bg-warning{% else %}bg-info{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ goal.progress }}%"
+                                     aria-valuenow="{{ goal.progress }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <span class="progress-text">{{ goal.progress }}%</span>
+                            <button type="button" class="btn btn-outline-primary btn-increase" title="10% 증가">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
                     {% if goal.memo %}
                     <div class="mb-3">
                         <div class="card bg-light">
@@ -44,7 +96,7 @@
                     {% endif %}
                     
                     {% if goal.is_achieved %}
-                    <div class="alert alert-success py-2">
+                    <div class="alert alert-success py-2 mb-0">
                         <i class="fas fa-trophy me-2"></i>목표 달성!
                         {% if goal.achievement_date %}
                         <br><small>{{ goal.achievement_date|date:"Y-m-d" }} 달성</small>
@@ -70,11 +122,84 @@
     <div class="text-center py-5">
         <i class="fas fa-bullseye fa-3x text-muted mb-3"></i>
         <h5>설정된 목표가 없습니다</h5>
-        <p class="text-muted">새로운 학습 목표를 설정해보세요.</p>
+        <p class="text-muted">새로운 목표를 설정해보세요.</p>
         <a href="{% url 'planner:goal_create' %}" class="btn btn-warning">
             <i class="fas fa-plus me-2"></i>첫 번째 목표 설정하기
         </a>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 진행률 업데이트 함수
+    function updateProgress(goalId, change) {
+        const container = document.querySelector(`.progress-control[data-goal-id="${goalId}"]`);
+        const progressBar = container.querySelector('.progress-bar');
+        const progressText = container.querySelector('.progress-text');
+        
+        let currentProgress = parseInt(progressBar.getAttribute('aria-valuenow'));
+        let newProgress = Math.max(0, Math.min(100, currentProgress + change));
+        
+        // AJAX 요청
+        fetch(`/planner/ajax/update-goal-progress/${goalId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `progress=${newProgress}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // UI 업데이트
+                progressBar.style.width = data.progress + '%';
+                progressBar.setAttribute('aria-valuenow', data.progress);
+                progressText.textContent = data.progress + '%';
+                
+                // 색상 업데이트
+                progressBar.classList.remove('bg-info', 'bg-warning', 'bg-success');
+                if (data.progress >= 100) {
+                    progressBar.classList.add('bg-success');
+                } else if (data.progress >= 50) {
+                    progressBar.classList.add('bg-warning');
+                } else {
+                    progressBar.classList.add('bg-info');
+                }
+                
+                // 100% 달성 시 페이지 새로고침
+                if (data.is_achieved && data.progress >= 100) {
+                    alert(data.message);
+                    location.reload();
+                }
+            } else {
+                alert('오류: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('네트워크 오류가 발생했습니다.');
+        });
+    }
+    
+    // 증가 버튼 이벤트
+    document.querySelectorAll('.btn-increase').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.closest('.progress-control').dataset.goalId;
+            updateProgress(goalId, 10);
+        });
+    });
+    
+    // 감소 버튼 이벤트
+    document.querySelectorAll('.btn-decrease').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const goalId = this.closest('.progress-control').dataset.goalId;
+            updateProgress(goalId, -10);
+        });
+    });
+});
+</script>
 {% endblock %}

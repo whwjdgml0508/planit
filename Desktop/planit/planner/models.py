@@ -262,7 +262,12 @@ class Goal(models.Model):
     # 메모
     memo = models.TextField(blank=True, verbose_name='메모')
     
-    # 달성 여부
+    # 진행률 및 달성 여부
+    progress = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name='진행률(%)'
+    )
     is_achieved = models.BooleanField(default=False, verbose_name='달성 여부')
     achievement_date = models.DateTimeField(null=True, blank=True, verbose_name='달성일시')
     
@@ -270,12 +275,31 @@ class Goal(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = '학습 목표'
-        verbose_name_plural = '학습 목표들'
+        verbose_name = '목표'
+        verbose_name_plural = '목표들'
         ordering = ['-start_date', '-created_at']
         
     def __str__(self):
         return f"{self.title} ({self.get_goal_type_display()})"
+    
+    def save(self, *args, **kwargs):
+        # 진행률이 100%가 되면 자동으로 달성 상태로 변경
+        if self.progress >= 100 and not self.is_achieved:
+            self.is_achieved = True
+            self.achievement_date = timezone.now()
+        # 달성 상태로 변경되면 진행률을 100%로 설정
+        elif self.is_achieved and self.progress < 100:
+            self.progress = 100
+            if not self.achievement_date:
+                self.achievement_date = timezone.now()
+        # 달성 상태가 아니면 달성일시 초기화
+        elif not self.is_achieved:
+            self.achievement_date = None
+        super().save(*args, **kwargs)
+    
+    def get_progress_percentage(self):
+        """진행률 반환"""
+        return self.progress
 
 
 class DailyPlanner(models.Model):
