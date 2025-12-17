@@ -19,62 +19,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-from django.http import HttpResponse, FileResponse, Http404
-import json
-import os
-
-def manifest_view(request):
-    """PWA 매니페스트 파일 서빙"""
-    try:
-        import os
-        manifest_path = os.path.join(settings.STATIC_ROOT, 'manifest.json')
-        if not os.path.exists(manifest_path):
-            # 개발 환경에서는 static 폴더에서 찾기
-            manifest_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
-        
-        with open(manifest_path, 'r', encoding='utf-8') as f:
-            manifest_data = f.read()
-        return HttpResponse(manifest_data, content_type='application/json')
-    except FileNotFoundError:
-        # 파일이 없으면 기본 매니페스트 반환
-        default_manifest = {
-            "name": "PlanIt",
-            "short_name": "PlanIt",
-            "start_url": "/",
-            "display": "standalone",
-            "background_color": "#ffffff",
-            "theme_color": "#0d6efd"
-        }
-        return HttpResponse(json.dumps(default_manifest), content_type='application/json')
-
-def sw_view(request):
-    """서비스 워커 파일 서빙"""
-    try:
-        import os
-        sw_path = os.path.join(settings.STATIC_ROOT, 'sw.js')
-        if not os.path.exists(sw_path):
-            # 개발 환경에서는 static 폴더에서 찾기
-            sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
-        
-        with open(sw_path, 'r', encoding='utf-8') as f:
-            sw_data = f.read()
-        return HttpResponse(sw_data, content_type='application/javascript')
-    except FileNotFoundError:
-        # 파일이 없으면 기본 서비스 워커 반환
-        default_sw = """
-        const CACHE_NAME = 'planit-v1';
-        self.addEventListener('install', event => {
-            console.log('Service Worker installed');
-        });
-        """
-        return HttpResponse(default_sw, content_type='application/javascript')
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('manifest.json', manifest_view, name='manifest'),
-    path('sw.js', sw_view, name='sw'),
     
     # API URLs (temporarily commented out)
     # path('api/v1/', include('api.urls')),

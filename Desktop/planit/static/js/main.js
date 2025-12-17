@@ -1,38 +1,5 @@
 // Main JavaScript for PlanIt
 
-// PWA Service Worker 등록
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-                console.log('[PWA] Service Worker registered:', registration.scope);
-            })
-            .catch((error) => {
-                console.log('[PWA] Service Worker registration failed:', error);
-            });
-    });
-}
-
-// PWA 설치 프롬프트 저장
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[PWA] beforeinstallprompt event fired');
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // 설치 버튼 표시 (있는 경우)
-    const installButtons = document.querySelectorAll('#installPWA, #quickInstallPWA');
-    installButtons.forEach(btn => {
-        if (btn) btn.style.display = 'block';
-    });
-});
-
-// PWA 설치 완료 이벤트
-window.addEventListener('appinstalled', () => {
-    console.log('[PWA] App was installed');
-    deferredPrompt = null;
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

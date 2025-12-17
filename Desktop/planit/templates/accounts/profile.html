@@ -9,6 +9,18 @@
         transform: translateY(-5px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
     }
+    .auto-refresh-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #28a745;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
 </style>
 {% endblock %}
 
@@ -170,8 +182,8 @@
                                         </div>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <div class="fw-bold text-warning fs-4">{{ study_hours }}h</div>
-                                        <div class="text-muted small">최근 학습시간</div>
+                                        <div class="fw-bold text-warning fs-4" id="study-hours-value">{{ study_hours }}h</div>
+                                        <div class="text-muted small">최근 학습시간 (30일)</div>
                                     </div>
                                 </div>
                             </div>
@@ -182,6 +194,10 @@
                         <div class="small text-muted">
                             <i class="fas fa-info-circle me-1"></i>
                             최근 30일간의 활동 통계입니다.
+                            <span class="ms-2">
+                                <span class="auto-refresh-indicator"></span>
+                                <span class="ms-1">5분마다 자동 업데이트</span>
+                            </span>
                         </div>
                     {% else %}
                         <div class="text-center text-muted py-4">
@@ -195,4 +211,29 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 프로필 통계 자동 새로고침 (5분마다)
+let autoRefreshInterval;
+
+function refreshProfileStats() {
+    // 현재 페이지 새로고침
+    location.reload();
+}
+
+// 5분(300000ms)마다 자동 새로고침
+autoRefreshInterval = setInterval(refreshProfileStats, 300000);
+
+// 페이지를 떠날 때 interval 정리
+window.addEventListener('beforeunload', function() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+});
+
+// 페이지 로드 시 마지막 업데이트 시간 표시 (선택사항)
+console.log('프로필 통계 자동 새로고침 활성화 (5분 간격)');
+</script>
 {% endblock %}

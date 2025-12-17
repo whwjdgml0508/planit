@@ -92,7 +92,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         from django.db.models import Sum
         from timetable.models import Subject
-        from planner.models import Task, StudySession
+        from planner.models import Task, StudySession, TimeBlock
         from community.models import Post
         
         context = super().get_context_data(**kwargs)
@@ -121,14 +121,24 @@ class ProfileView(LoginRequiredMixin, DetailView):
             completed_at__gte=thirty_days_ago
         ).count()
         
-        # 학습 세션 통계
+        # 학습 세션 통계 (StudySession)
         study_sessions = user.study_sessions.filter(
             start_time__gte=thirty_days_ago,
             end_time__isnull=False
         )
-        total_minutes = study_sessions.aggregate(
+        session_minutes = study_sessions.aggregate(
             total=Sum('duration_minutes')
         )['total'] or 0
+        
+        # 일일 플래너 학습 시간 통계 (TimeBlock)
+        timeblock_minutes = TimeBlock.objects.filter(
+            daily_planner__user=user,
+            daily_planner__date__gte=thirty_days_ago.date(),
+            block_type='STUDY'
+        ).count() * 10  # 각 블록은 10분
+        
+        # 총 학습시간 합산
+        total_minutes = session_minutes + timeblock_minutes
         context['study_hours'] = round(total_minutes / 60, 1)
         context['study_sessions_count'] = study_sessions.count()
         
@@ -154,8 +164,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # 이번주 일요일 찾기
         end_of_week = start_of_week + timedelta(days=6)
         
-        # 이번주 학습 세션의 총 시간 계산 (분 단위)
-        weekly_study_minutes = StudySession.objects.filter(
+        # 이번주 학습 세션의 총 시간 계산 (분 단위) - StudySession
+        weekly_session_minutes = StudySession.objects.filter(
             user=user,
             start_time__date__gte=start_of_week,
             start_time__date__lte=end_of_week,
@@ -164,8 +174,17 @@ class ProfileView(LoginRequiredMixin, DetailView):
             total=Sum('duration_minutes')
         )['total'] or 0
         
-        # 시간으로 변환
-        context['weekly_study_hours'] = round(weekly_study_minutes / 60, 1) if weekly_study_minutes else 0
+        # 이번주 일일 플래너 학습 시간 계산 (분 단위) - TimeBlock
+        weekly_timeblock_minutes = TimeBlock.objects.filter(
+            daily_planner__user=user,
+            daily_planner__date__gte=start_of_week,
+            daily_planner__date__lte=end_of_week,
+            block_type='STUDY'
+        ).count() * 10  # 각 블록은 10분
+        
+        # 총 학습시간 합산 및 시간으로 변환
+        weekly_total_minutes = weekly_session_minutes + weekly_timeblock_minutes
+        context['weekly_study_hours'] = round(weekly_total_minutes / 60, 1) if weekly_total_minutes else 0
         
         return context
 
@@ -180,29 +199,52 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
         return self.request.user
     
     def form_valid(self, form):
-        # 프로필 이미지 삭제 처리
-        if self.request.POST.get('profile_image-clear') == 'on':
-            user = form.save(commit=False)
-            if user.profile_image:
-                user.profile_image.delete(save=False)
-                user.profile_image = None
-            user.save()
-            messages.success(self.request, '프로필 이미지가 제거되었습니다.')
-            logger.info(f"프로필 이미지 제거 - 사용자: {user.username}")
+        try:
+            # 프로필 이미지 삭제 처리
+            if self.request.POST.get('profile_image-clear') == 'on':
+                user = form.save(commit=False)
+                if user.profile_image:
+                    user.profile_image.delete(save=False)
+                    user.profile_image = None
+                user.save()
+                messages.success(self.request, '프로필 이미지가 제거되었습니다.')
+                logger.info(f"프로필 이미지 제거 - 사용자: {user.username}")
+                return redirect(self.success_url)
+            
+            # 새 프로필 이미지 업로드 처리
+            if 'profile_image' in self.request.FILES:
+                # 기존 이미지 경로 저장 (삭제용)
+                old_image_path = None
+                if self.request.user.profile_image:
+                    old_image_path = self.request.user.profile_image.path
+                
+                # 폼 저장 (Django가 자동으로 새 이미지 저장)
+                user = form.save()
+                
+                # 기존 이미지 파일 삭제 (새 이미지 저장 후)
+                if old_image_path:
+                    try:
+                        import os
+                        if os.path.exists(old_image_path):
+                            os.remove(old_image_path)
+                    except Exception as e:
+                        logger.warning(f"기존 프로필 이미지 삭제 실패 - {str(e)}")
+                
+                logger.info(f"프로필 이미지 업로드 - 사용자: {user.username}, 파일: {self.request.FILES['profile_image'].name}")
+                messages.success(self.request, '프로필이 성공적으로 업데이트되었습니다.')
+                logger.info(f"프로필 업데이트 성공 - 사용자: {user.username}")
+                return redirect(self.success_url)
+            
+            # 일반 필드만 업데이트 (이미지 변경 없음)
+            user = form.save()
+            messages.success(self.request, '프로필이 성공적으로 업데이트되었습니다.')
+            logger.info(f"프로필 업데이트 성공 - 사용자: {user.username}")
             return redirect(self.success_url)
-        
-        # 새 프로필 이미지 업로드 처리
-        if 'profile_image' in self.request.FILES:
-            # 기존 이미지가 있으면 삭제
-            if self.request.user.profile_image:
-                self.request.user.profile_image.delete(save=False)
-            logger.info(f"프로필 이미지 업로드 - 사용자: {self.request.user.username}, 파일: {self.request.FILES['profile_image'].name}")
-        
-        # 폼을 통해 저장 (파일 포함)
-        user = form.save()
-        messages.success(self.request, '프로필이 성공적으로 업데이트되었습니다.')
-        logger.info(f"프로필 업데이트 성공 - 사용자: {user.username}")
-        return redirect(self.success_url)
+            
+        except Exception as e:
+            logger.error(f"프로필 업데이트 중 오류 발생 - 사용자: {self.request.user.username}, 오류: {str(e)}", exc_info=True)
+            messages.error(self.request, f'프로필 업데이트 중 오류가 발생했습니다: {str(e)}')
+            return super().form_invalid(form)
     
     def form_invalid(self, form):
         messages.error(self.request, '프로필 업데이트 중 오류가 발생했습니다.')

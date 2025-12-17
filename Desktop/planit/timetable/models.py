@@ -26,7 +26,7 @@ class Subject(models.Model):
     credits = models.DecimalField(
         max_digits=3,
         decimal_places=1,
-        validators=[MinValueValidator(0.5), MaxValueValidator(6)],
+        validators=[MinValueValidator(0), MaxValueValidator(6)],
         default=3,
         verbose_name='학점'
     )
