@@ -136,8 +136,8 @@
                                         style="height: 80px; cursor: pointer;">
                                         {% if timetable_data|get_item:day|get_item:period %}
                                             {% with slot_data=timetable_data|get_item:day|get_item:period %}
-                                            <div class="subject-slot rounded p-2 h-100 d-flex flex-column justify-content-center"
-                                                 style="background-color: {{ slot_data.subject.color }}; color: white;">
+                                            <div class="subject-slot p-2 h-100 d-flex flex-column justify-content-center"
+                                                 style="background-color: {{ slot_data.subject.color }}; color: white; border-radius: 8px;">
                                                 <strong style="font-size: 0.9em;">{{ slot_data.subject.name }}</strong>
                                                 {% if slot_data.time_slot.location %}
                                                 <small>{{ slot_data.time_slot.location }}</small>
@@ -199,6 +199,18 @@
 .timetable-table {
     table-layout: fixed !important;
     width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 4px !important;
+}
+
+.timetable-table thead th {
+    border: none !important;
+    background-color: #f8f9fa !important;
+}
+
+.timetable-table tbody td {
+    border: none !important;
+    background-color: #ffffff !important;
 }
 
 .subject-item:hover {
@@ -218,6 +230,8 @@
     max-height: 80px !important;
     vertical-align: middle !important;
     padding: 4px !important;
+    background-color: #f8f9fa !important;
+    border-radius: 8px !important;
 }
 
 .timetable-cell:hover .empty-slot {
@@ -239,6 +253,8 @@
     height: 100% !important;
     min-height: 100% !important;
     max-height: 100% !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
 }
 
 .remove-btn {
@@ -282,8 +298,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 시간표 셀 클릭 (과목 추가)
     document.querySelectorAll('.timetable-cell').forEach(cell => {
-        cell.addEventListener('click', function() {
+        cell.addEventListener('click', function(e) {
             console.log('시간표 셀 클릭됨');
+            
+            // 이미 과목이 있는 경우 (삭제 버튼 클릭 시)
+            if (this.querySelector('.subject-slot')) {
+                console.log('이미 과목이 있는 셀입니다.');
+                return;
+            }
             
             if (!selectedSubject) {
                 alert('먼저 과목을 선택해주세요.');
@@ -300,12 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 period: period,
                 location: location
             });
-            
-            // 이미 과목이 있는 경우
-            if (this.querySelector('.subject-slot')) {
-                console.log('이미 과목이 있는 셀입니다.');
-                return;
-            }
             
             // AJAX로 과목 추가
             addToTimetable(selectedSubject.id, day, period, location);
@@ -379,44 +395,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 시간표 자동 업데이트 함수 (실시간 업데이트)
     function updateTimetableDisplay() {
-        // AJAX로 시간표 데이터만 가져와서 업데이트
-        fetch('{% url "timetable:get_timetable_data" %}', {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 기존 시간표 셀 초기화
-                document.querySelectorAll('.timetable-cell').forEach(cell => {
-                    cell.innerHTML = '<button class="btn btn-outline-secondary btn-sm w-100 h-100" onclick="addToTimetable(\'' + cell.dataset.day + '\', ' + cell.dataset.period + ')">+</button>';
-                });
-                
-                // 새로운 시간표 데이터로 업데이트
-                data.timetable_data.forEach(slot => {
-                    const cell = document.querySelector(`[data-day="${slot.day}"][data-period="${slot.period}"]`);
-                    if (cell) {
-                        cell.innerHTML = `
-                            <div class="subject-card" style="background-color: ${slot.subject_color}; color: white; padding: 5px; border-radius: 3px; position: relative;">
-                                <strong>${slot.subject_name}</strong>
-                                <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0" 
-                                        onclick="removeFromTimetable('${slot.day}', ${slot.period})" 
-                                        style="padding: 1px 4px; font-size: 10px;">×</button>
-                            </div>
-                        `;
-                    }
-                });
-            } else {
-                console.error('시간표 데이터 로드 실패:', data.error);
-            }
-        })
-        .catch(error => {
-            console.error('시간표 업데이트 오류:', error);
-            // 오류 발생 시에만 페이지 새로고침
-            window.location.reload();
-        });
+        // 페이지 새로고침으로 시간표 업데이트 (디자인 유지)
+        window.location.reload();
     }
     
     function removeFromTimetable(day, period) {
