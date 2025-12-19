@@ -236,7 +236,6 @@
 
 .timetable-cell:hover .empty-slot {
     background-color: #e9ecef;
-    border-color: #007bff;
 }
 
 .timetable-cell.can-add:hover {
@@ -278,13 +277,17 @@
 }
 
 .empty-slot {
-    background-color: #f8f9fa;
-    border: 2px dashed #dee2e6;
+    background-color: transparent;
+    border: none;
     cursor: pointer;
     transition: all 0.3s ease;
     height: 100% !important;
     min-height: 100% !important;
     max-height: 100% !important;
+}
+
+.empty-slot:hover {
+    background-color: #e9ecef;
 }
 
 .remove-btn {
