@@ -137,15 +137,14 @@
                                         {% if timetable_data|get_item:day|get_item:period %}
                                             {% with slot_data=timetable_data|get_item:day|get_item:period %}
                                             <div class="subject-slot p-2 h-100 d-flex flex-column justify-content-center"
-                                                 style="background-color: {{ slot_data.subject.color }}; color: white; border-radius: 8px;">
+                                                 style="background-color: {{ slot_data.subject.color }}; color: white; border-radius: 8px; position: relative;">
                                                 <strong style="font-size: 0.9em;">{{ slot_data.subject.name }}</strong>
                                                 {% if slot_data.time_slot.location %}
                                                 <small>{{ slot_data.time_slot.location }}</small>
                                                 {% endif %}
-                                                <button class="btn btn-sm btn-outline-light mt-1 remove-btn" 
+                                                <button class="btn btn-sm remove-btn" 
                                                         data-day="{{ day }}" 
-                                                        data-period="{{ period }}"
-                                                        style="font-size: 0.7em;">
+                                                        data-period="{{ period }}">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </div>
@@ -258,8 +257,22 @@
 }
 
 .remove-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
     opacity: 0;
     transition: opacity 0.2s;
+    padding: 2px 6px;
+    font-size: 0.7em;
+    color: white;
+    background: rgba(0,0,0,0.3);
+    border: none;
+    border-radius: 4px;
+}
+
+.remove-btn:hover {
+    background: rgba(0,0,0,0.5);
+    color: white;
 }
 
 .subject-slot:hover .remove-btn {
@@ -308,7 +321,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!selectedSubject) {
-                alert('먼저 과목을 선택해주세요.');
                 return;
             }
             

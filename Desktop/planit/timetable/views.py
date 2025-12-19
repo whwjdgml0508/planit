@@ -127,10 +127,22 @@ class SubjectDeleteView(LoginRequiredMixin, DeleteView):
     """과목 삭제 뷰"""
     model = Subject
     template_name = 'timetable/subject_delete.html'
-    success_url = reverse_lazy('timetable:index')
     
     def get_queryset(self):
         return Subject.objects.filter(user=self.request.user)
+    
+    def get_success_url(self):
+        # HTTP_REFERER에서 이전 페이지 확인하여 적절한 페이지로 리다이렉트
+        referer = self.request.session.get('delete_referer', '')
+        if 'manage' in referer:
+            return reverse_lazy('timetable:timetable_manage')
+        return reverse_lazy('timetable:index')
+    
+    def get(self, request, *args, **kwargs):
+        # 삭제 확인 페이지 접근 시 이전 페이지 저장
+        referer = request.META.get('HTTP_REFERER', '')
+        request.session['delete_referer'] = referer
+        return super().get(request, *args, **kwargs)
     
     def delete(self, request, *args, **kwargs):
         subject = self.get_object()
