@@ -245,7 +245,40 @@
 
 <script>
 function setStatus(status) {
-    document.querySelector('[name="status"]').value = status;
+    const form = document.getElementById('updateStatusForm');
+    const statusSelect = form.querySelector('[name="status"]');
+    statusSelect.value = status;
+    
+    const formData = new FormData(form);
+    const deleteContent = document.getElementById('deleteContent').checked;
+    
+    if (deleteContent) {
+        if (!confirm('정말로 신고된 콘텐츠를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+            return;
+        }
+        formData.append('delete_content', 'true');
+    }
+    
+    fetch('{% url "community:report_update_status" report.pk %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || '처리가 완료되었습니다.');
+            window.location.reload();
+        } else {
+            alert(data.message || '처리 중 오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('처리 중 오류가 발생했습니다.');
+    });
 }
 
 document.getElementById('updateStatusForm').addEventListener('submit', function(e) {
