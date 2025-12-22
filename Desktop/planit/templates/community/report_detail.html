@@ -270,7 +270,11 @@ function setStatus(status) {
     .then(data => {
         if (data.success) {
             alert(data.message || '처리가 완료되었습니다.');
-            window.location.reload();
+            if (deleteContent) {
+                window.location.href = '{% url "community:report_list" %}';
+            } else {
+                window.location.reload();
+            }
         } else {
             alert(data.message || '처리 중 오류가 발생했습니다.');
         }
@@ -305,7 +309,11 @@ document.getElementById('updateStatusForm').addEventListener('submit', function(
     .then(data => {
         if (data.success) {
             alert(data.message || '처리가 완료되었습니다.');
-            window.location.reload();
+            if (deleteContent) {
+                window.location.href = '{% url "community:report_list" %}';
+            } else {
+                window.location.reload();
+            }
         } else {
             alert(data.message || '처리 중 오류가 발생했습니다.');
         }
