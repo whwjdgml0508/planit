@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}파일 업로드 - {{ subject.name }} - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h4 class="mb-0"><i class="fas fa-upload me-2"></i>파일 업로드</h4>
+                    <small>{{ subject.name }}</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.file_type.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-tag me-2"></i>{{ form.file_type.label }}
+                            </label>
+                            <select name="{{ form.file_type.name }}" id="{{ form.file_type.id_for_label }}" class="form-select" required>
+                                <option value="">파일 종류를 선택하세요</option>
+                                {% for value, label in form.file_type.field.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.file_type.errors %}
+                            <div class="text-danger small mt-1">{{ form.file_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-heading me-2"></i>{{ form.title.label }}
+                            </label>
+                            <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                                   class="form-control" placeholder="{{ form.title.field.widget.attrs.placeholder }}" required>
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-2"></i>{{ form.description.label }}
+                            </label>
+                            <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                      class="form-control" rows="3" placeholder="{{ form.description.field.widget.attrs.placeholder }}"></textarea>
+                            {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.file.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-file me-2"></i>{{ form.file.label }}
+                            </label>
+                            <input type="file" name="{{ form.file.name }}" id="{{ form.file.id_for_label }}" 
+                                   class="form-control" required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                최대 파일 크기: 50MB
+                            </div>
+                            {% if form.file.errors %}
+                            <div class="text-danger small mt-1">{{ form.file.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload me-2"></i>업로드
+                            </button>
+                            <a href="{% url 'timetable:subject_detail' subject.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>취소
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    border-bottom: none;
+}
+
+.form-label {
+    color: #495057;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}

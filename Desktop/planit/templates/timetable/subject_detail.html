@@ -95,20 +95,71 @@
                     
                     <!-- 통계 정보 -->
                     <div class="row text-center bg-light rounded p-3 mb-4">
-                        <div class="col-4">
+                        <div class="col-3">
                             <div class="fw-bold text-primary">{{ subject.time_slots.count }}</div>
                             <small class="text-muted">시간표 슬롯</small>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <div class="fw-bold text-success">{{ subject.credits }}</div>
                             <small class="text-muted">학점</small>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
+                            <div class="fw-bold text-info">{{ files.count }}</div>
+                            <small class="text-muted">파일</small>
+                        </div>
+                        <div class="col-3">
                             <div class="fw-bold" style="color: {{ subject.color }};">
                                 <i class="fas fa-circle"></i>
                             </div>
                             <small class="text-muted">과목 색상</small>
                         </div>
+                    </div>
+                    
+                    <!-- 파일 관리 섹션 -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-folder-open me-2"></i>과목 자료</h5>
+                            <a href="{% url 'timetable:subject_file_upload' subject.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-upload me-1"></i>파일 업로드
+                            </a>
+                        </div>
+                        
+                        {% if files %}
+                        <div class="list-group">
+                            {% for file in files %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge bg-secondary me-2">{{ file.get_file_type_display }}</span>
+                                            <h6 class="mb-0">{{ file.title }}</h6>
+                                        </div>
+                                        {% if file.description %}
+                                        <p class="mb-1 text-muted small">{{ file.description }}</p>
+                                        {% endif %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-file me-1"></i>{{ file.get_file_size_display }}
+                                            <i class="fas fa-clock ms-2 me-1"></i>{{ file.created_at|date:"Y-m-d H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="btn-group-vertical btn-group-sm ms-3">
+                                        <a href="{% url 'timetable:subject_file_download' file.pk %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{% url 'timetable:subject_file_delete' file.pk %}" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            아직 업로드된 파일이 없습니다. 강의계획서, 수업자료 등을 업로드해보세요!
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <!-- 액션 버튼 -->

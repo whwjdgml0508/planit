@@ -3,7 +3,7 @@ from django.forms import inlineformset_factory
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div, Submit, HTML, Row, Column
 from crispy_forms.bootstrap import PrependedText
-from .models import Subject, TimeSlot, Semester
+from .models import Subject, TimeSlot, Semester, SubjectFile
 
 class SubjectForm(forms.ModelForm):
     """과목 생성/수정 폼"""
@@ -384,3 +384,30 @@ class ImprovedSubjectWithTimeSlotsForm(forms.ModelForm):
                     period = int(parts[2])
                     selected_slots.append({'day': day, 'period': period})
         return selected_slots
+
+class SubjectFileForm(forms.ModelForm):
+    """과목 파일 업로드 폼"""
+    
+    class Meta:
+        model = SubjectFile
+        fields = ['file_type', 'title', 'description', 'file']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['file_type'].label = '파일 종류'
+        self.fields['title'].label = '파일 제목'
+        self.fields['description'].label = '설명'
+        self.fields['file'].label = '파일'
+        
+        self.fields['title'].widget.attrs.update({'placeholder': '예: 1주차 강의자료, 중간고사 범위 등'})
+        self.fields['description'].widget.attrs.update({'placeholder': '파일에 대한 간단한 설명 (선택사항)'})
+    
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if file:
+            if file.size > 50 * 1024 * 1024:
+                raise forms.ValidationError('파일 크기는 50MB를 초과할 수 없습니다.')
+        return file

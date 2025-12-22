@@ -16,6 +16,11 @@ urlpatterns = [
     path('subject/<uuid:pk>/edit/', views.SubjectUpdateView.as_view(), name='subject_edit'),
     path('subject/<uuid:pk>/delete/', views.SubjectDeleteView.as_view(), name='subject_delete'),
     
+    # 파일 관리
+    path('subject/<uuid:subject_id>/file/upload/', views.SubjectFileUploadView.as_view(), name='subject_file_upload'),
+    path('file/<uuid:pk>/delete/', views.SubjectFileDeleteView.as_view(), name='subject_file_delete'),
+    path('file/<uuid:pk>/download/', views.download_subject_file, name='subject_file_download'),
+    
     # 시간표 관리
     path('manage/', views.TimetableManageView.as_view(), name='timetable_manage'),
     path('ajax/add-to-timetable/', views.add_to_timetable, name='add_to_timetable'),

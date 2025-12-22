@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, CreateView, DetailView, UpdateView, DeleteView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.urls import reverse_lazy
-from django.http import JsonResponse
+from django.urls import reverse_lazy, reverse
+from django.http import JsonResponse, FileResponse, Http404
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from .models import Subject, TimeSlot, Semester
-from .forms import SubjectForm, TimeSlotForm, SubjectWithTimeSlotsForm, SemesterForm, ImprovedSubjectWithTimeSlotsForm
+from .models import Subject, TimeSlot, Semester, SubjectFile
+from .forms import SubjectForm, TimeSlotForm, SubjectWithTimeSlotsForm, SemesterForm, ImprovedSubjectWithTimeSlotsForm, SubjectFileForm
 
 class TimetableView(LoginRequiredMixin, TemplateView):
     """시간표 메인 뷰"""
@@ -103,7 +103,12 @@ class SubjectDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'subject'
     
     def get_queryset(self):
-        return Subject.objects.filter(user=self.request.user).prefetch_related('time_slots')
+        return Subject.objects.filter(user=self.request.user).prefetch_related('time_slots', 'files')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['files'] = self.object.files.all()
+        return context
 
 class SubjectUpdateView(LoginRequiredMixin, UpdateView):
     """과목 수정 뷰"""
@@ -454,3 +459,56 @@ class ImprovedSubjectCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
         return super().form_valid(form)
+
+class SubjectFileUploadView(LoginRequiredMixin, CreateView):
+    """과목 파일 업로드 뷰"""
+    model = SubjectFile
+    form_class = SubjectFileForm
+    template_name = 'timetable/subject_file_upload.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.subject = get_object_or_404(Subject, pk=kwargs['subject_id'], user=request.user)
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subject'] = self.subject
+        return context
+    
+    def form_valid(self, form):
+        form.instance.subject = self.subject
+        messages.success(self.request, f'"{form.instance.title}" 파일이 업로드되었습니다.')
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse('timetable:subject_detail', kwargs={'pk': self.subject.pk})
+
+class SubjectFileDeleteView(LoginRequiredMixin, DeleteView):
+    """과목 파일 삭제 뷰"""
+    model = SubjectFile
+    template_name = 'timetable/subject_file_delete.html'
+    
+    def get_queryset(self):
+        return SubjectFile.objects.filter(subject__user=self.request.user)
+    
+    def get_success_url(self):
+        return reverse('timetable:subject_detail', kwargs={'pk': self.object.subject.pk})
+    
+    def delete(self, request, *args, **kwargs):
+        file_obj = self.get_object()
+        file_title = file_obj.title
+        result = super().delete(request, *args, **kwargs)
+        messages.success(request, f'"{file_title}" 파일이 삭제되었습니다.')
+        return result
+
+@login_required
+def download_subject_file(request, pk):
+    """과목 파일 다운로드"""
+    file_obj = get_object_or_404(SubjectFile, pk=pk, subject__user=request.user)
+    
+    try:
+        response = FileResponse(file_obj.file.open('rb'), as_attachment=True, filename=file_obj.file.name.split('/')[-1])
+        return response
+    except Exception as e:
+        messages.error(request, '파일 다운로드 중 오류가 발생했습니다.')
+        return redirect('timetable:subject_detail', pk=file_obj.subject.pk)

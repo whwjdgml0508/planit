@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subject, TimeSlot, Semester
+from .models import Subject, TimeSlot, Semester, SubjectFile
 
 class TimeSlotInline(admin.TabularInline):
     model = TimeSlot

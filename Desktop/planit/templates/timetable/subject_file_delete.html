@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}파일 삭제 확인 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>파일 삭제 확인</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        다음 파일을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                    </div>
+                    
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <h5 class="mb-2">{{ subjectfile.title }}</h5>
+                        <p class="mb-2 text-muted">
+                            <span class="badge bg-secondary">{{ subjectfile.get_file_type_display }}</span>
+                            <span class="ms-2">{{ subjectfile.get_file_size_display }}</span>
+                        </p>
+                        {% if subjectfile.description %}
+                        <p class="mb-0 small text-muted">{{ subjectfile.description }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash me-2"></i>삭제
+                            </button>
+                            <a href="{% url 'timetable:subject_detail' subjectfile.subject.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>취소
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    border-bottom: none;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+</style>
+{% endblock %}
