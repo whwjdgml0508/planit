@@ -47,3 +47,10 @@ class SemesterAdmin(admin.ModelAdmin):
     list_filter = ['year', 'semester', 'is_current']
     search_fields = ['user__username']
     readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(SubjectFile)
+class SubjectFileAdmin(admin.ModelAdmin):
+    list_display = ['title', 'subject', 'file_type', 'file_size', 'created_at']
+    list_filter = ['file_type', 'created_at']
+    search_fields = ['title', 'subject__name', 'description']
+    readonly_fields = ['id', 'created_at', 'updated_at']

@@ -28,6 +28,8 @@ class Subject(models.Model):
         decimal_places=1,
         validators=[MinValueValidator(0), MaxValueValidator(6)],
         default=3,
+        null=True,
+        blank=True,
         verbose_name='학점'
     )
     
@@ -165,3 +167,58 @@ class Semester(models.Model):
         if self.is_current:
             Semester.objects.filter(user=self.user, is_current=True).update(is_current=False)
         super().save(*args, **kwargs)
+
+class SubjectFile(models.Model):
+    """과목 파일 모델 - 수업 자료, 강의계획서 등"""
+    
+    FILE_TYPE_CHOICES = [
+        ('SYLLABUS', '강의계획서'),
+        ('LECTURE', '수업자료'),
+        ('ASSIGNMENT', '과제'),
+        ('EXAM', '시험자료'),
+        ('REFERENCE', '참고자료'),
+        ('OTHER', '기타'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='files')
+    file_type = models.CharField(
+        max_length=20,
+        choices=FILE_TYPE_CHOICES,
+        default='OTHER',
+        verbose_name='파일 종류'
+    )
+    title = models.CharField(max_length=200, verbose_name='파일 제목')
+    description = models.TextField(max_length=500, blank=True, verbose_name='설명')
+    file = models.FileField(upload_to='subject_files/%Y/%m/', verbose_name='파일')
+    file_size = models.BigIntegerField(default=0, verbose_name='파일 크기')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = '과목 파일'
+        verbose_name_plural = '과목 파일들'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+    
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.file_size = self.file.size
+        super().save(*args, **kwargs)
+    
+    def get_file_size_display(self):
+        """파일 크기를 읽기 쉬운 형태로 반환"""
+        size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024.0:
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"
+    
+    def get_file_extension(self):
+        """파일 확장자 반환"""
+        import os
+        return os.path.splitext(self.file.name)[1].lower()
