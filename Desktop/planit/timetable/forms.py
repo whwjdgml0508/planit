@@ -8,17 +8,59 @@ from .models import Subject, TimeSlot, Semester, SubjectFile
 class SubjectForm(forms.ModelForm):
     """과목 생성/수정 폼"""
     
+    midterm_percent = forms.IntegerField(
+        required=False,
+        initial=0,
+        min_value=0,
+        max_value=100,
+        label='중간',
+        widget=forms.NumberInput(attrs={'placeholder': '0', 'class': 'form-control'})
+    )
+    final_percent = forms.IntegerField(
+        required=False,
+        initial=0,
+        min_value=0,
+        max_value=100,
+        label='기말',
+        widget=forms.NumberInput(attrs={'placeholder': '0', 'class': 'form-control'})
+    )
+    quiz_percent = forms.IntegerField(
+        required=False,
+        initial=0,
+        min_value=0,
+        max_value=100,
+        label='수시',
+        widget=forms.NumberInput(attrs={'placeholder': '0', 'class': 'form-control'})
+    )
+    
     class Meta:
         model = Subject
         fields = ['name', 'professor', 'credits', 'subject_type', 
-                 'evaluation_method', 'classroom', 'note', 'color']
+                 'classroom', 'note', 'color']
         widgets = {
             'color': forms.TextInput(attrs={'type': 'color'}),
             'note': forms.Textarea(attrs={'rows': 3}),
-            'evaluation_method': forms.Textarea(attrs={'rows': 2}),
         }
     
     def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+        if instance and instance.evaluation_method:
+            eval_text = instance.evaluation_method
+            import re
+            midterm_match = re.search(r'중간[^0-9]*(\d+)', eval_text)
+            final_match = re.search(r'기말[^0-9]*(\d+)', eval_text)
+            quiz_match = re.search(r'수시[^0-9]*(\d+)', eval_text)
+            
+            if midterm_match:
+                kwargs['initial'] = kwargs.get('initial', {})
+                kwargs['initial']['midterm_percent'] = int(midterm_match.group(1))
+            if final_match:
+                kwargs['initial'] = kwargs.get('initial', {})
+                kwargs['initial']['final_percent'] = int(final_match.group(1))
+            if quiz_match:
+                kwargs['initial'] = kwargs.get('initial', {})
+                kwargs['initial']['quiz_percent'] = int(quiz_match.group(1))
+        
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'
@@ -41,7 +83,12 @@ class SubjectForm(forms.ModelForm):
                     css_class='col-md-6'
                 ),
                 Column(
-                    Field('evaluation_method', placeholder='예: 중간고사 30%, 기말고사 40%, 과제 20%, 출석 10%'),
+                    HTML('<label class="form-label">평가 방식</label>'),
+                    Row(
+                        Column(Field('midterm_percent'), css_class='col-4'),
+                        Column(Field('final_percent'), css_class='col-4'),
+                        Column(Field('quiz_percent'), css_class='col-4'),
+                    ),
                     css_class='col-md-6'
                 ),
                 css_class='mb-3'
@@ -61,15 +108,34 @@ class SubjectForm(forms.ModelForm):
             Submit('submit', '저장', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
         
-        # 필드 라벨 설정
         self.fields['name'].label = '과목명'
         self.fields['professor'].label = '교수명'
         self.fields['credits'].label = '학점'
         self.fields['subject_type'].label = '과목 구분'
-        self.fields['evaluation_method'].label = '평가 방식'
         self.fields['classroom'].label = '강의실'
         self.fields['note'].label = '메모'
         self.fields['color'].label = '색상'
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        midterm = self.cleaned_data.get('midterm_percent', 0) or 0
+        final = self.cleaned_data.get('final_percent', 0) or 0
+        quiz = self.cleaned_data.get('quiz_percent', 0) or 0
+        
+        eval_parts = []
+        if midterm > 0:
+            eval_parts.append(f'중간고사 {midterm}%')
+        if final > 0:
+            eval_parts.append(f'기말고사 {final}%')
+        if quiz > 0:
+            eval_parts.append(f'수시 {quiz}%')
+        
+        instance.evaluation_method = ', '.join(eval_parts) if eval_parts else ''
+        
+        if commit:
+            instance.save()
+        return instance
 
 class TimeSlotForm(forms.ModelForm):
     """시간표 슬롯 폼"""
