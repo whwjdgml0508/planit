@@ -38,7 +38,7 @@
                                                 {% if user.avatar_choice == 'default' %}👤
                                                 {% elif user.avatar_choice == 'student_male' %}👨‍🎓
                                                 {% elif user.avatar_choice == 'student_female' %}👩‍🎓
-                                                {% elif user.avatar_choice == 'soldier' %}🪖
+                                                {% elif user.avatar_choice == 'soldier' %}💂
                                                 {% elif user.avatar_choice == 'pilot' %}👨‍✈️
                                                 {% elif user.avatar_choice == 'engineer' %}👨‍🔧
                                                 {% elif user.avatar_choice == 'scientist' %}👨‍🔬
@@ -88,7 +88,7 @@
                                 <option value="default" {% if user.avatar_choice == 'default' %}selected{% endif %}>👤 기본 아바타</option>
                                 <option value="student_male" {% if user.avatar_choice == 'student_male' %}selected{% endif %}>👨‍🎓 남학생</option>
                                 <option value="student_female" {% if user.avatar_choice == 'student_female' %}selected{% endif %}>👩‍🎓 여학생</option>
-                                <option value="soldier" {% if user.avatar_choice == 'soldier' %}selected{% endif %}>🪖 군인</option>
+                                <option value="soldier" {% if user.avatar_choice == 'soldier' %}selected{% endif %}>💂 군인</option>
                                 <option value="pilot" {% if user.avatar_choice == 'pilot' %}selected{% endif %}>👨‍✈️ 조종사</option>
                                 <option value="engineer" {% if user.avatar_choice == 'engineer' %}selected{% endif %}>👨‍🔧 엔지니어</option>
                                 <option value="scientist" {% if user.avatar_choice == 'scientist' %}selected{% endif %}>👨‍🔬 과학자</option>
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'default': '👤',
         'student_male': '👨‍🎓',
         'student_female': '👩‍🎓',
-        'soldier': '🪖',
+        'soldier': '💂',
         'pilot': '👨‍✈️',
         'engineer': '👨‍🔧',
         'scientist': '👨‍🔬',

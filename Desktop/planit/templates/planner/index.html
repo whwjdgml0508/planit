@@ -7,45 +7,49 @@
 {% block extra_css %}
 <style>
 .dashboard-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
-    border-radius: 12px;
+    border-radius: 18px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .task-item {
-    border-left: 4px solid #007bff;
-    background-color: #f8f9fa;
-    border-radius: 0 8px 8px 0;
-    transition: all 0.3s ease;
+    border-left: 3px solid #007AFF;
+    background-color: #F2F2F7;
+    border-radius: 0 12px 12px 0;
+    transition: all 0.2s ease;
+    padding: 1rem;
 }
 
 .task-item:hover {
-    background-color: #e9ecef;
+    background-color: #E5E5EA;
+    transform: translateX(2px);
 }
 
 .task-completed {
-    border-left-color: #28a745;
-    opacity: 0.7;
+    border-left-color: #34C759;
+    opacity: 0.6;
 }
 
 .task-overdue {
-    border-left-color: #dc3545;
+    border-left-color: #FF3B30;
 }
 
-.priority-urgent { border-left-color: #dc3545; }
-.priority-high { border-left-color: #fd7e14; }
-.priority-medium { border-left-color: #ffc107; }
-.priority-low { border-left-color: #28a745; }
+.priority-urgent { border-left-color: #FF3B30; }
+.priority-high { border-left-color: #FF9500; }
+.priority-medium { border-left-color: #FF9500; }
+.priority-low { border-left-color: #5AC8FA; }
 
 .stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #007AFF 0%, #AF52DE 100%);
     color: white;
-    border-radius: 12px;
+    border-radius: 18px;
 }
 
 </style>
@@ -54,10 +58,10 @@
 {% block content %}
 <div class="container-fluid">
     <!-- 헤더 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h2><i class="fas fa-tasks me-2"></i>학습 플래너</h2>
-            <p class="text-muted mb-0">오늘도 목표를 향해 한 걸음 더!</p>
+            <h2 class="fw-bold mb-2" style="font-size: 2.25rem; letter-spacing: -0.02em;">학습 플래너</h2>
+            <p class="mb-0" style="color: #636366; font-size: 1rem;">오늘도 목표를 향해 한 걸음 더!</p>
         </div>
         <div class="btn-group">
             <a href="{% url 'planner:daily_planner' %}" class="btn btn-info">

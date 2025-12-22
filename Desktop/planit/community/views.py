@@ -574,6 +574,20 @@ class ReportDetailView(UserPassesTestMixin, DetailView):
     
     def test_func(self):
         return self.request.user.is_staff
+    
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except Report.DoesNotExist:
+            messages.error(self.request, '해당 신고를 찾을 수 없습니다. 이미 삭제되었거나 존재하지 않는 신고입니다.')
+            return None
+    
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object is None:
+            return redirect('community:report_list')
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
 class ReportUpdateStatusView(UserPassesTestMixin, View):
     """신고 상태 업데이트 뷰 (AJAX)"""

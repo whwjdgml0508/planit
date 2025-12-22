@@ -354,8 +354,8 @@ class TimeBlock(models.Model):
     
     # 시간 정보 (10분 단위)
     hour = models.IntegerField(
-        validators=[MinValueValidator(6), MaxValueValidator(23)],
-        verbose_name='시간 (6-23)'
+        validators=[MinValueValidator(0), MaxValueValidator(23)],
+        verbose_name='시간 (0-23)'
     )
     minute_block = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(5)],

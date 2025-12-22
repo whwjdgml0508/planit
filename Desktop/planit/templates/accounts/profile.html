@@ -196,7 +196,7 @@
                             최근 30일간의 활동 통계입니다.
                             <span class="ms-2">
                                 <span class="auto-refresh-indicator"></span>
-                                <span class="ms-1">5분마다 자동 업데이트</span>
+                                <span class="ms-1">30초마다 자동 업데이트</span>
                             </span>
                         </div>
                     {% else %}
@@ -215,16 +215,39 @@
 
 {% block extra_js %}
 <script>
-// 프로필 통계 자동 새로고침 (5분마다)
+// 프로필 통계 자동 새로고침 (30초마다)
 let autoRefreshInterval;
 
-function refreshProfileStats() {
-    // 현재 페이지 새로고침
-    location.reload();
+function refreshStudyStats() {
+    // AJAX로 학습 통계만 업데이트
+    fetch('{% url "accounts:study_stats_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            // 학습시간 업데이트
+            const studyHoursElement = document.getElementById('study-hours-value');
+            if (studyHoursElement) {
+                studyHoursElement.textContent = data.study_hours + 'h';
+                
+                // 업데이트 애니메이션 효과
+                studyHoursElement.style.transition = 'all 0.3s ease';
+                studyHoursElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    studyHoursElement.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            console.log('학습 통계 업데이트됨:', data);
+        })
+        .catch(error => {
+            console.error('학습 통계 업데이트 실패:', error);
+        });
 }
 
-// 5분(300000ms)마다 자동 새로고침
-autoRefreshInterval = setInterval(refreshProfileStats, 300000);
+// 페이지 로드 시 즉시 한 번 실행
+refreshStudyStats();
+
+// 30초(30000ms)마다 자동 새로고침
+autoRefreshInterval = setInterval(refreshStudyStats, 30000);
 
 // 페이지를 떠날 때 interval 정리
 window.addEventListener('beforeunload', function() {
@@ -233,7 +256,6 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-// 페이지 로드 시 마지막 업데이트 시간 표시 (선택사항)
-console.log('프로필 통계 자동 새로고침 활성화 (5분 간격)');
+console.log('프로필 통계 자동 새로고침 활성화 (30초 간격)');
 </script>
 {% endblock %}

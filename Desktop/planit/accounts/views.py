@@ -10,6 +10,9 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Sum
 from django.utils import timezone
 from datetime import timedelta
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileEditForm
 
 User = get_user_model()
@@ -121,16 +124,21 @@ class ProfileView(LoginRequiredMixin, DetailView):
             completed_at__gte=thirty_days_ago
         ).count()
         
-        # 학습 세션 통계 (StudySession)
+        # 학습 세션 통계 (StudySession) - duration_minutes가 NULL인 경우 직접 계산
         study_sessions = user.study_sessions.filter(
             start_time__gte=thirty_days_ago,
             end_time__isnull=False
         )
-        session_minutes = study_sessions.aggregate(
-            total=Sum('duration_minutes')
-        )['total'] or 0
+        session_minutes = 0
+        for session in study_sessions:
+            if session.duration_minutes:
+                session_minutes += session.duration_minutes
+            elif session.start_time and session.end_time:
+                # duration_minutes가 없으면 직접 계산
+                duration = session.end_time - session.start_time
+                session_minutes += int(duration.total_seconds() / 60)
         
-        # 일일 플래너 학습 시간 통계 (TimeBlock)
+        # 일일 플래너 학습 시간 통계 (TimeBlock) - STUDY 타입만 포함
         timeblock_minutes = TimeBlock.objects.filter(
             daily_planner__user=user,
             daily_planner__date__gte=thirty_days_ago.date(),
@@ -165,16 +173,21 @@ class ProfileView(LoginRequiredMixin, DetailView):
         end_of_week = start_of_week + timedelta(days=6)
         
         # 이번주 학습 세션의 총 시간 계산 (분 단위) - StudySession
-        weekly_session_minutes = StudySession.objects.filter(
+        weekly_sessions = StudySession.objects.filter(
             user=user,
             start_time__date__gte=start_of_week,
             start_time__date__lte=end_of_week,
             end_time__isnull=False
-        ).aggregate(
-            total=Sum('duration_minutes')
-        )['total'] or 0
+        )
+        weekly_session_minutes = 0
+        for session in weekly_sessions:
+            if session.duration_minutes:
+                weekly_session_minutes += session.duration_minutes
+            elif session.start_time and session.end_time:
+                duration = session.end_time - session.start_time
+                weekly_session_minutes += int(duration.total_seconds() / 60)
         
-        # 이번주 일일 플래너 학습 시간 계산 (분 단위) - TimeBlock
+        # 이번주 일일 플래너 학습 시간 계산 (분 단위) - TimeBlock (STUDY 타입만 포함)
         weekly_timeblock_minutes = TimeBlock.objects.filter(
             daily_planner__user=user,
             daily_planner__date__gte=start_of_week,
@@ -250,3 +263,72 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
         messages.error(self.request, '프로필 업데이트 중 오류가 발생했습니다.')
         logger.error(f"프로필 업데이트 실패 - 사용자: {self.request.user.username}, 오류: {form.errors}")
         return super().form_invalid(form)
+
+@login_required
+@require_http_methods(["GET"])
+def get_study_stats(request):
+    """학습 통계를 JSON으로 반환하는 API 엔드포인트"""
+    from planner.models import StudySession, TimeBlock
+    
+    user = request.user
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    
+    # 학습 세션 통계 (StudySession)
+    study_sessions = user.study_sessions.filter(
+        start_time__gte=thirty_days_ago,
+        end_time__isnull=False
+    )
+    session_minutes = 0
+    for session in study_sessions:
+        if session.duration_minutes:
+            session_minutes += session.duration_minutes
+        elif session.start_time and session.end_time:
+            duration = session.end_time - session.start_time
+            session_minutes += int(duration.total_seconds() / 60)
+    
+    # 일일 플래너 학습 시간 통계 (TimeBlock)
+    timeblock_minutes = TimeBlock.objects.filter(
+        daily_planner__user=user,
+        daily_planner__date__gte=thirty_days_ago.date(),
+        block_type='STUDY'
+    ).count() * 10
+    
+    # 총 학습시간 합산
+    total_minutes = session_minutes + timeblock_minutes
+    study_hours = round(total_minutes / 60, 1)
+    
+    # 이번주 학습시간 계산
+    today = timezone.now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    
+    weekly_sessions = StudySession.objects.filter(
+        user=user,
+        start_time__date__gte=start_of_week,
+        start_time__date__lte=end_of_week,
+        end_time__isnull=False
+    )
+    weekly_session_minutes = 0
+    for session in weekly_sessions:
+        if session.duration_minutes:
+            weekly_session_minutes += session.duration_minutes
+        elif session.start_time and session.end_time:
+            duration = session.end_time - session.start_time
+            weekly_session_minutes += int(duration.total_seconds() / 60)
+    
+    weekly_timeblock_minutes = TimeBlock.objects.filter(
+        daily_planner__user=user,
+        daily_planner__date__gte=start_of_week,
+        daily_planner__date__lte=end_of_week,
+        block_type='STUDY'
+    ).count() * 10
+    
+    weekly_total_minutes = weekly_session_minutes + weekly_timeblock_minutes
+    weekly_study_hours = round(weekly_total_minutes / 60, 1) if weekly_total_minutes else 0
+    
+    return JsonResponse({
+        'study_hours': study_hours,
+        'weekly_study_hours': weekly_study_hours,
+        'study_sessions_count': study_sessions.count(),
+        'last_updated': timezone.now().isoformat()
+    })
