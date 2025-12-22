@@ -111,6 +111,7 @@ class SubjectForm(forms.ModelForm):
         self.fields['name'].label = '과목명'
         self.fields['professor'].label = '교수명'
         self.fields['credits'].label = '학점'
+        self.fields['credits'].required = False
         self.fields['subject_type'].label = '과목 구분'
         self.fields['classroom'].label = '강의실'
         self.fields['note'].label = '메모'
@@ -433,6 +434,7 @@ class ImprovedSubjectWithTimeSlotsForm(forms.ModelForm):
         self.fields['name'].label = '과목명'
         self.fields['professor'].label = '교수명'
         self.fields['credits'].label = '학점'
+        self.fields['credits'].required = False
         self.fields['subject_type'].label = '과목 구분'
         self.fields['evaluation_method'].label = '평가 방식'
         self.fields['classroom'].label = '강의실'

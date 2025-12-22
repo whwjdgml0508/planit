@@ -7,115 +7,180 @@
     <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8">
             <div class="card shadow-lg border-0 mt-4">
-                <div class="card-header bg-warning text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>과목 수정
-                    </h4>
+                <div class="card-header gradient-header">
+                    <h3 class="mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-edit icon-label"></i>과목 수정
+                    </h3>
+                    <p class="mb-0 mt-2 text-white-50">
+                        과목 정보를 수정하세요
+                    </p>
                 </div>
+                
                 <div class="card-body p-4">
                     <form method="post">
                         {% csrf_token %}
                         
-                        <!-- 과목명 -->
-                        <div class="mb-3">
-                            <label for="{{ form.name.id_for_label }}" class="form-label">과목명*</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                                <div class="text-danger small">{{ form.name.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 교수명 & 학점 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.professor.id_for_label }}" class="form-label">교수명</label>
-                                {{ form.professor }}
-                                {% if form.professor.errors %}
-                                    <div class="text-danger small">{{ form.professor.errors }}</div>
-                                {% endif %}
+                        <!-- 과목 정보 섹션 -->
+                        <div class="mb-4">
+                            <div class="section-divider mb-4">
+                                <h5 class="section-title">
+                                    <i class="fas fa-book me-2"></i>과목 정보
+                                </h5>
                             </div>
-                            <div class="col-md-6">
-                                <label for="{{ form.credits.id_for_label }}" class="form-label">학점</label>
-                                {{ form.credits }}
-                                {% if form.credits.errors %}
-                                    <div class="text-danger small">{{ form.credits.errors }}</div>
-                                {% endif %}
+                            
+                            <!-- 과목명 & 색상 -->
+                            <div class="row align-items-end mb-3">
+                                <div class="col-md-9">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-book text-primary me-2"></i>과목명*
+                                    </label>
+                                    <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                                           class="form-control modern-input" value="{{ form.name.value|default:'' }}" 
+                                           placeholder="과목명" required>
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="{{ form.color.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-palette text-danger me-2"></i>색상*
+                                    </label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" name="{{ form.color.name }}" id="{{ form.color.id_for_label }}" 
+                                               class="color-picker-input" value="{{ form.color.value|default:'#007bff' }}" 
+                                               title="과목 색상을 선택하세요">
+                                        <div class="color-picker-preview" id="color-preview"></div>
+                                    </div>
+                                    {% if form.color.errors %}
+                                        <div class="text-danger small mt-1">{{ form.color.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- 과목 구분 & 평가 방식 -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.subject_type.id_for_label }}" class="form-label">과목 구분*</label>
-                                {{ form.subject_type }}
-                                {% if form.subject_type.errors %}
-                                    <div class="text-danger small">{{ form.subject_type.errors }}</div>
-                                {% endif %}
+                            
+                            <!-- 교수명 & 학점 & 과목 구분 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.professor.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-chalkboard-teacher text-success me-2"></i>교수명
+                                    </label>
+                                    <input type="text" name="{{ form.professor.name }}" id="{{ form.professor.id_for_label }}" 
+                                           class="form-control modern-input" value="{{ form.professor.value|default:'' }}" 
+                                           placeholder="교수명">
+                                    {% if form.professor.errors %}
+                                        <div class="text-danger small mt-1">{{ form.professor.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="{{ form.credits.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-star text-warning me-2"></i>학점 <span class="text-muted small">(선택)</span>
+                                    </label>
+                                    <input type="number" name="{{ form.credits.name }}" id="{{ form.credits.id_for_label }}" 
+                                           class="form-control modern-input" value="{{ form.credits.value|default:'' }}" 
+                                           min="0.5" max="6" step="0.5" placeholder="선택사항">
+                                    {% if form.credits.errors %}
+                                        <div class="text-danger small mt-1">{{ form.credits.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="{{ form.subject_type.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-tag text-info me-2"></i>구분*
+                                    </label>
+                                    <select name="{{ form.subject_type.name }}" id="{{ form.subject_type.id_for_label }}" 
+                                            class="form-select modern-select">
+                                        <option value="MAJOR" {% if form.subject_type.value == 'MAJOR' %}selected{% endif %}>전공</option>
+                                        <option value="GENERAL" {% if form.subject_type.value == 'GENERAL' %}selected{% endif %}>교양</option>
+                                        <option value="MILITARY" {% if form.subject_type.value == 'MILITARY' %}selected{% endif %}>군사학</option>
+                                        <option value="PHYSICAL" {% if form.subject_type.value == 'PHYSICAL' %}selected{% endif %}>체육</option>
+                                        <option value="OTHER" {% if form.subject_type.value == 'OTHER' %}selected{% endif %}>기타</option>
+                                    </select>
+                                    {% if form.subject_type.errors %}
+                                        <div class="text-danger small mt-1">{{ form.subject_type.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">평가 방식</label>
-                                <div class="row g-2">
-                                    <div class="col-4">
-                                        <label for="{{ form.midterm_percent.id_for_label }}" class="form-label small">중간</label>
-                                        <div class="input-group input-group-sm">
-                                            {{ form.midterm_percent }}
-                                            <span class="input-group-text">%</span>
+                            
+                            <!-- 평가 방식 -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-clipboard-check text-primary me-2"></i>평가 방식
+                                </label>
+                                <div class="evaluation-grid">
+                                    <div class="eval-item">
+                                        <label for="{{ form.midterm_percent.id_for_label }}" class="eval-label">중간</label>
+                                        <div class="input-group">
+                                            <input type="number" name="{{ form.midterm_percent.name }}" 
+                                                   id="{{ form.midterm_percent.id_for_label }}" 
+                                                   class="form-control eval-input" 
+                                                   value="{{ form.midterm_percent.value|default:'0' }}" 
+                                                   min="0" max="100" placeholder="0">
+                                            <span class="input-group-text eval-suffix">%</span>
                                         </div>
                                     </div>
-                                    <div class="col-4">
-                                        <label for="{{ form.final_percent.id_for_label }}" class="form-label small">기말</label>
-                                        <div class="input-group input-group-sm">
-                                            {{ form.final_percent }}
-                                            <span class="input-group-text">%</span>
+                                    <div class="eval-item">
+                                        <label for="{{ form.final_percent.id_for_label }}" class="eval-label">기말</label>
+                                        <div class="input-group">
+                                            <input type="number" name="{{ form.final_percent.name }}" 
+                                                   id="{{ form.final_percent.id_for_label }}" 
+                                                   class="form-control eval-input" 
+                                                   value="{{ form.final_percent.value|default:'0' }}" 
+                                                   min="0" max="100" placeholder="0">
+                                            <span class="input-group-text eval-suffix">%</span>
                                         </div>
                                     </div>
-                                    <div class="col-4">
-                                        <label for="{{ form.quiz_percent.id_for_label }}" class="form-label small">수시</label>
-                                        <div class="input-group input-group-sm">
-                                            {{ form.quiz_percent }}
-                                            <span class="input-group-text">%</span>
+                                    <div class="eval-item">
+                                        <label for="{{ form.quiz_percent.id_for_label }}" class="eval-label">수시</label>
+                                        <div class="input-group">
+                                            <input type="number" name="{{ form.quiz_percent.name }}" 
+                                                   id="{{ form.quiz_percent.id_for_label }}" 
+                                                   class="form-control eval-input" 
+                                                   value="{{ form.quiz_percent.value|default:'0' }}" 
+                                                   min="0" max="100" placeholder="0">
+                                            <span class="input-group-text eval-suffix">%</span>
                                         </div>
                                     </div>
                                 </div>
-                                <small class="text-muted">예: 중간고사 30%, 기말고사 40%, 수시 30%</small>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>예: 중간고사 30%, 기말고사 40%, 수시 30%
+                                </small>
                             </div>
-                        </div>
-                        
-                        <!-- 강의실 & 색상 -->
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <label for="{{ form.classroom.id_for_label }}" class="form-label">강의실</label>
-                                {{ form.classroom }}
+                            
+                            <!-- 강의실 -->
+                            <div class="mb-3">
+                                <label for="{{ form.classroom.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>강의실
+                                </label>
+                                <input type="text" name="{{ form.classroom.name }}" id="{{ form.classroom.id_for_label }}" 
+                                       class="form-control modern-input" value="{{ form.classroom.value|default:'' }}" 
+                                       placeholder="강의실명">
                                 {% if form.classroom.errors %}
-                                    <div class="text-danger small">{{ form.classroom.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.classroom.errors }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-4">
-                                <label for="{{ form.color.id_for_label }}" class="form-label">색상*</label>
-                                {{ form.color }}
-                                {% if form.color.errors %}
-                                    <div class="text-danger small">{{ form.color.errors }}</div>
+                            
+                            <!-- 메모 -->
+                            <div class="mb-3">
+                                <label for="{{ form.note.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-sticky-note text-warning me-2"></i>메모
+                                </label>
+                                <textarea name="{{ form.note.name }}" id="{{ form.note.id_for_label }}" 
+                                          class="form-control modern-textarea" rows="3" 
+                                          placeholder="과목에 대한 메모를 입력하세요">{{ form.note.value|default:'' }}</textarea>
+                                {% if form.note.errors %}
+                                    <div class="text-danger small mt-1">{{ form.note.errors }}</div>
                                 {% endif %}
                             </div>
-                        </div>
-                        
-                        <!-- 메모 -->
-                        <div class="mb-3">
-                            <label for="{{ form.note.id_for_label }}" class="form-label">메모</label>
-                            {{ form.note }}
-                            {% if form.note.errors %}
-                                <div class="text-danger small">{{ form.note.errors }}</div>
-                            {% endif %}
                         </div>
                         
                         <!-- 저장 버튼 -->
-                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
-                            <i class="fas fa-save me-2"></i>저장
-                        </button>
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg modern-btn">
+                                <i class="fas fa-save me-2"></i>저장
+                            </button>
+                        </div>
                     </form>
                     
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'timetable:subject_list' %}" class="btn btn-secondary">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'timetable:subject_list' %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>취소
                         </a>
                         <a href="{% url 'timetable:subject_detail' subject.pk %}" class="btn btn-outline-info">
@@ -144,15 +209,230 @@
 </div>
 
 <style>
-    .form-control, .form-select {
-        border-radius: 0.375rem;
+/* 그라디언트 헤더 */
+.gradient-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.icon-label {
+    font-size: 1.3rem;
+}
+
+/* 섹션 구분선 */
+.section-divider {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Modern Input 스타일 */
+.modern-input {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-input:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Select 스타일 */
+.modern-select {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.modern-select:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Textarea 스타일 */
+.modern-textarea {
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modern-textarea:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-textarea:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* 평가 방식 그리드 */
+.evaluation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.eval-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.eval-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    margin: 0;
+    text-align: center;
+}
+
+.eval-input {
+    height: 45px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.eval-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+.eval-suffix {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 0 10px 10px 0;
+}
+
+/* 색상 선택기 */
+.color-picker-wrapper {
+    position: relative;
+    height: 50px;
+}
+
+.color-picker-input {
+    width: 100%;
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.color-picker-input:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.color-picker-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    outline: none;
+}
+
+/* Modern Button */
+.modern-btn {
+    height: 55px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.modern-btn:active {
+    transform: translateY(0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .evaluation-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
-    .input-group-sm .form-control {
-        font-size: 0.875rem;
+    
+    .gradient-header {
+        padding: 1.5rem;
     }
-    .input-group-text {
-        background-color: #e9ecef;
-        border: 1px solid #ced4da;
-    }
+}
 </style>
+
+<script>
+// 색상 선택기 미리보기
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.getElementById('{{ form.color.id_for_label }}');
+    if (colorInput) {
+        colorInput.addEventListener('input', function() {
+            this.style.backgroundColor = this.value;
+        });
+        // 초기 색상 설정
+        colorInput.style.backgroundColor = colorInput.value;
+    }
+});
+</script>
 {% endblock %}

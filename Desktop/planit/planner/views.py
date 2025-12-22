@@ -605,3 +605,41 @@ def update_goal_progress(request, goal_id):
         })
     
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def update_target_hours(request):
+    """목표 학습시간 업데이트 (AJAX)"""
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        target_hours = request.POST.get('target_hours')
+        
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            date = timezone.now().date()
+        
+        try:
+            target_hours = float(target_hours)
+            if target_hours < 0.1 or target_hours > 24.0:
+                return JsonResponse({'success': False, 'error': '목표 시간은 0.1시간에서 24시간 사이여야 합니다.'})
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'error': '유효하지 않은 시간입니다.'})
+        
+        # 일일 플래너 업데이트
+        daily_planner, created = DailyPlanner.objects.get_or_create(
+            user=request.user,
+            date=date,
+            defaults={'target_study_hours': target_hours}
+        )
+        
+        if not created:
+            daily_planner.target_study_hours = target_hours
+            daily_planner.save()
+        
+        return JsonResponse({
+            'success': True,
+            'target_hours': float(daily_planner.target_study_hours),
+            'message': f'목표 학습시간이 {target_hours}시간으로 설정되었습니다.'
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})

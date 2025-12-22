@@ -240,6 +240,59 @@
     min-height: 60px;
 }
 
+.target-hours-section {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    color: #2d3436;
+}
+
+.target-hours-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.target-hours-input input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    background: white;
+}
+
+.target-hours-input input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.target-hours-input label {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.save-target-btn {
+    padding: 8px 16px;
+    background: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.save-target-btn:hover {
+    background: #3367d6;
+    transform: translateY(-1px);
+}
+
 .empty-state {
     text-align: center;
     padding: 40px 20px;
@@ -500,6 +553,22 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
+
+        <!-- 목표 학습시간 설정 -->
+        <div class="target-hours-section">
+            <div class="section-title">
+                <span>⏰</span>
+                <span>목표 학습시간</span>
+            </div>
+            <div class="target-hours-input">
+                <input type="number" id="target-hours" 
+                       value="{{ stats.target_hours }}" 
+                       min="0.5" max="24" step="0.5">
+                <label>시간</label>
+                <button class="save-target-btn" onclick="saveTargetHours()">저장</button>
+            </div>
+            <small style="opacity: 0.8; margin-top: 8px; display: block;">💡 하루 목표 학습시간을 설정하세요 (0.5 ~ 24시간)</small>
         </div>
 
         <!-- 오늘의 목표 -->
@@ -1380,6 +1449,66 @@ function updateTodoStats() {
             todoProgress.textContent = '할 일을 추가해보세요';
         }
     }
+}
+
+// 목표 학습시간 저장 함수
+function saveTargetHours() {
+    const targetHoursInput = document.getElementById('target-hours');
+    const targetHours = parseFloat(targetHoursInput.value);
+    const saveBtn = document.querySelector('.save-target-btn');
+    
+    // 유효성 검사
+    if (isNaN(targetHours) || targetHours < 0.5 || targetHours > 24) {
+        alert('목표 시간은 0.5시간에서 24시간 사이여야 합니다.');
+        return;
+    }
+    
+    // 버튼 상태 변경
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = '저장 중...';
+    saveBtn.disabled = true;
+    
+    const currentDate = document.getElementById('date-picker').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "planner:update_target_hours" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: `date=${currentDate}&target_hours=${targetHours}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 성공 메시지 표시
+            saveBtn.textContent = '✓ 저장됨';
+            saveBtn.style.background = '#34a853';
+            
+            // 통계 업데이트
+            updateStudyStats();
+            
+            // 2초 후 원래 상태로 복구
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.background = '#4285f4';
+                saveBtn.disabled = false;
+            }, 2000);
+            
+            console.log('목표 학습시간 저장 완료:', data.message);
+        } else {
+            alert('저장 실패: ' + data.error);
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('네트워크 오류:', error);
+        alert('저장 중 오류가 발생했습니다.');
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    });
 }
 </script>
 {% endblock %}
