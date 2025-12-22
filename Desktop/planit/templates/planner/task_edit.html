@@ -1,33 +1,516 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 
 {% block title %}과제 수정 - PlanIt{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>과제 수정</h4>
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header gradient-header">
+                    <h3 class="mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-edit icon-label"></i>과제 수정
+                    </h3>
+                    <p class="mb-0 mt-2 text-white-50">
+                        과제 정보를 수정하세요
+                    </p>
                 </div>
-                <div class="card-body">
+                
+                <div class="card-body p-4">
                     <form method="post">
                         {% csrf_token %}
-                        {% crispy form %}
+                        
+                        <!-- 기본 정보 섹션 -->
+                        <div class="mb-4">
+                            <div class="section-divider mb-4">
+                                <h5 class="section-title">
+                                    <i class="fas fa-clipboard-list me-2"></i>기본 정보
+                                </h5>
+                            </div>
+                            
+                            <!-- 제목 -->
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-heading text-primary me-2"></i>제목*
+                                </label>
+                                <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                                       class="form-control modern-input" value="{{ form.title.value|default:'' }}" 
+                                       placeholder="과제 제목" required>
+                                {% if form.title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 설명 -->
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-align-left text-info me-2"></i>설명
+                                </label>
+                                <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                          class="form-control modern-textarea" rows="3" 
+                                          placeholder="과제에 대한 상세 설명을 입력하세요">{{ form.description.value|default:'' }}</textarea>
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 카테고리 & 우선순위 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-folder text-warning me-2"></i>카테고리*
+                                    </label>
+                                    <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}" 
+                                            class="form-select modern-select" required>
+                                        <option value="ASSIGNMENT" {% if form.category.value == 'ASSIGNMENT' %}selected{% endif %}>과제</option>
+                                        <option value="EXAM" {% if form.category.value == 'EXAM' %}selected{% endif %}>시험</option>
+                                        <option value="PROJECT" {% if form.category.value == 'PROJECT' %}selected{% endif %}>프로젝트</option>
+                                        <option value="STUDY" {% if form.category.value == 'STUDY' %}selected{% endif %}>학습</option>
+                                        <option value="OTHER" {% if form.category.value == 'OTHER' %}selected{% endif %}>기타</option>
+                                    </select>
+                                    {% if form.category.errors %}
+                                        <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.priority.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-exclamation-circle text-danger me-2"></i>우선순위*
+                                    </label>
+                                    <select name="{{ form.priority.name }}" id="{{ form.priority.id_for_label }}" 
+                                            class="form-select modern-select" required>
+                                        <option value="LOW" {% if form.priority.value == 'LOW' %}selected{% endif %}>낮음</option>
+                                        <option value="MEDIUM" {% if form.priority.value == 'MEDIUM' %}selected{% endif %}>보통</option>
+                                        <option value="HIGH" {% if form.priority.value == 'HIGH' %}selected{% endif %}>높음</option>
+                                    </select>
+                                    {% if form.priority.errors %}
+                                        <div class="text-danger small mt-1">{{ form.priority.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- 상태 -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-tasks text-success me-2"></i>상태*
+                                    </label>
+                                    <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                            class="form-select modern-select" required>
+                                        <option value="TODO" {% if form.status.value == 'TODO' %}selected{% endif %}>할 일</option>
+                                        <option value="IN_PROGRESS" {% if form.status.value == 'IN_PROGRESS' %}selected{% endif %}>진행 중</option>
+                                        <option value="COMPLETED" {% if form.status.value == 'COMPLETED' %}selected{% endif %}>완료</option>
+                                        <option value="CANCELLED" {% if form.status.value == 'CANCELLED' %}selected{% endif %}>취소</option>
+                                    </select>
+                                    {% if form.status.errors %}
+                                        <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- 진행률 -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <input type="number" name="{{ form.progress.name }}" id="{{ form.progress.id_for_label }}" 
+                                           class="form-control modern-input" value="{{ form.progress.value|default:'0' }}" 
+                                           min="0" max="100" placeholder="0" style="display: none;">
+                                    {% if form.progress.errors %}
+                                        <div class="text-danger small mt-1">{{ form.progress.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- 마감일 & 예상 소요시간 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.due_date.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-calendar-alt text-danger me-2"></i>마감일
+                                    </label>
+                                    <input type="datetime-local" name="{{ form.due_date.name }}" 
+                                           id="{{ form.due_date.id_for_label }}" 
+                                           class="form-control modern-input" 
+                                           value="{{ form.due_date.value|date:'Y-m-d\TH:i'|default:'' }}">
+                                    <small class="text-muted">예상 소요시간(시간)</small>
+                                    {% if form.due_date.errors %}
+                                        <div class="text-danger small mt-1">{{ form.due_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.estimated_hours.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-clock text-primary me-2"></i>예상 소요시간(시간)
+                                    </label>
+                                    <input type="number" name="{{ form.estimated_hours.name }}" 
+                                           id="{{ form.estimated_hours.id_for_label }}" 
+                                           class="form-control modern-input" 
+                                           value="{{ form.estimated_hours.value|default:'' }}" 
+                                           min="0" step="0.5" placeholder="예: 2.5">
+                                    {% if form.estimated_hours.errors %}
+                                        <div class="text-danger small mt-1">{{ form.estimated_hours.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- 관련 과목 -->
+                            <div class="mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-book text-success me-2"></i>관련 과목
+                                </label>
+                                <select name="{{ form.subject.name }}" id="{{ form.subject.id_for_label }}" 
+                                        class="form-select modern-select">
+                                    <option value="">과목 선택 (선택사항)</option>
+                                    {% for subject in form.subject.field.queryset %}
+                                        <option value="{{ subject.id }}" 
+                                                {% if form.subject.value == subject.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ subject.name }} ({{ subject.professor }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.subject.errors %}
+                                    <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 저장 버튼 -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg modern-btn">
+                                <i class="fas fa-save me-2"></i>저장
+                            </button>
+                        </div>
                     </form>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'planner:task_detail' task.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>과제 상세로 돌아가기
+                        </a>
+                        <a href="{% url 'planner:task_list' %}" class="btn btn-outline-info">
+                            <i class="fas fa-list me-2"></i>과제 목록
+                        </a>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mt-3">
-                <a href="{% url 'planner:task_detail' task.id %}" class="btn btn-secondary me-2">
-                    <i class="fas fa-arrow-left me-2"></i>과제 상세로 돌아가기
-                </a>
-                <a href="{% url 'planner:task_list' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-list me-2"></i>과제 목록
-                </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* 그라디언트 헤더 */
+.gradient-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.icon-label {
+    font-size: 1.3rem;
+}
+
+/* 섹션 구분선 */
+.section-divider {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Modern Input 스타일 */
+.modern-input {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-input:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Select 스타일 */
+.modern-select {
+    height: 50px;
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.modern-select:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-select:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Textarea 스타일 */
+.modern-textarea {
+    border-radius: 12px;
+    border: 3px solid #e9ecef;
+    padding: 12px 18px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modern-textarea:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.modern-textarea:focus {
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* Modern Button */
+.modern-btn {
+    height: 55px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.modern-btn:active {
+    transform: translateY(0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .gradient-header {
+        padding: 1.5rem;
+    }
+}
+
+/* 진행률 슬라이더 스타일 */
+.progress-slider-container {
+    margin-top: 10px;
+}
+
+.progress-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.progress-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+    min-width: 70px;
+    text-align: right;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #e9ecef 0%, #e9ecef 100%);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.progress-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.progress-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.progress-bar-visual {
+    height: 30px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 50%, #667eea 100%);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.progress-presets {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.progress-preset-btn {
+    padding: 5px 12px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.progress-preset-btn:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.progress-preset-btn:active {
+    transform: scale(0.95);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressInput = document.getElementById('{{ form.progress.id_for_label }}');
+    
+    if (progressInput) {
+        const progressWrapper = progressInput.closest('.row');
+        if (progressWrapper) {
+            // 커스텀 진행률 컨트롤 생성
+            const customControl = document.createElement('div');
+            customControl.className = 'col-md-12 progress-slider-container';
+            customControl.innerHTML = `
+                <div class="progress-display">
+                    <label class="form-label fw-bold mb-0"><i class="fas fa-tasks me-2"></i>진행률</label>
+                    <span class="progress-value">${progressInput.value || 0}%</span>
+                </div>
+                <input type="range" class="progress-slider" min="0" max="100" step="5" value="${progressInput.value || 0}">
+                <div class="progress-bar-visual">
+                    <div class="progress-bar-fill" style="width: ${progressInput.value || 0}%">
+                        ${progressInput.value || 0}%
+                    </div>
+                </div>
+                <div class="progress-presets">
+                    <button type="button" class="progress-preset-btn" data-value="0">시작 전 (0%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="25">1/4 완료 (25%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="50">절반 완료 (50%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="75">3/4 완료 (75%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="100">완료 (100%)</button>
+                </div>
+            `;
+            
+            progressWrapper.parentNode.insertBefore(customControl, progressWrapper.nextSibling);
+            
+            const slider = customControl.querySelector('.progress-slider');
+            const valueDisplay = customControl.querySelector('.progress-value');
+            const barFill = customControl.querySelector('.progress-bar-fill');
+            const presetButtons = customControl.querySelectorAll('.progress-preset-btn');
+            
+            // 진행률 업데이트 함수
+            function updateProgress(value) {
+                value = Math.max(0, Math.min(100, parseInt(value)));
+                progressInput.value = value;
+                slider.value = value;
+                valueDisplay.textContent = value + '%';
+                barFill.style.width = value + '%';
+                barFill.textContent = value + '%';
+                
+                // 진행률에 따라 색상 변경
+                if (value === 0) {
+                    barFill.style.background = '#6c757d';
+                } else if (value < 30) {
+                    barFill.style.background = 'linear-gradient(90deg, #dc3545 0%, #fd7e14 100%)';
+                } else if (value < 70) {
+                    barFill.style.background = 'linear-gradient(90deg, #ffc107 0%, #20c997 100%)';
+                } else if (value < 100) {
+                    barFill.style.background = 'linear-gradient(90deg, #20c997 0%, #667eea 100%)';
+                } else {
+                    barFill.style.background = 'linear-gradient(90deg, #28a745 0%, #20c997 100%)';
+                }
+            }
+            
+            // 슬라이더 이벤트
+            slider.addEventListener('input', function() {
+                updateProgress(this.value);
+            });
+            
+            // 프리셋 버튼 이벤트
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    updateProgress(this.dataset.value);
+                });
+            });
+            
+            // 초기값 설정
+            updateProgress(progressInput.value || 0);
+        }
+    }
+});
+</script>
 {% endblock %}

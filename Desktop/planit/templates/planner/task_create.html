@@ -12,7 +12,7 @@
                     <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>새 과제 추가</h4>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="taskForm">
                         {% csrf_token %}
                         {% crispy form %}
                     </form>
@@ -27,4 +27,197 @@
         </div>
     </div>
 </div>
+
+<style>
+.progress-slider-container {
+    margin-top: 10px;
+}
+
+.progress-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.progress-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+    min-width: 70px;
+    text-align: right;
+}
+
+.progress-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #e9ecef 0%, #e9ecef 100%);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0d6efd;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.progress-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0d6efd;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.progress-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.progress-bar-visual {
+    height: 30px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 50%, #0d6efd 100%);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.progress-presets {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.progress-preset-btn {
+    padding: 5px 12px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.progress-preset-btn:hover {
+    background: #f8f9fa;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.progress-preset-btn:active {
+    transform: scale(0.95);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressInput = document.getElementById('id_progress');
+    
+    if (progressInput) {
+        // 기존 입력 필드 숨기기
+        const progressWrapper = progressInput.closest('.form-group') || progressInput.closest('.mb-3');
+        if (progressWrapper) {
+            progressInput.style.display = 'none';
+            
+            // 커스텀 진행률 컨트롤 생성
+            const customControl = document.createElement('div');
+            customControl.className = 'progress-slider-container';
+            customControl.innerHTML = `
+                <div class="progress-display">
+                    <label class="form-label mb-0"><i class="fas fa-tasks me-2"></i>진행률</label>
+                    <span class="progress-value">${progressInput.value || 0}%</span>
+                </div>
+                <input type="range" class="progress-slider" min="0" max="100" step="5" value="${progressInput.value || 0}">
+                <div class="progress-bar-visual">
+                    <div class="progress-bar-fill" style="width: ${progressInput.value || 0}%">
+                        ${progressInput.value || 0}%
+                    </div>
+                </div>
+                <div class="progress-presets">
+                    <button type="button" class="progress-preset-btn" data-value="0">시작 전 (0%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="25">1/4 완료 (25%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="50">절반 완료 (50%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="75">3/4 완료 (75%)</button>
+                    <button type="button" class="progress-preset-btn" data-value="100">완료 (100%)</button>
+                </div>
+            `;
+            
+            progressInput.parentNode.insertBefore(customControl, progressInput);
+            
+            const slider = customControl.querySelector('.progress-slider');
+            const valueDisplay = customControl.querySelector('.progress-value');
+            const barFill = customControl.querySelector('.progress-bar-fill');
+            const presetButtons = customControl.querySelectorAll('.progress-preset-btn');
+            
+            // 진행률 업데이트 함수
+            function updateProgress(value) {
+                value = Math.max(0, Math.min(100, parseInt(value)));
+                progressInput.value = value;
+                slider.value = value;
+                valueDisplay.textContent = value + '%';
+                barFill.style.width = value + '%';
+                barFill.textContent = value + '%';
+                
+                // 진행률에 따라 색상 변경
+                if (value === 0) {
+                    barFill.style.background = '#6c757d';
+                } else if (value < 30) {
+                    barFill.style.background = 'linear-gradient(90deg, #dc3545 0%, #fd7e14 100%)';
+                } else if (value < 70) {
+                    barFill.style.background = 'linear-gradient(90deg, #ffc107 0%, #20c997 100%)';
+                } else if (value < 100) {
+                    barFill.style.background = 'linear-gradient(90deg, #20c997 0%, #0d6efd 100%)';
+                } else {
+                    barFill.style.background = 'linear-gradient(90deg, #28a745 0%, #20c997 100%)';
+                }
+            }
+            
+            // 슬라이더 이벤트
+            slider.addEventListener('input', function() {
+                updateProgress(this.value);
+            });
+            
+            // 프리셋 버튼 이벤트
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    updateProgress(this.dataset.value);
+                });
+            });
+            
+            // 초기값 설정
+            updateProgress(progressInput.value || 0);
+        }
+    }
+});
+</script>
 {% endblock %}
