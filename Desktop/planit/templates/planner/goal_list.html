@@ -26,6 +26,86 @@
     text-align: center;
     font-weight: bold;
 }
+
+/* 하위 목표 스타일 */
+.subgoal-section {
+    margin-top: 15px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
+}
+.subgoal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.subgoal-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+.subgoal-item:hover {
+    background: #e9ecef;
+}
+.subgoal-item.completed {
+    background: #d4edda;
+}
+.subgoal-item.completed .subgoal-title {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+.subgoal-checkbox {
+    width: 22px;
+    height: 22px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #28a745;
+}
+.subgoal-title {
+    flex: 1;
+    font-size: 0.95rem;
+}
+.subgoal-delete {
+    color: #dc3545;
+    background: none;
+    border: none;
+    padding: 5px 8px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.subgoal-item:hover .subgoal-delete {
+    opacity: 0.6;
+}
+.subgoal-delete:hover {
+    opacity: 1 !important;
+}
+.add-subgoal-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.add-subgoal-form input {
+    flex: 1;
+    font-size: 0.9rem;
+}
+.subgoal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.subgoal-counter {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+.custom-badge {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #000;
+}
 </style>
 {% endblock %}
 
@@ -101,6 +181,45 @@
                         {% if goal.achievement_date %}
                         <br><small>{{ goal.achievement_date|date:"Y-m-d" }} 달성</small>
                         {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 사용자 정의 목표: 하위 목표 섹션 -->
+                    {% if goal.goal_type == 'CUSTOM' %}
+                    <div class="subgoal-section" data-goal-id="{{ goal.pk }}">
+                        <div class="subgoal-header">
+                            <label class="form-label small text-muted mb-0">
+                                <i class="fas fa-list-check me-1"></i>세부 목표
+                            </label>
+                            <span class="subgoal-counter">
+                                <span class="completed-count">{{ goal.subgoals.all|length }}</span>개 중 
+                                <span class="total-count">0</span>개 완료
+                            </span>
+                        </div>
+                        
+                        <ul class="subgoal-list">
+                            {% for subgoal in goal.subgoals.all %}
+                            <li class="subgoal-item {% if subgoal.is_completed %}completed{% endif %}" data-subgoal-id="{{ subgoal.pk }}">
+                                <input type="checkbox" class="subgoal-checkbox" {% if subgoal.is_completed %}checked{% endif %}>
+                                <span class="subgoal-title">{{ subgoal.title }}</span>
+                                <button type="button" class="subgoal-delete" title="삭제">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </li>
+                            {% empty %}
+                            <li class="text-muted text-center py-2 no-subgoals">
+                                <small>아직 세부 목표가 없습니다</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="add-subgoal-form">
+                            <input type="text" class="form-control form-control-sm new-subgoal-input" 
+                                   placeholder="새 세부 목표 추가..." maxlength="200">
+                            <button type="button" class="btn btn-sm btn-outline-primary add-subgoal-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
@@ -199,6 +318,273 @@ document.addEventListener('DOMContentLoaded', function() {
             const goalId = this.closest('.progress-control').dataset.goalId;
             updateProgress(goalId, -10);
         });
+    });
+    
+    // ==================== 하위 목표 관리 ====================
+    
+    // 하위 목표 카운터 업데이트
+    function updateSubgoalCounter(section) {
+        const items = section.querySelectorAll('.subgoal-item');
+        const completedItems = section.querySelectorAll('.subgoal-item.completed');
+        const totalCount = section.querySelector('.subgoal-counter .completed-count');
+        const completedCount = section.querySelector('.subgoal-counter .total-count');
+        
+        if (totalCount) totalCount.textContent = items.length;
+        if (completedCount) completedCount.textContent = completedItems.length;
+    }
+    
+    // 진행률 바 업데이트
+    function updateGoalProgressBar(goalId, progress, isAchieved) {
+        const container = document.querySelector(`.progress-control[data-goal-id="${goalId}"]`);
+        if (!container) return;
+        
+        const progressBar = container.querySelector('.progress-bar');
+        const progressText = container.querySelector('.progress-text');
+        
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        progressText.textContent = progress + '%';
+        
+        progressBar.classList.remove('bg-info', 'bg-warning', 'bg-success');
+        if (progress >= 100) {
+            progressBar.classList.add('bg-success');
+        } else if (progress >= 50) {
+            progressBar.classList.add('bg-warning');
+        } else {
+            progressBar.classList.add('bg-info');
+        }
+        
+        if (isAchieved) {
+            location.reload();
+        }
+    }
+    
+    // 하위 목표 체크박스 토글
+    document.querySelectorAll('.subgoal-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const item = this.closest('.subgoal-item');
+            const subgoalId = item.dataset.subgoalId;
+            const section = this.closest('.subgoal-section');
+            const goalId = section.dataset.goalId;
+            
+            fetch(`/planner/ajax/subgoals/${subgoalId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_completed) {
+                        item.classList.add('completed');
+                    } else {
+                        item.classList.remove('completed');
+                    }
+                    updateSubgoalCounter(section);
+                    updateGoalProgressBar(goalId, data.goal_progress, data.goal_is_achieved);
+                    
+                    if (data.message) {
+                        alert(data.message);
+                    }
+                } else {
+                    alert('오류: ' + data.error);
+                    this.checked = !this.checked;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.checked = !this.checked;
+            });
+        });
+    });
+    
+    // 하위 목표 삭제
+    document.querySelectorAll('.subgoal-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!confirm('이 세부 목표를 삭제하시겠습니까?')) return;
+            
+            const item = this.closest('.subgoal-item');
+            const subgoalId = item.dataset.subgoalId;
+            const section = this.closest('.subgoal-section');
+            const goalId = section.dataset.goalId;
+            
+            fetch(`/planner/ajax/subgoals/${subgoalId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    item.remove();
+                    updateSubgoalCounter(section);
+                    updateGoalProgressBar(goalId, data.goal_progress, data.goal_is_achieved);
+                    
+                    // 하위 목표가 없으면 빈 메시지 표시
+                    const list = section.querySelector('.subgoal-list');
+                    if (list.querySelectorAll('.subgoal-item').length === 0) {
+                        list.innerHTML = '<li class="text-muted text-center py-2 no-subgoals"><small>아직 세부 목표가 없습니다</small></li>';
+                    }
+                } else {
+                    alert('오류: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        });
+    });
+    
+    // 하위 목표 추가
+    document.querySelectorAll('.add-subgoal-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const section = this.closest('.subgoal-section');
+            const input = section.querySelector('.new-subgoal-input');
+            const title = input.value.trim();
+            
+            if (!title) {
+                input.focus();
+                return;
+            }
+            
+            const goalId = section.dataset.goalId;
+            
+            fetch(`/planner/ajax/goals/${goalId}/subgoals/add/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `title=${encodeURIComponent(title)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const list = section.querySelector('.subgoal-list');
+                    
+                    // 빈 메시지 제거
+                    const noSubgoals = list.querySelector('.no-subgoals');
+                    if (noSubgoals) noSubgoals.remove();
+                    
+                    // 새 아이템 추가
+                    const newItem = document.createElement('li');
+                    newItem.className = 'subgoal-item';
+                    newItem.dataset.subgoalId = data.subgoal_id;
+                    newItem.innerHTML = `
+                        <input type="checkbox" class="subgoal-checkbox">
+                        <span class="subgoal-title">${escapeHtml(data.title)}</span>
+                        <button type="button" class="subgoal-delete" title="삭제">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    list.appendChild(newItem);
+                    
+                    // 이벤트 바인딩
+                    newItem.querySelector('.subgoal-checkbox').addEventListener('change', handleCheckboxChange);
+                    newItem.querySelector('.subgoal-delete').addEventListener('click', handleDeleteClick);
+                    
+                    input.value = '';
+                    input.focus();
+                    updateSubgoalCounter(section);
+                    updateGoalProgressBar(goalId, data.goal_progress, false);
+                } else {
+                    alert('오류: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        });
+    });
+    
+    // Enter 키로 하위 목표 추가
+    document.querySelectorAll('.new-subgoal-input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.closest('.add-subgoal-form').querySelector('.add-subgoal-btn').click();
+            }
+        });
+    });
+    
+    // HTML 이스케이프
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // 동적으로 추가된 요소용 핸들러
+    function handleCheckboxChange() {
+        const item = this.closest('.subgoal-item');
+        const subgoalId = item.dataset.subgoalId;
+        const section = this.closest('.subgoal-section');
+        const goalId = section.dataset.goalId;
+        
+        fetch(`/planner/ajax/subgoals/${subgoalId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_completed) {
+                    item.classList.add('completed');
+                } else {
+                    item.classList.remove('completed');
+                }
+                updateSubgoalCounter(section);
+                updateGoalProgressBar(goalId, data.goal_progress, data.goal_is_achieved);
+                
+                if (data.message) {
+                    alert(data.message);
+                }
+            }
+        });
+    }
+    
+    function handleDeleteClick() {
+        if (!confirm('이 세부 목표를 삭제하시겠습니까?')) return;
+        
+        const item = this.closest('.subgoal-item');
+        const subgoalId = item.dataset.subgoalId;
+        const section = this.closest('.subgoal-section');
+        const goalId = section.dataset.goalId;
+        
+        fetch(`/planner/ajax/subgoals/${subgoalId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                item.remove();
+                updateSubgoalCounter(section);
+                updateGoalProgressBar(goalId, data.goal_progress, data.goal_is_achieved);
+                
+                const list = section.querySelector('.subgoal-list');
+                if (list.querySelectorAll('.subgoal-item').length === 0) {
+                    list.innerHTML = '<li class="text-muted text-center py-2 no-subgoals"><small>아직 세부 목표가 없습니다</small></li>';
+                }
+            }
+        });
+    }
+    
+    // 초기 카운터 업데이트
+    document.querySelectorAll('.subgoal-section').forEach(section => {
+        updateSubgoalCounter(section);
     });
 });
 </script>

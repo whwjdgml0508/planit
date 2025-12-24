@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
 from datetime import datetime, timedelta
-from .models import Task, StudySession, Goal, DailyPlanner, TimeBlock, TodoItem
+from .models import Task, StudySession, Goal, SubGoal, DailyPlanner, TimeBlock, TodoItem
 from .forms import TaskForm, StudySessionForm, GoalForm, TaskFilterForm
 
 class PlannerView(LoginRequiredMixin, TemplateView):
@@ -281,8 +281,31 @@ class GoalCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.user = self.request.user
-        messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        
+        # 사용자 정의 목표인 경우 하위 목표 처리
+        if form.instance.goal_type == 'CUSTOM':
+            import json
+            subgoals_data = self.request.POST.get('subgoals_data', '[]')
+            try:
+                subgoals_titles = json.loads(subgoals_data)
+                for order, title in enumerate(subgoals_titles):
+                    if title.strip():
+                        SubGoal.objects.create(
+                            goal=form.instance,
+                            title=title.strip(),
+                            order=order
+                        )
+                if subgoals_titles:
+                    messages.success(self.request, f'"{form.instance.title}" 목표가 {len(subgoals_titles)}개의 세부 목표와 함께 설정되었습니다.')
+                else:
+                    messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
+            except json.JSONDecodeError:
+                messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
+        else:
+            messages.success(self.request, f'"{form.instance.title}" 목표가 설정되었습니다.')
+        
+        return response
 
 class GoalUpdateView(LoginRequiredMixin, UpdateView):
     """목표 수정 뷰"""
@@ -643,3 +666,130 @@ def update_target_hours(request):
         })
     
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+# ==================== 하위 목표 (SubGoal) AJAX API ====================
+
+def add_subgoal(request, goal_id):
+    """하위 목표 추가 (AJAX)"""
+    if request.method == 'POST':
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+        
+        # 사용자 정의 목표만 하위 목표 추가 가능
+        if goal.goal_type != 'CUSTOM':
+            return JsonResponse({'success': False, 'error': '사용자 정의 목표에만 하위 목표를 추가할 수 있습니다.'})
+        
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        
+        if not title:
+            return JsonResponse({'success': False, 'error': '하위 목표를 입력해주세요.'})
+        
+        # 순서 계산
+        max_order = goal.subgoals.count()
+        
+        subgoal = SubGoal.objects.create(
+            goal=goal,
+            title=title,
+            description=description,
+            order=max_order
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'subgoal_id': str(subgoal.id),
+            'title': subgoal.title,
+            'description': subgoal.description,
+            'is_completed': subgoal.is_completed,
+            'goal_progress': goal.progress
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def toggle_subgoal(request, subgoal_id):
+    """하위 목표 완료 토글 (AJAX)"""
+    if request.method == 'POST':
+        subgoal = get_object_or_404(SubGoal, id=subgoal_id, goal__user=request.user)
+        
+        subgoal.is_completed = not subgoal.is_completed
+        subgoal.save()  # save()에서 상위 목표 진행률 자동 업데이트
+        
+        goal = subgoal.goal
+        
+        return JsonResponse({
+            'success': True,
+            'is_completed': subgoal.is_completed,
+            'completed_at': subgoal.completed_at.strftime('%Y-%m-%d %H:%M') if subgoal.completed_at else None,
+            'goal_progress': goal.progress,
+            'goal_is_achieved': goal.is_achieved,
+            'message': '🎉 목표를 달성했습니다!' if goal.is_achieved else None
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def delete_subgoal(request, subgoal_id):
+    """하위 목표 삭제 (AJAX)"""
+    if request.method == 'POST':
+        subgoal = get_object_or_404(SubGoal, id=subgoal_id, goal__user=request.user)
+        goal = subgoal.goal
+        
+        subgoal.delete()
+        
+        # 삭제 후 상위 목표 진행률 재계산
+        goal.update_progress_from_subgoals()
+        
+        return JsonResponse({
+            'success': True,
+            'goal_progress': goal.progress,
+            'goal_is_achieved': goal.is_achieved
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def update_subgoal(request, subgoal_id):
+    """하위 목표 수정 (AJAX)"""
+    if request.method == 'POST':
+        subgoal = get_object_or_404(SubGoal, id=subgoal_id, goal__user=request.user)
+        
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        
+        if not title:
+            return JsonResponse({'success': False, 'error': '하위 목표를 입력해주세요.'})
+        
+        subgoal.title = title
+        subgoal.description = description
+        subgoal.save()
+        
+        return JsonResponse({
+            'success': True,
+            'title': subgoal.title,
+            'description': subgoal.description
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
+
+
+def get_subgoals(request, goal_id):
+    """하위 목표 목록 조회 (AJAX)"""
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+    
+    subgoals = goal.subgoals.all()
+    subgoals_data = [{
+        'id': str(sg.id),
+        'title': sg.title,
+        'description': sg.description,
+        'is_completed': sg.is_completed,
+        'completed_at': sg.completed_at.strftime('%Y-%m-%d %H:%M') if sg.completed_at else None,
+        'order': sg.order
+    } for sg in subgoals]
+    
+    return JsonResponse({
+        'success': True,
+        'subgoals': subgoals_data,
+        'goal_progress': goal.progress,
+        'goal_is_achieved': goal.is_achieved
+    })

@@ -300,6 +300,70 @@ class Goal(models.Model):
     def get_progress_percentage(self):
         """진행률 반환"""
         return self.progress
+    
+    def update_progress_from_subgoals(self):
+        """하위 목표 완료율에 따라 진행률 자동 계산 (사용자 정의 목표용)"""
+        if self.goal_type == 'CUSTOM':
+            subgoals = self.subgoals.all()
+            if subgoals.exists():
+                completed_count = subgoals.filter(is_completed=True).count()
+                total_count = subgoals.count()
+                self.progress = int((completed_count / total_count) * 100)
+                self.save()
+    
+    def get_remaining_days(self):
+        """남은 일수 반환"""
+        today = timezone.now().date()
+        if self.end_date > today:
+            return (self.end_date - today).days
+        return 0
+    
+    def is_overdue(self):
+        """기한 초과 여부"""
+        return timezone.now().date() > self.end_date and not self.is_achieved
+
+
+class SubGoal(models.Model):
+    """하위 목표 모델 (사용자 정의 목표용 체크리스트)"""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    goal = models.ForeignKey(
+        Goal,
+        on_delete=models.CASCADE,
+        related_name='subgoals',
+        verbose_name='상위 목표'
+    )
+    title = models.CharField(max_length=200, verbose_name='하위 목표')
+    description = models.TextField(blank=True, verbose_name='설명')
+    
+    # 완료 상태
+    is_completed = models.BooleanField(default=False, verbose_name='완료 여부')
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='완료일시')
+    
+    # 순서
+    order = models.PositiveIntegerField(default=0, verbose_name='순서')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = '하위 목표'
+        verbose_name_plural = '하위 목표들'
+        ordering = ['order', 'created_at']
+    
+    def __str__(self):
+        status = '✓' if self.is_completed else '○'
+        return f"{status} {self.title}"
+    
+    def save(self, *args, **kwargs):
+        # 완료 상태 변경 시 완료일시 설정
+        if self.is_completed and not self.completed_at:
+            self.completed_at = timezone.now()
+        elif not self.is_completed:
+            self.completed_at = None
+        super().save(*args, **kwargs)
+        # 상위 목표 진행률 자동 업데이트
+        self.goal.update_progress_from_subgoals()
 
 
 class DailyPlanner(models.Model):
