@@ -40,17 +40,7 @@
                                      style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #e9ecef;">
                             {% else %}
                                 <div class="d-flex align-items-center justify-content-center" 
-                                     style="width: 100px; height: 100px; font-size: 80px; line-height: 1;">
-                                    {% if profile_user.avatar_choice == 'default' %}👤
-                                    {% elif profile_user.avatar_choice == 'student_male' %}👨‍🎓
-                                    {% elif profile_user.avatar_choice == 'student_female' %}👩‍🎓
-                                    {% elif profile_user.avatar_choice == 'soldier' %}🪖
-                                    {% elif profile_user.avatar_choice == 'pilot' %}👨‍✈️
-                                    {% elif profile_user.avatar_choice == 'engineer' %}👨‍🔧
-                                    {% elif profile_user.avatar_choice == 'scientist' %}👨‍🔬
-                                    {% elif profile_user.avatar_choice == 'astronaut' %}👨‍🚀
-                                    {% else %}👤{% endif %}
-                                </div>
+                                     style="width: 100px; height: 100px; font-size: 80px; line-height: 1;">👤</div>
                             {% endif %}
                         </div>
                         <div class="col">

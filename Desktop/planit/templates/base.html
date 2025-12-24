@@ -88,7 +88,7 @@
                             {% if user.profile_image %}
                                 <img src="{{ user.profile_image.url }}" alt="프로필" class="rounded-circle me-2" width="32" height="32" style="object-fit: cover; border: 2px solid #fff;">
                             {% else %}
-                                <span class="me-2" style="font-size: 24px;">{{ user.get_avatar_emoji }}</span>
+                                <span class="me-2" style="font-size: 24px;">👤</span>
                             {% endif %}
                             <span>{{ user.username }}</span>
                         </a>

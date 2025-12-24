@@ -33,19 +33,7 @@
                                              class="rounded-circle"
                                              style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #e9ecef;">
                                     {% else %}
-                                        <div id="avatarPreview" style="font-size: 120px; line-height: 1;">
-                                            {% if user.avatar_choice %}
-                                                {% if user.avatar_choice == 'default' %}👤
-                                                {% elif user.avatar_choice == 'student_male' %}👨‍🎓
-                                                {% elif user.avatar_choice == 'student_female' %}👩‍🎓
-                                                {% elif user.avatar_choice == 'soldier' %}💂
-                                                {% elif user.avatar_choice == 'pilot' %}👨‍✈️
-                                                {% elif user.avatar_choice == 'engineer' %}👨‍🔧
-                                                {% elif user.avatar_choice == 'scientist' %}👨‍🔬
-                                                {% elif user.avatar_choice == 'astronaut' %}👨‍🚀
-                                                {% endif %}
-                                            {% else %}👤{% endif %}
-                                        </div>
+                                        <div id="defaultAvatar" style="font-size: 120px; line-height: 1;">👤</div>
                                     {% endif %}
                                 </div>
                                 <p class="text-muted small mb-0 mt-2">현재 프로필</p>
@@ -73,28 +61,6 @@
                                 </label>
                             </div>
                             {% endif %}
-                        </div>
-                        
-                        <hr class="my-4">
-                        
-                        <!-- 프로필 아바타 선택 섹션 (이미지가 없을 때 사용) -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-user-circle me-2"></i>프로필 아바타 (이미지 미업로드 시)
-                            </label>
-                            
-                            <!-- 아바타 선택 드롭다운 -->
-                            <select name="avatar_choice" class="form-select" id="avatarSelect">
-                                <option value="default" {% if user.avatar_choice == 'default' %}selected{% endif %}>👤 기본 아바타</option>
-                                <option value="student_male" {% if user.avatar_choice == 'student_male' %}selected{% endif %}>👨‍🎓 남학생</option>
-                                <option value="student_female" {% if user.avatar_choice == 'student_female' %}selected{% endif %}>👩‍🎓 여학생</option>
-                                <option value="soldier" {% if user.avatar_choice == 'soldier' %}selected{% endif %}>💂 군인</option>
-                                <option value="pilot" {% if user.avatar_choice == 'pilot' %}selected{% endif %}>👨‍✈️ 조종사</option>
-                                <option value="engineer" {% if user.avatar_choice == 'engineer' %}selected{% endif %}>👨‍🔧 엔지니어</option>
-                                <option value="scientist" {% if user.avatar_choice == 'scientist' %}selected{% endif %}>👨‍🔬 과학자</option>
-                                <option value="astronaut" {% if user.avatar_choice == 'astronaut' %}selected{% endif %}>👨‍🚀 우주비행사</option>
-                            </select>
-                            <div class="form-text">프로필 이미지를 업로드하지 않으면 선택한 아바타가 표시됩니다</div>
                         </div>
                         
                         <hr class="my-4">
@@ -212,7 +178,7 @@
                     </h6>
                     <ul class="card-text small mb-0">
                         <li>프로필 이미지를 업로드하면 <strong>실제 사진</strong>이 표시됩니다</li>
-                        <li>이미지를 업로드하지 않으면 <strong>선택한 아바타 이모지</strong>가 표시됩니다</li>
+                        <li>이미지를 업로드하지 않으면 <strong>기본 프로필 아이콘</strong>이 표시됩니다</li>
                         <li>이미지 파일은 JPG, PNG, GIF 형식을 지원하며 최대 5MB까지 가능합니다</li>
                         <li>전화번호는 010-1234-5678 형식으로 입력해주세요</li>
                         <li>자기소개는 최대 500자까지 입력 가능합니다</li>
@@ -228,24 +194,10 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const avatarSelect = document.getElementById('avatarSelect');
-    const avatarPreview = document.getElementById('avatarPreview');
     const phoneInput = document.getElementById('id_phone_number');
     const profileImageInput = document.getElementById('profileImageInput');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const clearImageCheckbox = document.getElementById('clearImage');
-    
-    // 아바타 이모지 매핑
-    const avatarEmojis = {
-        'default': '👤',
-        'student_male': '👨‍🎓',
-        'student_female': '👩‍🎓',
-        'soldier': '💂',
-        'pilot': '👨‍✈️',
-        'engineer': '👨‍🔧',
-        'scientist': '👨‍🔬',
-        'astronaut': '👨‍🚀'
-    };
     
     // 프로필 이미지 업로드 시 미리보기
     if (profileImageInput) {
@@ -290,30 +242,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clearImageCheckbox) {
         clearImageCheckbox.addEventListener('change', function() {
             if (this.checked) {
-                // 아바타 이모지로 변경
-                const selectedAvatar = avatarSelect.value;
+                // 기본 아이콘으로 변경
                 imagePreviewContainer.innerHTML = `
-                    <div id="avatarPreview" style="font-size: 120px; line-height: 1;">
-                        ${avatarEmojis[selectedAvatar] || '👤'}
-                    </div>
+                    <div id="defaultAvatar" style="font-size: 120px; line-height: 1;">👤</div>
                 `;
                 // 파일 입력 초기화
                 if (profileImageInput) {
                     profileImageInput.value = '';
-                }
-            }
-        });
-    }
-    
-    // 아바타 선택 시 미리보기 업데이트 (이미지가 없을 때만)
-    if (avatarSelect) {
-        avatarSelect.addEventListener('change', function() {
-            const selectedAvatar = this.value;
-            // 이미지가 업로드되지 않았거나 제거 체크박스가 선택된 경우에만 업데이트
-            if (avatarPreview || (clearImageCheckbox && clearImageCheckbox.checked)) {
-                const preview = document.getElementById('avatarPreview');
-                if (preview) {
-                    preview.textContent = avatarEmojis[selectedAvatar] || '👤';
                 }
             }
         });
