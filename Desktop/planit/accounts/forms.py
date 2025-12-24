@@ -150,7 +150,7 @@ class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email', 'department', 'grade', 
-                 'phone_number', 'profile_image', 'avatar_choice', 'bio')
+                 'phone_number', 'profile_image', 'bio')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -182,7 +182,6 @@ class ProfileEditForm(forms.ModelForm):
                 css_class='row mb-3'
             ),
             Field('phone_number', placeholder='전화번호', css_class='mb-3'),
-            Field('avatar_choice', css_class='mb-3'),
             Field('bio', rows=4, placeholder='자기소개를 입력하세요', css_class='mb-3'),
             Submit('submit', '프로필 업데이트', css_class='btn btn-primary btn-lg w-100 mt-3')
         )
@@ -195,5 +194,4 @@ class ProfileEditForm(forms.ModelForm):
         self.fields['grade'].label = '학년'
         self.fields['phone_number'].label = '전화번호'
         self.fields['profile_image'].label = '프로필 이미지'
-        self.fields['avatar_choice'].label = '아바타 선택'
         self.fields['bio'].label = '자기소개'
