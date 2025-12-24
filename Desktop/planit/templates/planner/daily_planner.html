@@ -530,7 +530,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="stat-card green" id="study-time-card" style="cursor: pointer;" onclick="showTargetHoursModal()">
+            <div class="stat-card green" id="study-time-card" style="cursor: pointer;">
                 <div class="stat-number" id="study-hours-display">{{ stats.study_hours|floatformat:1 }}h</div>
                 <div class="stat-label">오늘 학습 시간</div>
                 <div class="stat-progress" id="target-hours-display">
@@ -1169,6 +1169,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 이벤트 리스너 등록
     attachTimeTableEvents();
+    
+    // 목표 학습시간 카드 클릭 이벤트
+    const studyTimeCard = document.getElementById('study-time-card');
+    if (studyTimeCard) {
+        studyTimeCard.addEventListener('click', function() {
+            const currentTarget = document.getElementById('target-hours').value;
+            document.getElementById('modal-target-hours').value = currentTarget;
+            const modal = new bootstrap.Modal(document.getElementById('targetHoursModal'));
+            modal.show();
+        });
+    }
     
     // 일일 목표 업데이트
     const dailyGoalElement = document.getElementById('daily-goal');
