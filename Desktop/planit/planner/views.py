@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse
@@ -436,6 +437,7 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         return context
 
 
+@login_required
 def add_todo_item(request):
     """할 일 추가 (AJAX)"""
     if request.method == 'POST':
@@ -475,6 +477,7 @@ def add_todo_item(request):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def toggle_todo_item(request, todo_id):
     """할 일 완료 토글 (AJAX)"""
     if request.method == 'POST':
@@ -492,6 +495,7 @@ def toggle_todo_item(request, todo_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def delete_todo_item(request, todo_id):
     """할 일 삭제 (AJAX)"""
     if request.method == 'POST':
@@ -503,6 +507,7 @@ def delete_todo_item(request, todo_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def add_time_block(request):
     """시간 블록 추가/수정 (AJAX)"""
     if request.method == 'POST':
@@ -551,6 +556,7 @@ def add_time_block(request):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def remove_time_block(request):
     """시간 블록 제거 (AJAX)"""
     if request.method == 'POST':
@@ -579,6 +585,7 @@ def remove_time_block(request):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def update_daily_goal(request):
     """일일 목표 업데이트 (AJAX)"""
     if request.method == 'POST':
@@ -606,6 +613,7 @@ def update_daily_goal(request):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def update_goal_progress(request, goal_id):
     """목표 진행률 업데이트 (AJAX)"""
     if request.method == 'POST':
@@ -630,6 +638,7 @@ def update_goal_progress(request, goal_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def update_target_hours(request):
     """목표 학습시간 업데이트 (AJAX)"""
     if request.method == 'POST':
@@ -670,6 +679,7 @@ def update_target_hours(request):
 
 # ==================== 하위 목표 (SubGoal) AJAX API ====================
 
+@login_required
 def add_subgoal(request, goal_id):
     """하위 목표 추가 (AJAX)"""
     if request.method == 'POST':
@@ -707,6 +717,7 @@ def add_subgoal(request, goal_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def toggle_subgoal(request, subgoal_id):
     """하위 목표 완료 토글 (AJAX)"""
     if request.method == 'POST':
@@ -729,6 +740,7 @@ def toggle_subgoal(request, subgoal_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def delete_subgoal(request, subgoal_id):
     """하위 목표 삭제 (AJAX)"""
     if request.method == 'POST':
@@ -749,6 +761,7 @@ def delete_subgoal(request, subgoal_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def update_subgoal(request, subgoal_id):
     """하위 목표 수정 (AJAX)"""
     if request.method == 'POST':
@@ -773,6 +786,7 @@ def update_subgoal(request, subgoal_id):
     return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})
 
 
+@login_required
 def get_subgoals(request, goal_id):
     """하위 목표 목록 조회 (AJAX)"""
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
