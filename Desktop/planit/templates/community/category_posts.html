@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}게시글 목록 - PlanIt{% endblock %}
+{% block title %}{{ category.name }} - PlanIt 커뮤니티{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -8,36 +8,16 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2>💬 커뮤니티 게시글</h2>
-                    {% if filtered_author %}
-                    <p class="text-muted mb-0">
-                        <i class="fas fa-user"></i> {{ filtered_author.get_full_name }}님의 게시글
-                    </p>
-                    {% endif %}
+                    <h2><i class="{{ category.icon }}" style="color: {{ category.color }};"></i> {{ category.name }}</h2>
+                    <p class="text-muted mb-0">{{ category.description }}</p>
                 </div>
                 <div>
                     <a href="{% url 'community:post_create' %}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> 새 글 작성
                     </a>
-                    <a href="{% url 'community:index' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> 커뮤니티 홈
+                    <a href="{% url 'community:post_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 전체 목록
                     </a>
-                </div>
-            </div>
-
-            <!-- 카테고리 필터 -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="{% url 'community:post_list' %}" class="btn btn-outline-primary btn-sm">
-                            전체
-                        </a>
-                        {% for category in categories %}
-                        <a href="{% url 'community:category_posts' category.slug %}" class="btn btn-outline-secondary btn-sm" style="border-color: {{ category.color }}; color: {{ category.color }};">
-                            <i class="{{ category.icon }}"></i> {{ category.name }}
-                        </a>
-                        {% endfor %}
-                    </div>
                 </div>
             </div>
 
@@ -49,7 +29,6 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge bg-primary me-2">{{ post.category.get_name_display }}</span>
                                     {% if post.is_pinned %}
                                     <span class="badge bg-warning me-2">
                                         <i class="fas fa-thumbtack"></i> 공지
@@ -115,10 +94,10 @@
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?{% if filtered_author %}author={{ filtered_author.id }}&{% endif %}page=1">처음</a>
+                        <a class="page-link" href="?page=1">처음</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?{% if filtered_author %}author={{ filtered_author.id }}&{% endif %}page={{ page_obj.previous_page_number }}">이전</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a>
                     </li>
                     {% endif %}
                     
@@ -129,17 +108,17 @@
                     </li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
-                        <a class="page-link" href="?{% if filtered_author %}author={{ filtered_author.id }}&{% endif %}page={{ num }}">{{ num }}</a>
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
                     </li>
                     {% endif %}
                     {% endfor %}
                     
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?{% if filtered_author %}author={{ filtered_author.id }}&{% endif %}page={{ page_obj.next_page_number }}">다음</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?{% if filtered_author %}author={{ filtered_author.id }}&{% endif %}page={{ page_obj.paginator.num_pages }}">마지막</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">마지막</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -149,9 +128,9 @@
             {% else %}
             <div class="text-center py-5">
                 <div class="mb-4">
-                    <i class="fas fa-comments fa-4x text-muted"></i>
+                    <i class="{{ category.icon }} fa-4x" style="color: {{ category.color }};"></i>
                 </div>
-                <h4 class="text-muted">게시글이 없습니다</h4>
+                <h4 class="text-muted">이 카테고리에 게시글이 없습니다</h4>
                 <p class="text-muted">첫 번째 게시글을 작성해보세요!</p>
                 <a href="{% url 'community:post_create' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> 첫 번째 글 작성하기
