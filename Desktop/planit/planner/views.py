@@ -27,13 +27,15 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             status__in=['TODO', 'IN_PROGRESS']
         )
         
-        # 이번 주 과제
+        # 이번 주 과제 (마감일이 이번 주이거나, 마감일 미설정 과제 중 이번 주 생성된 과제)
         week_start = today - timedelta(days=today.weekday())
         week_end = week_start + timedelta(days=6)
         week_tasks = Task.objects.filter(
             user=user,
-            due_date__date__range=[week_start, week_end],
             status__in=['TODO', 'IN_PROGRESS']
+        ).filter(
+            Q(due_date__date__range=[week_start, week_end]) |  # 마감일이 이번 주
+            Q(due_date__isnull=True, created_at__date__range=[week_start, week_end])  # 마감일 미설정 + 이번 주 생성
         )
         
         # 마감일 지난 과제
@@ -92,6 +94,42 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'overdue': overdue_tasks.count(),
         }
         
+        # 완료율 계산
+        completion_rate = 0
+        if task_stats['total'] > 0:
+            completion_rate = round((task_stats['completed'] / task_stats['total']) * 100, 1)
+        
+        # 3일 이내 마감 과제
+        upcoming_deadline = Task.objects.filter(
+            user=user,
+            due_date__date__range=[today, today + timedelta(days=3)],
+            status__in=['TODO', 'IN_PROGRESS']
+        ).order_by('due_date')
+        
+        # 일일 학습시간 (최근 7일)
+        daily_study_data = []
+        for i in range(6, -1, -1):
+            day = today - timedelta(days=i)
+            day_sessions = StudySession.objects.filter(
+                user=user,
+                start_time__date=day,
+                end_time__isnull=False
+            )
+            day_minutes = sum(
+                s.duration_minutes if s.duration_minutes else 
+                int((s.end_time - s.start_time).total_seconds() / 60)
+                for s in day_sessions
+            )
+            daily_study_data.append({
+                'date': day.strftime('%m/%d'),
+                'day_name': ['월', '화', '수', '목', '금', '토', '일'][day.weekday()],
+                'minutes': day_minutes,
+                'hours': round(day_minutes / 60, 1)
+            })
+        
+        # 오늘 학습시간
+        today_study_minutes = daily_study_data[-1]['minutes'] if daily_study_data else 0
+        
         context.update({
             'today_tasks': today_tasks,
             'week_tasks': week_tasks,
@@ -99,8 +137,12 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'recent_completed': recent_completed,
             'week_sessions': week_sessions,
             'total_study_hours': float(total_study_minutes) / 60.0,
+            'today_study_hours': float(today_study_minutes) / 60.0,
             'active_goals': active_goals,
             'task_stats': task_stats,
+            'completion_rate': completion_rate,
+            'upcoming_deadline': upcoming_deadline,
+            'daily_study_data': daily_study_data,
         })
         return context
 
