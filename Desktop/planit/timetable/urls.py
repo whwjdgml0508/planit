@@ -29,6 +29,11 @@ urlpatterns = [
     
     # 기존 기능
     path('subject/<uuid:subject_id>/timeslot/add/', views.TimeSlotCreateView.as_view(), name='timeslot_add'),
+    
+    # 학기 관리
     path('semesters/', views.SemesterListView.as_view(), name='semester_list'),
     path('semester/create/', views.SemesterCreateView.as_view(), name='semester_create'),
+    path('semester/<uuid:pk>/edit/', views.SemesterUpdateView.as_view(), name='semester_edit'),
+    path('semester/<uuid:pk>/set-current/', views.set_current_semester, name='semester_set_current'),
+    path('semester/<uuid:pk>/delete/', views.delete_semester, name='semester_delete'),
 ]

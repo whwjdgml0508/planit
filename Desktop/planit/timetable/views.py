@@ -163,7 +163,24 @@ class SemesterListView(LoginRequiredMixin, ListView):
     context_object_name = 'semesters'
     
     def get_queryset(self):
-        return Semester.objects.filter(user=self.request.user)
+        from django.db.models import Count
+        return Semester.objects.filter(user=self.request.user).annotate(
+            subject_count=Count('subjects')
+        ).order_by('-year', '-semester')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from datetime import date
+        context['today'] = date.today()
+        
+        # 전체 과목 수 (학기 미지정 포함)
+        context['total_subjects'] = Subject.objects.filter(user=self.request.user).count()
+        context['unassigned_subjects'] = Subject.objects.filter(
+            user=self.request.user,
+            semester__isnull=True
+        ).count()
+        
+        return context
 
 class SemesterCreateView(LoginRequiredMixin, CreateView):
     """학기 생성 뷰"""
@@ -512,3 +529,81 @@ def download_subject_file(request, pk):
     except Exception as e:
         messages.error(request, '파일 다운로드 중 오류가 발생했습니다.')
         return redirect('timetable:subject_detail', pk=file_obj.subject.pk)
+
+
+class SemesterUpdateView(LoginRequiredMixin, UpdateView):
+    """학기 수정 뷰"""
+    model = Semester
+    form_class = SemesterForm
+    template_name = 'timetable/semester_edit.html'
+    success_url = reverse_lazy('timetable:semester_list')
+    
+    def get_queryset(self):
+        return Semester.objects.filter(user=self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        semester = self.object
+        # 해당 학기의 과목 수
+        context['subject_count'] = Subject.objects.filter(
+            user=self.request.user, 
+            semester=semester
+        ).count()
+        return context
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'"{form.instance}" 학기가 수정되었습니다.')
+        return super().form_valid(form)
+
+
+@login_required
+@require_http_methods(["POST"])
+def set_current_semester(request, pk):
+    """현재 학기로 설정하는 API"""
+    try:
+        semester = get_object_or_404(Semester, pk=pk, user=request.user)
+        
+        # 다른 학기들의 is_current를 False로 설정
+        Semester.objects.filter(user=request.user, is_current=True).update(is_current=False)
+        
+        # 선택한 학기를 현재 학기로 설정
+        semester.is_current = True
+        semester.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'"{semester}"가 현재 학기로 설정되었습니다.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_semester(request, pk):
+    """학기 삭제 API"""
+    try:
+        semester = get_object_or_404(Semester, pk=pk, user=request.user)
+        semester_name = str(semester)
+        
+        # 해당 학기에 연결된 과목이 있는지 확인
+        subject_count = Subject.objects.filter(semester=semester).count()
+        
+        if subject_count > 0:
+            # 과목들의 학기 연결을 해제 (과목은 삭제하지 않음)
+            Subject.objects.filter(semester=semester).update(semester=None)
+        
+        semester.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'"{semester_name}" 학기가 삭제되었습니다.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

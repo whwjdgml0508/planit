@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}학기 수정 - PlanIt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                        <h2 class="fw-bold">학기 수정</h2>
+                        <p class="text-muted">{{ object.year }}년 {{ object.get_semester_display }} 정보를 수정합니다</p>
+                    </div>
+                    
+                    {% crispy form %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'timetable:semester_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> 목록으로
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 학기 정보 -->
+            <div class="card border-info mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="fas fa-info-circle me-2"></i>현재 학기 정보
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>등록된 과목:</strong> {{ subject_count }}개</p>
+                            <p class="mb-1"><strong>시작일:</strong> {{ object.start_date|date:"Y년 m월 d일" }}</p>
+                            <p class="mb-0"><strong>종료일:</strong> {{ object.end_date|date:"Y년 m월 d일" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1">
+                                <strong>상태:</strong>
+                                {% if object.is_current %}
+                                <span class="badge bg-success">현재 학기</span>
+                                {% else %}
+                                <span class="badge bg-secondary">비활성</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-0">
+                                <strong>생성일:</strong> {{ object.created_at|date:"Y-m-d" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 위험 구역 -->
+            <div class="card border-danger mt-3">
+                <div class="card-body">
+                    <h6 class="card-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>위험 구역
+                    </h6>
+                    <p class="small text-muted mb-3">
+                        학기를 삭제하면 해당 학기에 연결된 과목들의 학기 정보가 해제됩니다. 과목 자체는 삭제되지 않습니다.
+                    </p>
+                    <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i> 이 학기 삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    if (confirm('정말로 이 학기를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) {
+        fetch('{% url "timetable:semester_delete" object.pk %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{% url "timetable:semester_list" %}';
+            } else {
+                alert('삭제 중 오류가 발생했습니다: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('서버 오류가 발생했습니다.');
+        });
+    }
+}
+
+// 폼 검증
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const startDate = new Date(document.getElementById('id_start_date').value);
+            const endDate = new Date(document.getElementById('id_end_date').value);
+            
+            if (startDate >= endDate) {
+                e.preventDefault();
+                alert('시작일은 종료일보다 빨라야 합니다.');
+                return false;
+            }
+            
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 30) {
+                e.preventDefault();
+                alert('학기 기간이 너무 짧습니다. 최소 30일 이상이어야 합니다.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
