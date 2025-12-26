@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse, FileResponse, Http404
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from .models import Subject, TimeSlot, Semester, SubjectFile
@@ -236,8 +236,11 @@ class TimeSlotCreateView(LoginRequiredMixin, CreateView):
             time_slot = form.save(commit=False)
             time_slot.subject = subject
             time_slot.semester = current_semester
-            time_slot.save()
-            return JsonResponse({'success': True, 'message': '시간표가 추가되었습니다.'})
+            try:
+                time_slot.save()
+                return JsonResponse({'success': True, 'message': '시간표가 추가되었습니다.'})
+            except IntegrityError:
+                return JsonResponse({'success': False, 'error': '해당 시간에 이미 수업이 배치되어 있습니다.'})
         
         return JsonResponse({'success': False, 'error': '입력 정보를 확인해주세요.'})
 
@@ -392,13 +395,19 @@ def add_to_timetable(request):
                 })
             
             # 시간표 슬롯 생성 (현재 학기에 할당)
-            TimeSlot.objects.create(
-                subject=subject,
-                semester=current_semester,
-                day=day,
-                period=period,
-                location=location
-            )
+            try:
+                TimeSlot.objects.create(
+                    subject=subject,
+                    semester=current_semester,
+                    day=day,
+                    period=period,
+                    location=location
+                )
+            except IntegrityError:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'해당 시간에 이미 수업이 배치되어 있습니다. 다른 시간을 선택해주세요.'
+                })
             
             return JsonResponse({
                 'success': True,
@@ -410,7 +419,7 @@ def add_to_timetable(request):
         except Exception as e:
             return JsonResponse({
                 'success': False,
-                'error': f'서버 오류가 발생했습니다: {str(e)}'
+                'error': f'오류가 발생했습니다. 다시 시도해주세요.'
             })
     
     return JsonResponse({'success': False, 'error': '잘못된 요청 방식입니다.'})
@@ -421,9 +430,16 @@ def remove_from_timetable(request):
         day = request.POST.get('day')
         period = int(request.POST.get('period'))
         
+        # 현재 학기 가져오기
+        current_semester = Semester.objects.filter(
+            user=request.user,
+            is_current=True
+        ).first()
+        
         try:
             time_slot = TimeSlot.objects.get(
                 subject__user=request.user,
+                semester=current_semester,  # 현재 학기만 필터링
                 day=day,
                 period=period
             )
