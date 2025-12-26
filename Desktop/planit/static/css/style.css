@@ -667,3 +667,51 @@ footer h5 {
 [data-theme="dark"] a:hover {
     color: #5AC8FA;
 }
+
+/* 다크 모드에서 시간표 색상 부드럽게 조정 */
+[data-theme="dark"] .timetable-subject {
+    filter: brightness(0.7) saturate(0.8);
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .timetable-subject:hover {
+    filter: brightness(0.8) saturate(0.9);
+}
+
+/* 다크 모드에서 밝은 배경색 조정 */
+[data-theme="dark"] [style*="background-color: yellow"],
+[data-theme="dark"] [style*="background-color: #FFFF00"],
+[data-theme="dark"] [style*="background-color: #ffff00"] {
+    background-color: #5A5A00 !important;
+    color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] [style*="background-color: #FF00FF"],
+[data-theme="dark"] [style*="background-color: magenta"] {
+    background-color: #5A005A !important;
+    color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] [style*="background-color: #00FF00"],
+[data-theme="dark"] [style*="background-color: lime"] {
+    background-color: #005A00 !important;
+    color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] [style*="background-color: #FFA500"],
+[data-theme="dark"] [style*="background-color: orange"] {
+    background-color: #5A3A00 !important;
+    color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] [style*="background-color: #FF69B4"],
+[data-theme="dark"] [style*="background-color: hotpink"] {
+    background-color: #5A2040 !important;
+    color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] [style*="background-color: #00FFFF"],
+[data-theme="dark"] [style*="background-color: cyan"] {
+    background-color: #005A5A !important;
+    color: #E8E8E8 !important;
+}
