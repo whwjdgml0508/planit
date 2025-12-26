@@ -53,15 +53,15 @@
                             <!-- 학기 통계 -->
                             <div class="row text-center bg-light rounded p-2 mb-3">
                                 <div class="col-4">
-                                    <div class="fw-bold text-primary">{{ semester.subject_count }}</div>
+                                    <div class="fw-bold text-primary">{{ semester.subject_count }}개</div>
                                     <small class="text-muted">과목</small>
                                 </div>
                                 <div class="col-4">
-                                    <div class="fw-bold text-info">{{ semester.year }}</div>
-                                    <small class="text-muted">년도</small>
+                                    <div class="fw-bold text-success">{{ semester.total_credits }}학점</div>
+                                    <small class="text-muted">총 학점</small>
                                 </div>
                                 <div class="col-4">
-                                    <div class="fw-bold {% if semester.start_date <= today and semester.end_date >= today %}text-success{% elif semester.start_date > today %}text-info{% else %}text-secondary{% endif %}">
+                                    <div class="fw-bold {% if semester.start_date <= today and semester.end_date >= today %}text-info{% elif semester.start_date > today %}text-warning{% else %}text-secondary{% endif %}">
                                         {% if semester.start_date <= today and semester.end_date >= today %}
                                         진행중
                                         {% elif semester.start_date > today %}
