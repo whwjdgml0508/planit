@@ -78,13 +78,11 @@ class PlannerView(LoginRequiredMixin, TemplateView):
         # 총 학습시간 합산
         total_study_minutes = session_study_minutes + timeblock_study_minutes
         
-        # 활성 목표
+        # 활성 목표 (달성되지 않은 모든 목표 표시)
         active_goals = Goal.objects.filter(
             user=user,
-            start_date__lte=today,
-            end_date__gte=today,
             is_achieved=False
-        )
+        ).order_by('end_date')
         
         # 통계
         task_stats = {
