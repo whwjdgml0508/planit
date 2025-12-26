@@ -1493,15 +1493,28 @@ function updateTodoStats() {
 
 // 목표 학습시간 모달 표시
 function showTargetHoursModal() {
-    const currentTarget = document.getElementById('target-hours').value;
-    document.getElementById('modal-target-hours').value = currentTarget;
-    const modal = new bootstrap.Modal(document.getElementById('targetHoursModal'));
+    const targetHoursInput = document.getElementById('target-hours');
+    const modalInput = document.getElementById('modal-target-hours');
+    const modalEl = document.getElementById('targetHoursModal');
+    
+    if (!targetHoursInput || !modalInput || !modalEl) {
+        console.error('목표 학습시간 모달 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    modalInput.value = targetHoursInput.value;
+    const modal = new bootstrap.Modal(modalEl);
     modal.show();
 }
 
 // 모달에서 목표 학습시간 저장
 function saveTargetHoursFromModal() {
-    const targetHours = parseFloat(document.getElementById('modal-target-hours').value);
+    const modalInput = document.getElementById('modal-target-hours');
+    if (!modalInput) {
+        alert('입력 필드를 찾을 수 없습니다.');
+        return;
+    }
+    const targetHours = parseFloat(modalInput.value);
     
     // 유효성 검사
     if (isNaN(targetHours) || targetHours < 0.5 || targetHours > 24) {
@@ -1509,14 +1522,23 @@ function saveTargetHoursFromModal() {
         return;
     }
     
-    const currentDate = document.getElementById('date-picker').value;
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const datePicker = document.getElementById('date-picker');
+    const csrfTokenEl = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!datePicker || !csrfTokenEl) {
+        alert('필수 요소를 찾을 수 없습니다.');
+        return;
+    }
+    const currentDate = datePicker.value;
+    const csrfToken = csrfTokenEl.value;
     
     // 저장 버튼 상태 변경
     const saveBtn = document.querySelector('#targetHoursModal .btn-success');
-    const originalText = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
-    saveBtn.disabled = true;
+    let originalText = '';
+    if (saveBtn) {
+        originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
+        saveBtn.disabled = true;
+    }
     
     fetch('{% url "planner:update_target_hours" %}', {
         method: 'POST',
@@ -1547,7 +1569,17 @@ function saveTargetHoursFromModal() {
             updateStudyStatsWithTarget(targetHours);
             
             // 모달 닫기
-            bootstrap.Modal.getInstance(document.getElementById('targetHoursModal')).hide();
+            try {
+                const modalEl = document.getElementById('targetHoursModal');
+                if (modalEl) {
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+            } catch (e) {
+                console.warn('모달 닫기 오류:', e);
+            }
             
             // 성공 알림 (토스트 스타일)
             showToast('✅ 목표 학습시간이 ' + targetHours + '시간으로 설정되었습니다.');
@@ -1556,20 +1588,24 @@ function saveTargetHoursFromModal() {
         } else {
             alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
         }
-        saveBtn.innerHTML = originalText;
-        saveBtn.disabled = false;
+        if (saveBtn) {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
     })
     .catch(error => {
         console.error('저장 오류:', error);
         // 세션 만료 시 페이지 새로고침
-        if (error.message.includes('302') || error.message.includes('401') || error.message.includes('403')) {
+        if (error.message && (error.message.includes('302') || error.message.includes('401') || error.message.includes('403'))) {
             alert('세션이 만료되었습니다. 페이지를 새로고침합니다.');
             location.reload();
         } else {
-            alert('저장 중 오류가 발생했습니다: ' + error.message);
+            alert('저장 중 오류가 발생했습니다: ' + (error.message || '알 수 없는 오류'));
         }
-        saveBtn.innerHTML = originalText;
-        saveBtn.disabled = false;
+        if (saveBtn) {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
     });
 }
 
