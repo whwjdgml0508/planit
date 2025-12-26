@@ -61,14 +61,8 @@
                                     <small class="text-muted">총 학점</small>
                                 </div>
                                 <div class="col-4">
-                                    <div class="fw-bold {% if semester.start_date <= today and semester.end_date >= today %}text-info{% elif semester.start_date > today %}text-warning{% else %}text-secondary{% endif %}">
-                                        {% if semester.start_date <= today and semester.end_date >= today %}
-                                        진행중
-                                        {% elif semester.start_date > today %}
-                                        예정
-                                        {% else %}
-                                        완료
-                                        {% endif %}
+                                    <div class="fw-bold {% if semester.progress_percentage == 100 %}text-secondary{% elif semester.progress_percentage == 0 %}text-warning{% else %}text-info{% endif %}">
+                                        {{ semester.progress_percentage }}%
                                     </div>
                                     <small class="text-muted">상태</small>
                                 </div>
@@ -76,14 +70,7 @@
                             
                             <!-- 기간 표시 -->
                             <div class="progress mb-3" style="height: 8px;">
-                                {% now "Y-m-d" as today %}
-                                {% if semester.start_date <= today and semester.end_date >= today %}
-                                <div class="progress-bar bg-success" style="width: 60%"></div>
-                                {% elif semester.start_date > today %}
-                                <div class="progress-bar bg-info" style="width: 0%"></div>
-                                {% else %}
-                                <div class="progress-bar bg-secondary" style="width: 100%"></div>
-                                {% endif %}
+                                <div class="progress-bar {% if semester.progress_percentage == 100 %}bg-secondary{% elif semester.progress_percentage == 0 %}bg-info{% else %}bg-success{% endif %}" style="width: {{ semester.progress_percentage }}%"></div>
                             </div>
                         </div>
                         

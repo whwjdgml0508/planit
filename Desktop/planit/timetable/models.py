@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Sum
+from datetime import date
 import uuid
 
 User = get_user_model()
@@ -95,6 +97,7 @@ class TimeSlot(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='time_slots')
+    semester = models.ForeignKey('Semester', on_delete=models.CASCADE, related_name='time_slots', null=True, blank=True, verbose_name='학기')
     day = models.CharField(max_length=3, choices=DAY_CHOICES, verbose_name='요일')
     period = models.IntegerField(
         choices=PERIOD_CHOICES,
@@ -112,7 +115,7 @@ class TimeSlot(models.Model):
     class Meta:
         verbose_name = '시간표 슬롯'
         verbose_name_plural = '시간표 슬롯들'
-        unique_together = ['subject', 'day', 'period']
+        unique_together = ['semester', 'day', 'period']  # 같은 학기 내에서만 중복 체크
         ordering = ['day', 'period']
         
     def __str__(self):
@@ -167,6 +170,42 @@ class Semester(models.Model):
         if self.is_current:
             Semester.objects.filter(user=self.user, is_current=True).update(is_current=False)
         super().save(*args, **kwargs)
+    
+    @property
+    def subject_count(self):
+        """해당 학기의 과목 수 반환"""
+        return self.subjects.count()
+    
+    @property
+    def total_credits(self):
+        """해당 학기의 총 학점 반환"""
+        total = self.subjects.aggregate(total=Sum('credits'))['total']
+        if total is None:
+            return 0
+        # 소수점이 .0이면 정수로 표시
+        return int(total) if total == int(total) else total
+    
+    @property
+    def progress_percentage(self):
+        """학기 진행률 (시작일부터 종료일까지 경과한 비율)"""
+        today = date.today()
+        
+        # 아직 시작 전
+        if today < self.start_date:
+            return 0
+        
+        # 이미 종료
+        if today >= self.end_date:
+            return 100
+        
+        # 진행 중
+        total_days = (self.end_date - self.start_date).days
+        if total_days <= 0:
+            return 100
+        
+        elapsed_days = (today - self.start_date).days
+        percentage = (elapsed_days / total_days) * 100
+        return round(percentage)
 
 class SubjectFile(models.Model):
     """과목 파일 모델 - 수업 자료, 강의계획서 등"""
