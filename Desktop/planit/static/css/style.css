@@ -741,6 +741,68 @@ footer h5 {
     color: var(--text-primary) !important;
 }
 
+/* 다크 모드에서 모든 요소 강제 적용 */
+[data-theme="dark"] div,
+[data-theme="dark"] section,
+[data-theme="dark"] article,
+[data-theme="dark"] main,
+[data-theme="dark"] aside {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .container,
+[data-theme="dark"] .row,
+[data-theme="dark"] .col,
+[data-theme="dark"] [class*="col-"] {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] span,
+[data-theme="dark"] label,
+[data-theme="dark"] small,
+[data-theme="dark"] strong,
+[data-theme="dark"] b,
+[data-theme="dark"] em,
+[data-theme="dark"] i {
+    color: inherit;
+}
+
+/* 플래너 페이지 전용 스타일 */
+[data-theme="dark"] .planner-container,
+[data-theme="dark"] .daily-planner,
+[data-theme="dark"] .goal-section,
+[data-theme="dark"] .task-section,
+[data-theme="dark"] .schedule-section {
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .progress-card,
+[data-theme="dark"] .goal-card,
+[data-theme="dark"] .task-card {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .list-group,
+[data-theme="dark"] .list-group-item {
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .badge {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .alert {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
 /* 다크 모드에서 시간표 색상 부드럽게 조정 */
 [data-theme="dark"] .timetable-subject {
     filter: brightness(0.7) saturate(0.8);

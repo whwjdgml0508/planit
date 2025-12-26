@@ -156,6 +156,7 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'completion_rate': completion_rate,
             'upcoming_deadline': upcoming_deadline,
             'daily_study_data': daily_study_data,
+            'weekly_study_goal': user.weekly_study_goal,
         })
         return context
 
