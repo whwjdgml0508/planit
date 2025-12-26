@@ -34,11 +34,17 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:50618',
     'http://127.0.0.1:50619',
     'http://127.0.0.1:50620',
+    'http://127.0.0.1:50748',  # Current browser preview port
+    'http://127.0.0.1:50749',
+    'http://127.0.0.1:50750',
     'http://localhost:50616',
     'http://localhost:50617',
     'http://localhost:50618',
     'http://localhost:50619',
     'http://localhost:50620',
+    'http://localhost:50748',
+    'http://localhost:50749',
+    'http://localhost:50750',
     'https://planit.boramae.club',
     'http://planit.boramae.club',
 ]

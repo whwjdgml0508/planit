@@ -204,9 +204,15 @@
                 <div class="gradient-header">
                     <h3 class="text-white mb-0 d-flex align-items-center gap-2">
                         <i class="fas fa-book-medical icon-label"></i>
-                        새 과목 추가 (개선된 방식)
+                        새 과목 추가
                     </h3>
-                    <p class="text-white-50 mb-0 mt-2">과목 정보를 입력하고 시간표에 추가하세요</p>
+                    <p class="text-white-50 mb-0 mt-2">
+                        {% if current_semester %}
+                        <i class="fas fa-graduation-cap me-1"></i>{{ current_semester }} 학기에 과목이 추가됩니다
+                        {% else %}
+                        <i class="fas fa-exclamation-triangle me-1"></i>학기가 설정되지 않았습니다. <a href="{% url 'timetable:semester_create' %}" class="text-white">학기를 먼저 추가</a>하세요.
+                        {% endif %}
+                    </p>
                 </div>
                 <div class="card-body p-4">
                     {% crispy form %}

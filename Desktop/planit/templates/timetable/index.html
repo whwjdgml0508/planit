@@ -152,20 +152,54 @@
         </div>
     </div>
 
-    <!-- 현재 학기 정보 -->
-    {% if current_semester %}
+    <!-- 학기 선택 및 현재 학기 정보 -->
     <div class="semester-info">
         <div class="row align-items-center">
-            <div class="col-md-8">
-                <h5 class="mb-1">{{ current_semester }}</h5>
-                <p class="mb-0">{{ current_semester.start_date }} ~ {{ current_semester.end_date }}</p>
+            <div class="col-md-6">
+                {% if current_semester %}
+                <h5 class="mb-1"><i class="fas fa-graduation-cap me-2"></i>{{ current_semester }}</h5>
+                <p class="mb-0 opacity-75">{{ current_semester.start_date }} ~ {{ current_semester.end_date }}</p>
+                {% else %}
+                <h5 class="mb-1"><i class="fas fa-exclamation-triangle me-2"></i>학기 미설정</h5>
+                <p class="mb-0 opacity-75">학기를 설정하여 시간표를 관리하세요</p>
+                {% endif %}
             </div>
-            <div class="col-md-4 text-md-end">
-                <span class="badge bg-light text-dark fs-6">총 {{ semester_subjects_count }}개 과목</span>
+            <div class="col-md-6 text-md-end">
+                <div class="d-flex align-items-center justify-content-md-end gap-2 mt-2 mt-md-0">
+                    <span class="badge bg-light text-dark fs-6">총 {{ semester_subjects_count }}개 과목</span>
+                    {% if all_semesters %}
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-exchange-alt me-1"></i>학기 전환
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for semester in all_semesters %}
+                            <li>
+                                <a class="dropdown-item {% if current_semester.id == semester.id %}active{% endif %}" 
+                                   href="?semester={{ semester.id }}">
+                                    <i class="fas fa-{% if semester.is_current %}star text-warning{% else %}calendar{% endif %} me-2"></i>
+                                    {{ semester }}
+                                    {% if semester.is_current %}<span class="badge bg-success ms-2">현재</span>{% endif %}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-primary" href="{% url 'timetable:semester_create' %}">
+                                    <i class="fas fa-plus me-2"></i>새 학기 추가
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'timetable:semester_create' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus me-1"></i>새 학기 추가
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- 시간표 -->
     <div class="card shadow-sm">
