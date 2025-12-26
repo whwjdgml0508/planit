@@ -67,6 +67,10 @@ class User(AbstractUser):
         blank=True,
         verbose_name='자기소개'
     )
+    weekly_study_goal = models.PositiveIntegerField(
+        default=40,
+        verbose_name='주간 학습 목표(시간)'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

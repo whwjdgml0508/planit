@@ -110,16 +110,29 @@ class PlannerView(LoginRequiredMixin, TemplateView):
         daily_study_data = []
         for i in range(6, -1, -1):
             day = today - timedelta(days=i)
+            
+            # StudySession 학습시간
             day_sessions = StudySession.objects.filter(
                 user=user,
                 start_time__date=day,
                 end_time__isnull=False
             )
-            day_minutes = sum(
+            session_minutes = sum(
                 s.duration_minutes if s.duration_minutes else 
                 int((s.end_time - s.start_time).total_seconds() / 60)
                 for s in day_sessions
             )
+            
+            # TimeBlock 학습시간 (일일 플래너)
+            timeblock_minutes = TimeBlock.objects.filter(
+                daily_planner__user=user,
+                daily_planner__date=day,
+                block_type='STUDY'
+            ).count() * 10  # 각 블록은 10분
+            
+            # 총 학습시간
+            day_minutes = session_minutes + timeblock_minutes
+            
             daily_study_data.append({
                 'date': day.strftime('%m/%d'),
                 'day_name': ['월', '화', '수', '목', '금', '토', '일'][day.weekday()],
