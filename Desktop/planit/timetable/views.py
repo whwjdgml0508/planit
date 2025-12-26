@@ -104,8 +104,15 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         with transaction.atomic():
-            # 과목 저장 (학기는 할당하지 않음)
+            # 현재 학기 가져오기
+            current_semester = Semester.objects.filter(
+                user=self.request.user, 
+                is_current=True
+            ).first()
+            
+            # 과목 저장 (현재 학기에 연결)
             form.instance.user = self.request.user
+            form.instance.semester = current_semester
             subject = form.save()
             
             # 현재 학기 가져오기
@@ -217,7 +224,14 @@ class SubjectOnlyCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('timetable:subject_list')
     
     def form_valid(self, form):
+        # 현재 학기 가져오기
+        current_semester = Semester.objects.filter(
+            user=self.request.user, 
+            is_current=True
+        ).first()
+        
         form.instance.user = self.request.user
+        form.instance.semester = current_semester
         messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
         return super().form_valid(form)
 
@@ -501,7 +515,14 @@ class ImprovedSubjectCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('timetable:subject_list')
     
     def form_valid(self, form):
+        # 현재 학기 가져오기
+        current_semester = Semester.objects.filter(
+            user=self.request.user, 
+            is_current=True
+        ).first()
+        
         form.instance.user = self.request.user
+        form.instance.semester = current_semester
         messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
         return super().form_valid(form)
 
