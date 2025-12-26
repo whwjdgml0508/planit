@@ -30,19 +30,22 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         else:
             current_semester = Semester.objects.filter(user=user, is_current=True).first()
         
-        # 현재 학기의 과목만 가져오기 (학기가 없으면 빈 시간표)
+        # 현재 학기의 시간표 슬롯만 가져오기
         if current_semester:
-            semester_subjects = Subject.objects.filter(
-                user=user, 
+            semester_timeslots = TimeSlot.objects.filter(
+                subject__user=user,
                 semester=current_semester
-            ).prefetch_related('time_slots')
+            ).select_related('subject')
         else:
-            # 학기가 없으면 학기 미지정 과목 표시
-            semester_subjects = Subject.objects.filter(
-                user=user,
+            # 학기가 없으면 학기 미지정 슬롯 표시
+            semester_timeslots = TimeSlot.objects.filter(
+                subject__user=user,
                 semester__isnull=True
-            ).prefetch_related('time_slots')
+            ).select_related('subject')
         
+        # 해당 학기 시간표에 있는 과목들
+        semester_subject_ids = semester_timeslots.values_list('subject_id', flat=True).distinct()
+        semester_subjects = Subject.objects.filter(id__in=semester_subject_ids)
         semester_subjects_count = semester_subjects.count()
         
         # 시간표 데이터 구성
@@ -56,14 +59,13 @@ class TimetableView(LoginRequiredMixin, TemplateView):
             for period in periods:
                 timetable_data[day][period] = None
         
-        # 시간표에 과목 배치 (현재 학기 과목만)
-        for subject in semester_subjects:
-            for time_slot in subject.time_slots.all():
-                if time_slot.day in timetable_data and time_slot.period in periods:
-                    timetable_data[time_slot.day][time_slot.period] = {
-                        'subject': subject,
-                        'time_slot': time_slot
-                    }
+        # 시간표에 과목 배치 (현재 학기 TimeSlot만)
+        for time_slot in semester_timeslots:
+            if time_slot.day in timetable_data and time_slot.period in periods:
+                timetable_data[time_slot.day][time_slot.period] = {
+                    'subject': time_slot.subject,
+                    'time_slot': time_slot
+                }
         
         context.update({
             'current_semester': current_semester,
@@ -84,7 +86,7 @@ class TimetableView(LoginRequiredMixin, TemplateView):
         return context
 
 class SubjectCreateView(LoginRequiredMixin, CreateView):
-    """과목 생성 뷰"""
+    """과목 생성 뷰 - 과목만 생성 (학기와 무관)"""
     model = Subject
     form_class = SubjectWithTimeSlotsForm
     template_name = 'timetable/subject_create.html'
@@ -102,19 +104,17 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         with transaction.atomic():
-            # 과목 저장
+            # 과목 저장 (학기는 할당하지 않음)
             form.instance.user = self.request.user
+            subject = form.save()
             
-            # 현재 학기에 자동 할당
+            # 현재 학기 가져오기
             current_semester = Semester.objects.filter(
                 user=self.request.user, 
                 is_current=True
             ).first()
-            form.instance.semester = current_semester
             
-            subject = form.save()
-            
-            # 시간표 슬롯 생성
+            # 시간표 슬롯 생성 (현재 학기에 할당)
             days = form.cleaned_data['days']
             periods = form.cleaned_data['periods']
             location = form.cleaned_data['location']
@@ -123,12 +123,13 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
                 for period in periods:
                     TimeSlot.objects.create(
                         subject=subject,
+                        semester=current_semester,  # TimeSlot에 학기 할당
                         day=day,
                         period=int(period),
                         location=location
                     )
             
-            semester_info = f" ({current_semester})" if current_semester else ""
+            semester_info = f" ({current_semester} 시간표에 추가됨)" if current_semester else ""
             messages.success(self.request, f'"{subject.name}" 과목이 성공적으로 추가되었습니다.{semester_info}')
             return redirect(self.success_url)
     
@@ -160,45 +161,23 @@ class SubjectUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         return Subject.objects.filter(user=self.request.user)
     
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['initial'] = kwargs.get('initial', {})
-        kwargs['initial']['user'] = self.request.user
-        return kwargs
-    
     def form_valid(self, form):
-        messages.success(self.request, f'"{form.instance.name}" 과목이 성공적으로 수정되었습니다.')
+        messages.success(self.request, f'"{form.instance.name}" 과목이 수정되었습니다.')
         return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, '과목 수정 중 오류가 발생했습니다. 입력 내용을 확인해주세요.')
-        return super().form_invalid(form)
 
 class SubjectDeleteView(LoginRequiredMixin, DeleteView):
     """과목 삭제 뷰"""
     model = Subject
     template_name = 'timetable/subject_delete.html'
+    success_url = reverse_lazy('timetable:index')
     
     def get_queryset(self):
         return Subject.objects.filter(user=self.request.user)
     
-    def get_success_url(self):
-        referer = self.request.session.get('delete_referer', '')
-        if 'manage' in referer:
-            return reverse_lazy('timetable:timetable_manage')
-        return reverse_lazy('timetable:index')
-    
-    def get(self, request, *args, **kwargs):
-        referer = request.META.get('HTTP_REFERER', '')
-        request.session['delete_referer'] = referer
-        return super().get(request, *args, **kwargs)
-    
     def delete(self, request, *args, **kwargs):
         subject = self.get_object()
-        subject_name = subject.name
-        result = super().delete(request, *args, **kwargs)
-        messages.success(request, f'"{subject_name}" 과목이 삭제되었습니다.')
-        return result
+        messages.success(request, f'"{subject.name}" 과목이 삭제되었습니다.')
+        return super().delete(request, *args, **kwargs)
 
 class SemesterListView(LoginRequiredMixin, ListView):
     """학기 목록 뷰"""
@@ -207,23 +186,7 @@ class SemesterListView(LoginRequiredMixin, ListView):
     context_object_name = 'semesters'
     
     def get_queryset(self):
-        from django.db.models import Count, Sum, Value, DecimalField
-        from django.db.models.functions import Coalesce
-        return Semester.objects.filter(user=self.request.user).annotate(
-            subject_count=Count('subjects'),
-            total_credits=Coalesce(Sum('subjects__credits'), Value(0), output_field=DecimalField())
-        ).order_by('-year', '-semester')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        from datetime import date
-        context['today'] = date.today()
-        context['total_subjects'] = Subject.objects.filter(user=self.request.user).count()
-        context['unassigned_subjects'] = Subject.objects.filter(
-            user=self.request.user,
-            semester__isnull=True
-        ).count()
-        return context
+        return Semester.objects.filter(user=self.request.user).order_by('-year', '-semester')
 
 class SemesterCreateView(LoginRequiredMixin, CreateView):
     """학기 생성 뷰"""
@@ -237,45 +200,6 @@ class SemesterCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, '새 학기가 추가되었습니다.')
         return super().form_valid(form)
 
-class TimeSlotCreateView(LoginRequiredMixin, CreateView):
-    """시간표 슬롯 추가 뷰 (AJAX)"""
-    model = TimeSlot
-    form_class = TimeSlotForm
-    
-    def post(self, request, *args, **kwargs):
-        subject_id = kwargs.get('subject_id')
-        subject = get_object_or_404(Subject, id=subject_id, user=request.user)
-        
-        form = TimeSlotForm(request.POST)
-        if form.is_valid():
-            time_slot = form.save(commit=False)
-            time_slot.subject = subject
-            
-            # 중복 시간 체크 (같은 학기 내에서만)
-            existing_slot = TimeSlot.objects.filter(
-                subject__user=request.user,
-                subject__semester=subject.semester,
-                day=time_slot.day,
-                period=time_slot.period
-            ).exclude(subject=subject).first()
-            
-            if existing_slot:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'{time_slot.get_day_display()} {time_slot.get_period_display()}에 이미 "{existing_slot.subject.name}" 과목이 있습니다.'
-                })
-            
-            time_slot.save()
-            return JsonResponse({
-                'success': True,
-                'message': '시간표가 추가되었습니다.'
-            })
-        
-        return JsonResponse({
-            'success': False,
-            'error': '입력 정보를 확인해주세요.'
-        })
-
 class SubjectListView(LoginRequiredMixin, ListView):
     """과목 목록 뷰"""
     model = Subject
@@ -283,7 +207,7 @@ class SubjectListView(LoginRequiredMixin, ListView):
     context_object_name = 'subjects'
     
     def get_queryset(self):
-        return Subject.objects.filter(user=self.request.user).prefetch_related('time_slots')
+        return Subject.objects.filter(user=self.request.user)
 
 class SubjectOnlyCreateView(LoginRequiredMixin, CreateView):
     """과목만 생성하는 뷰 (시간표 없이)"""
@@ -294,14 +218,28 @@ class SubjectOnlyCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.user = self.request.user
-        # 현재 학기에 자동 할당
-        current_semester = Semester.objects.filter(
-            user=self.request.user, 
-            is_current=True
-        ).first()
-        form.instance.semester = current_semester
         messages.success(self.request, f'"{form.instance.name}" 과목이 추가되었습니다.')
         return super().form_valid(form)
+
+class TimeSlotCreateView(LoginRequiredMixin, CreateView):
+    """시간표 슬롯 추가 뷰"""
+    model = TimeSlot
+    form_class = TimeSlotForm
+    
+    def post(self, request, *args, **kwargs):
+        subject_id = kwargs.get('subject_id')
+        subject = get_object_or_404(Subject, id=subject_id, user=request.user)
+        current_semester = Semester.objects.filter(user=request.user, is_current=True).first()
+        
+        form = TimeSlotForm(request.POST)
+        if form.is_valid():
+            time_slot = form.save(commit=False)
+            time_slot.subject = subject
+            time_slot.semester = current_semester
+            time_slot.save()
+            return JsonResponse({'success': True, 'message': '시간표가 추가되었습니다.'})
+        
+        return JsonResponse({'success': False, 'error': '입력 정보를 확인해주세요.'})
 
 class TimetableManageView(LoginRequiredMixin, TemplateView):
     """시간표 관리 뷰 (과목을 시간표에 추가/제거)"""
@@ -314,18 +252,20 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
         # 현재 학기 가져오기
         current_semester = Semester.objects.filter(user=user, is_current=True).first()
         
-        # 현재 학기의 과목만 가져오기
+        # 모든 과목 가져오기 (학기와 무관하게 전체 과목)
+        subjects = Subject.objects.filter(user=user)
+        
+        # 현재 학기의 시간표 슬롯만 가져오기
         if current_semester:
-            subjects = Subject.objects.filter(
-                user=user, 
+            semester_timeslots = TimeSlot.objects.filter(
+                subject__user=user,
                 semester=current_semester
-            ).prefetch_related('time_slots')
+            ).select_related('subject')
         else:
-            # 학기가 없으면 학기 미지정 과목만
-            subjects = Subject.objects.filter(
-                user=user,
+            semester_timeslots = TimeSlot.objects.filter(
+                subject__user=user,
                 semester__isnull=True
-            ).prefetch_related('time_slots')
+            ).select_related('subject')
         
         # 시간표 데이터 구성
         timetable_data = {}
@@ -338,14 +278,13 @@ class TimetableManageView(LoginRequiredMixin, TemplateView):
             for period in periods:
                 timetable_data[day][period] = None
         
-        # 시간표에 과목 배치 (현재 학기만)
-        for subject in subjects:
-            for time_slot in subject.time_slots.all():
-                if time_slot.day in timetable_data and time_slot.period in periods:
-                    timetable_data[time_slot.day][time_slot.period] = {
-                        'subject': subject,
-                        'time_slot': time_slot
-                    }
+        # 시간표에 과목 배치 (현재 학기 TimeSlot만)
+        for time_slot in semester_timeslots:
+            if time_slot.day in timetable_data and time_slot.period in periods:
+                timetable_data[time_slot.day][time_slot.period] = {
+                    'subject': time_slot.subject,
+                    'time_slot': time_slot
+                }
         
         context.update({
             'current_semester': current_semester,
@@ -418,9 +357,16 @@ def add_to_timetable(request):
                     'error': '선택한 과목을 찾을 수 없습니다.'
                 })
             
-            # 중복 시간 체크 (다른 과목과의 충돌만 체크)
+            # 현재 학기 가져오기 (중복 체크 전에 필요)
+            current_semester = Semester.objects.filter(
+                user=request.user,
+                is_current=True
+            ).first()
+            
+            # 중복 시간 체크 (현재 학기에서 다른 과목과의 충돌만 체크)
             existing_slot = TimeSlot.objects.filter(
                 subject__user=request.user,
+                semester=current_semester,
                 day=day,
                 period=period
             ).exclude(subject=subject).first()
@@ -431,9 +377,10 @@ def add_to_timetable(request):
                     'error': f'해당 시간에 이미 "{existing_slot.subject.name}" 과목이 있습니다.'
                 })
             
-            # 같은 과목이 이미 해당 시간에 있는지 체크
+            # 같은 과목이 이미 해당 시간에 있는지 체크 (현재 학기에서만)
             same_subject_slot = TimeSlot.objects.filter(
                 subject=subject,
+                semester=current_semester,
                 day=day,
                 period=period
             ).first()
@@ -444,9 +391,10 @@ def add_to_timetable(request):
                     'error': f'"{subject.name}" 과목이 이미 해당 시간에 배치되어 있습니다.'
                 })
             
-            # 시간표 슬롯 생성
+            # 시간표 슬롯 생성 (현재 학기에 할당)
             TimeSlot.objects.create(
                 subject=subject,
+                semester=current_semester,
                 day=day,
                 period=period,
                 location=location
