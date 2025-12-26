@@ -120,6 +120,12 @@ class SubjectUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         return Subject.objects.filter(user=self.request.user)
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['initial'] = kwargs.get('initial', {})
+        kwargs['initial']['user'] = self.request.user
+        return kwargs
+    
     def form_valid(self, form):
         messages.success(self.request, f'"{form.instance.name}" 과목이 성공적으로 수정되었습니다.')
         return super().form_valid(form)

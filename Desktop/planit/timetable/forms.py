@@ -36,7 +36,7 @@ class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
         fields = ['name', 'professor', 'credits', 'subject_type', 
-                 'classroom', 'note', 'color']
+                 'semester', 'classroom', 'note', 'color']
         widgets = {
             'color': forms.TextInput(attrs={'type': 'color'}),
             'note': forms.Textarea(attrs={'rows': 3}),
@@ -62,6 +62,12 @@ class SubjectForm(forms.ModelForm):
                 kwargs['initial']['quiz_percent'] = int(quiz_match.group(1))
         
         super().__init__(*args, **kwargs)
+        
+        # 사용자별 학기 필터링
+        user = kwargs.get('initial', {}).get('user') or (instance.user if instance else None)
+        if user:
+            self.fields['semester'].queryset = Semester.objects.filter(user=user).order_by('-year', '-semester')
+        
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
@@ -79,9 +85,16 @@ class SubjectForm(forms.ModelForm):
             ),
             Row(
                 Column(
+                    Field('semester'),
+                    css_class='col-md-6'
+                ),
+                Column(
                     Field('subject_type'),
                     css_class='col-md-6'
                 ),
+                css_class='mb-3'
+            ),
+            Row(
                 Column(
                     HTML('<label class="form-label">평가 방식</label>'),
                     Row(
@@ -89,7 +102,7 @@ class SubjectForm(forms.ModelForm):
                         Column(Field('final_percent'), css_class='col-4'),
                         Column(Field('quiz_percent'), css_class='col-4'),
                     ),
-                    css_class='col-md-6'
+                    css_class='col-md-12'
                 ),
                 css_class='mb-3'
             ),
