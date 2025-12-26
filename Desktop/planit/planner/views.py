@@ -291,15 +291,11 @@ class TaskToggleView(LoginRequiredMixin, TemplateView):
             'new_status_class': task.get_status_badge_class()
         })
 
-class StudySessionListView(LoginRequiredMixin, ListView):
-    """학습 세션 목록 뷰"""
-    model = StudySession
-    template_name = 'planner/study_session_list.html'
-    context_object_name = 'sessions'
-    paginate_by = 20
+class StudySessionListView(LoginRequiredMixin, TemplateView):
+    """학습 세션 목록 뷰 - 일일 플래너로 리다이렉트"""
     
-    def get_queryset(self):
-        return StudySession.objects.filter(user=self.request.user).select_related('task', 'subject')
+    def get(self, request, *args, **kwargs):
+        return redirect('planner:daily_planner')
 
 class StudySessionCreateView(LoginRequiredMixin, CreateView):
     """학습 세션 생성 뷰"""
