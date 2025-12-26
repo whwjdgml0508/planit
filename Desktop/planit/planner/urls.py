@@ -35,6 +35,7 @@ urlpatterns = [
     path('ajax/update-daily-goal/', views.update_daily_goal, name='update_daily_goal'),
     path('ajax/update-target-hours/', views.update_target_hours, name='update_target_hours'),
     path('ajax/update-goal-progress/<uuid:goal_id>/', views.update_goal_progress, name='update_goal_progress'),
+    path('ajax/update-weekly-study-goal/', views.update_weekly_study_goal, name='update_weekly_study_goal'),
     
     # 하위 목표 (SubGoal) AJAX API
     path('ajax/goals/<uuid:goal_id>/subgoals/', views.get_subgoals, name='get_subgoals'),

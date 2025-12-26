@@ -156,7 +156,7 @@ class PlannerView(LoginRequiredMixin, TemplateView):
             'completion_rate': completion_rate,
             'upcoming_deadline': upcoming_deadline,
             'daily_study_data': daily_study_data,
-            'weekly_study_goal': user.weekly_study_goal,
+            'weekly_study_goal': getattr(user, 'weekly_study_goal', 40),
         })
         return context
 
@@ -861,3 +861,30 @@ def get_subgoals(request, goal_id):
         'goal_progress': goal.progress,
         'goal_is_achieved': goal.is_achieved
     })
+
+
+@login_required
+def update_weekly_study_goal(request):
+    """주간 학습 목표 업데이트 (AJAX)"""
+    if request.method == 'POST':
+        try:
+            weekly_goal = int(request.POST.get('weekly_goal', 40))
+            if weekly_goal < 1 or weekly_goal > 168:
+                return JsonResponse({'success': False, 'error': '주간 목표는 1시간에서 168시간 사이여야 합니다.'})
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'error': '유효하지 않은 시간입니다.'})
+        
+        user = request.user
+        try:
+            user.weekly_study_goal = weekly_goal
+            user.save(update_fields=['weekly_study_goal'])
+        except Exception:
+            return JsonResponse({'success': False, 'error': '아직 이 기능을 사용할 수 없습니다. 서버 업데이트가 필요합니다.'})
+        
+        return JsonResponse({
+            'success': True,
+            'weekly_goal': weekly_goal,
+            'message': f'주간 학습 목표가 {weekly_goal}시간으로 설정되었습니다.'
+        })
+    
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})

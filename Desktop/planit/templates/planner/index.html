@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block title %}학습 플래너 - PlanIt{% endblock %}
 
@@ -282,9 +281,14 @@
                     <h3 class="text-success fw-bold">{{ total_study_hours|floatformat:1 }}시간</h3>
                     <p class="text-muted mb-3">총 학습시간</p>
                     <div class="progress mb-3" style="height: 10px;">
-                        <div class="progress-bar bg-success" style="width: {% widthratio total_study_hours 40 100 %}%"></div>
+                        <div class="progress-bar bg-success" style="width: {% widthratio total_study_hours weekly_study_goal|default:40 100 %}%"></div>
                     </div>
-                    <small class="text-muted">목표: 주 40시간</small>
+                    <div class="d-flex justify-content-center align-items-center gap-2">
+                        <small class="text-muted">목표: 주 <span id="weekly-goal-display">{{ weekly_study_goal|default:40 }}</span>시간</small>
+                        <button class="btn btn-sm btn-outline-success py-0 px-1" onclick="openWeeklyGoalModal()" title="목표 수정">
+                            <i class="fas fa-edit" style="font-size: 0.7rem;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -347,10 +351,91 @@
         </div>
     </div>
 </div>
+
+<!-- 주간 목표 수정 모달 -->
+<div class="modal fade" id="weeklyGoalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h6 class="modal-title"><i class="fas fa-bullseye me-2"></i>주간 학습 목표 설정</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="weeklyGoalInput" class="form-label">목표 시간 (1~168시간)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="weeklyGoalInput" 
+                               min="1" max="168" value="{{ weekly_study_goal|default:40 }}" 
+                               placeholder="목표 시간">
+                        <span class="input-group-text">시간/주</span>
+                    </div>
+                    <div class="form-text">하루 평균 <span id="dailyAverage">-</span>시간</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-success btn-sm" onclick="saveWeeklyGoal()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// 주간 목표 모달 열기
+function openWeeklyGoalModal() {
+    const modal = new bootstrap.Modal(document.getElementById('weeklyGoalModal'));
+    modal.show();
+}
+
+// 주간 목표 저장
+function saveWeeklyGoal() {
+    const weeklyGoal = document.getElementById('weeklyGoalInput').value;
+    
+    if (!weeklyGoal || weeklyGoal < 1 || weeklyGoal > 168) {
+        alert('목표 시간은 1~168시간 사이로 설정해주세요.');
+        return;
+    }
+    
+    fetch('{% url "planner:update_weekly_study_goal" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `weekly_goal=${weeklyGoal}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('weekly-goal-display').textContent = weeklyGoal;
+            bootstrap.Modal.getInstance(document.getElementById('weeklyGoalModal')).hide();
+            location.reload();
+        } else {
+            alert(data.error || '오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('네트워크 오류가 발생했습니다.');
+    });
+}
+
+// 입력값 변경 시 일일 평균 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('weeklyGoalInput');
+    if (input) {
+        // 초기값 설정
+        const updateDailyAverage = () => {
+            const daily = (input.value / 7).toFixed(1);
+            document.getElementById('dailyAverage').textContent = daily;
+        };
+        updateDailyAverage();
+        input.addEventListener('input', updateDailyAverage);
+    }
+});
+
 // 과제 상태 토글
 function toggleTask(taskId) {
     fetch(`/planner/tasks/${taskId}/toggle/`, {
