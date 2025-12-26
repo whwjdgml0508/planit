@@ -163,11 +163,11 @@ class SemesterListView(LoginRequiredMixin, ListView):
     context_object_name = 'semesters'
     
     def get_queryset(self):
-        from django.db.models import Count, Sum, Value
+        from django.db.models import Count, Sum, Value, DecimalField
         from django.db.models.functions import Coalesce
         return Semester.objects.filter(user=self.request.user).annotate(
             subject_count=Count('subjects'),
-            total_credits=Coalesce(Sum('subjects__credits'), Value(0))
+            total_credits=Coalesce(Sum('subjects__credits'), Value(0), output_field=DecimalField())
         ).order_by('-year', '-semester')
     
     def get_context_data(self, **kwargs):
