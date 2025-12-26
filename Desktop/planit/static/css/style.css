@@ -11,7 +11,7 @@
     --apple-pink: #FF2D55;
     --apple-teal: #5AC8FA;
     
-    /* Neutral Colors */
+    /* Neutral Colors - Light Mode */
     --apple-gray-1: #F2F2F7;
     --apple-gray-2: #E5E5EA;
     --apple-gray-3: #D1D1D6;
@@ -30,6 +30,19 @@
     --light-color: var(--apple-gray-1);
     --dark-color: var(--apple-black);
     
+    /* Theme Colors */
+    --bg-primary: var(--apple-white);
+    --bg-secondary: var(--apple-gray-1);
+    --bg-tertiary: var(--apple-gray-2);
+    --text-primary: var(--apple-black);
+    --text-secondary: var(--apple-gray-6);
+    --text-tertiary: var(--apple-gray-5);
+    --border-color: var(--apple-gray-3);
+    --card-bg: var(--apple-white);
+    --navbar-bg: rgba(255, 255, 255, 0.8);
+    --dropdown-bg: var(--apple-white);
+    --input-bg: var(--apple-white);
+    
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -37,15 +50,45 @@
     --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* Dark Mode */
+[data-theme="dark"] {
+    --apple-gray-1: #1C1C1E;
+    --apple-gray-2: #2C2C2E;
+    --apple-gray-3: #3A3A3C;
+    --apple-gray-4: #48484A;
+    --apple-gray-5: #636366;
+    --apple-gray-6: #AEAEB2;
+    --apple-black: #FFFFFF;
+    --apple-white: #000000;
+    
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #AEAEB2;
+    --text-tertiary: #8E8E93;
+    --border-color: #3A3A3C;
+    --card-bg: #1C1C1E;
+    --navbar-bg: rgba(28, 28, 30, 0.9);
+    --dropdown-bg: #2C2C2E;
+    --input-bg: #2C2C2E;
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.4);
+}
+
 /* Global Styles - SF Pro Font Family */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.47059;
     letter-spacing: -0.022em;
-    color: var(--apple-black);
-    background-color: var(--apple-white);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Typography */
@@ -61,12 +104,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Navigation - Apple Style */
 .navbar {
-    background: rgba(255, 255, 255, 0.8) !important;
+    background: var(--navbar-bg) !important;
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--border-color);
     padding: 0.75rem 0;
     box-shadow: none;
+    transition: background-color 0.3s ease;
 }
 
 .navbar-dark {
@@ -78,23 +122,15 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1.375rem;
     font-weight: 600;
     letter-spacing: -0.02em;
-    color: var(--apple-black) !important;
-}
-
-.navbar-dark .navbar-brand {
-    color: var(--apple-white) !important;
+    color: var(--text-primary) !important;
 }
 
 .navbar-nav .nav-link {
     font-weight: 400;
     font-size: 0.9375rem;
     padding: 0.5rem 1rem;
-    color: var(--apple-black) !important;
+    color: var(--text-primary) !important;
     transition: opacity 0.2s ease;
-}
-
-.navbar-dark .nav-link {
-    color: var(--apple-white) !important;
 }
 
 .navbar-nav .nav-link:hover {
@@ -107,6 +143,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-lg);
     padding: 0.5rem;
     margin-top: 0.5rem;
+    background-color: var(--dropdown-bg);
 }
 
 .dropdown-item {
@@ -114,22 +151,24 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.625rem 1rem;
     font-size: 0.9375rem;
     transition: background-color 0.15s ease;
+    color: var(--text-primary);
 }
 
 .dropdown-item:hover {
-    background-color: var(--apple-gray-1);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .dropdown-divider {
     margin: 0.5rem 0;
-    border-color: var(--apple-gray-2);
+    border-color: var(--border-color);
 }
 
 /* Cards - Apple Style */
 .card {
     border: none;
     border-radius: 18px;
-    background-color: var(--apple-white);
+    background-color: var(--card-bg);
     box-shadow: var(--shadow-sm);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
@@ -142,6 +181,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-body {
     padding: 1.5rem;
+}
+
+.card-header, .card-footer {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
 }
 
 /* Buttons - Apple Style */
@@ -200,23 +244,30 @@ h1, h2, h3, h4, h5, h6 {
 /* Form Styles - Apple Style */
 .form-control, .form-select {
     border-radius: 10px;
-    border: 1px solid var(--apple-gray-3);
+    border: 1px solid var(--border-color);
     padding: 0.75rem 1rem;
     font-size: 1rem;
     transition: all 0.2s ease;
-    background-color: var(--apple-white);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .form-control:focus, .form-select:focus {
     border-color: var(--apple-blue);
     box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
     outline: none;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.form-control::placeholder {
+    color: var(--text-tertiary);
 }
 
 .form-label {
     font-weight: 500;
     font-size: 0.9375rem;
-    color: var(--apple-gray-6);
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
@@ -224,7 +275,7 @@ h1, h2, h3, h4, h5, h6 {
 .timetable-container {
     overflow-x: auto;
     border-radius: 18px;
-    background-color: var(--apple-white);
+    background-color: var(--card-bg);
     box-shadow: var(--shadow-sm);
 }
 
@@ -234,17 +285,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .timetable th,
 .timetable td {
-    border: 1px solid var(--apple-gray-2);
+    border: 1px solid var(--border-color);
     padding: 0.75rem;
     text-align: center;
     vertical-align: middle;
 }
 
 .timetable th {
-    background-color: var(--apple-gray-1);
+    background-color: var(--bg-secondary);
     font-weight: 600;
     font-size: 0.9375rem;
-    color: var(--apple-gray-6);
+    color: var(--text-secondary);
 }
 
 .timetable-slot {
@@ -368,13 +419,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Footer - Apple Style */
 footer {
-    background-color: var(--apple-gray-1) !important;
-    color: var(--apple-gray-6) !important;
-    border-top: 1px solid var(--apple-gray-2);
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+    border-top: 1px solid var(--border-color);
 }
 
 footer h5 {
-    color: var(--apple-black);
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -458,4 +509,113 @@ footer h5 {
 /* Smooth Transitions */
 * {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode Toggle Button */
+.theme-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-xl);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+    position: absolute;
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+}
+
+.theme-toggle .icon-sun {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+.theme-toggle .icon-moon {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Dark mode specific adjustments */
+[data-theme="dark"] .table {
+    --bs-table-bg: var(--card-bg);
+    --bs-table-striped-bg: var(--bg-tertiary);
+    --bs-table-hover-bg: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table-bordered {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .text-muted {
+    color: var(--text-tertiary) !important;
+}
+
+[data-theme="dark"] .border {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="dark"] .bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+[data-theme="dark"] hr {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .navbar-toggler-icon {
+    filter: invert(1);
 }
