@@ -252,6 +252,9 @@ class PostDetailView(LoginRequiredMixin, DetailView):
         # 사용자가 좋아요 했는지 확인
         context['user_liked'] = post.is_liked_by(self.request.user)
         
+        # 사용자가 북마크 했는지 확인
+        context['user_bookmarked'] = post.is_bookmarked_by(self.request.user)
+        
         # 같은 카테고리의 관련 게시글 (최신순 5개, 현재 글 제외)
         related_posts = Post.objects.filter(
             category=post.category,
@@ -418,6 +421,42 @@ class PostLikeToggleView(LoginRequiredMixin, TemplateView):
             'like_count': post.get_like_count(),
             'message': message
         })
+
+class PostBookmarkToggleView(LoginRequiredMixin, View):
+    """게시글 북마크 토글 뷰 (AJAX)"""
+    
+    def post(self, request, *args, **kwargs):
+        post_id = kwargs.get('pk')
+        post = get_object_or_404(Post, id=post_id, is_active=True)
+        
+        if post.is_bookmarked_by(request.user):
+            post.bookmarks.remove(request.user)
+            bookmarked = False
+            message = '북마크가 해제되었습니다.'
+        else:
+            post.bookmarks.add(request.user)
+            bookmarked = True
+            message = '북마크에 추가되었습니다.'
+        
+        return JsonResponse({
+            'success': True,
+            'bookmarked': bookmarked,
+            'bookmark_count': post.get_bookmark_count(),
+            'message': message
+        })
+
+class BookmarkListView(LoginRequiredMixin, ListView):
+    """북마크한 게시글 목록 뷰"""
+    model = Post
+    template_name = 'community/bookmark_list.html'
+    context_object_name = 'posts'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        return Post.objects.filter(
+            bookmarks=self.request.user,
+            is_active=True
+        ).select_related('author', 'category').order_by('-created_at')
 
 class AttachmentDownloadView(LoginRequiredMixin, TemplateView):
     """첨부파일 다운로드 뷰"""

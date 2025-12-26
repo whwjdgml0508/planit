@@ -13,6 +13,10 @@ urlpatterns = [
     path('posts/<uuid:pk>/edit/', views.PostUpdateView.as_view(), name='post_edit'),
     path('posts/<uuid:pk>/delete/', views.PostDeleteView.as_view(), name='post_delete'),
     path('posts/<uuid:pk>/like/', views.PostLikeToggleView.as_view(), name='post_like_toggle'),
+    path('posts/<uuid:pk>/bookmark/', views.PostBookmarkToggleView.as_view(), name='post_bookmark_toggle'),
+    
+    # 북마크 관련 URL
+    path('bookmarks/', views.BookmarkListView.as_view(), name='bookmark_list'),
     
     # 카테고리 관련 URL
     path('category/<slug:slug>/', views.CategoryPostListView.as_view(), name='category_posts'),

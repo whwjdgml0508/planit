@@ -84,6 +84,7 @@ class Post(models.Model):
     # 메타 정보
     views = models.PositiveIntegerField(default=0, verbose_name='조회수')
     likes = models.ManyToManyField(User, blank=True, related_name='liked_posts', verbose_name='좋아요')
+    bookmarks = models.ManyToManyField(User, blank=True, related_name='bookmarked_posts', verbose_name='북마크')
     is_pinned = models.BooleanField(default=False, verbose_name='상단 고정')
     is_active = models.BooleanField(default=True, verbose_name='활성화')
     
@@ -126,6 +127,12 @@ class Post(models.Model):
     
     def is_liked_by(self, user):
         return self.likes.filter(id=user.id).exists() if user.is_authenticated else False
+    
+    def is_bookmarked_by(self, user):
+        return self.bookmarks.filter(id=user.id).exists() if user.is_authenticated else False
+    
+    def get_bookmark_count(self):
+        return self.bookmarks.count()
 
 class Comment(models.Model):
     """댓글 모델"""

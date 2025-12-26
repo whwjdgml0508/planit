@@ -63,24 +63,33 @@
                     </div>
                     {% endif %}
                     
-                    <!-- 좋아요 및 조회수 -->
+                    <!-- 좋아요, 북마크 및 조회수 -->
                     <div class="d-flex justify-content-between align-items-center border-top pt-3">
                         <div class="d-flex align-items-center">
                             {% if user.is_authenticated %}
                             <button class="btn btn-outline-danger btn-sm me-2" id="like-btn" 
                                     data-post-id="{{ post.pk }}" 
-                                    data-liked="{% if user in post.likes.all %}true{% else %}false{% endif %}">
+                                    data-liked="{% if user_liked %}true{% else %}false{% endif %}">
                                 <i class="fas fa-heart"></i> 
                                 <span id="like-count">{{ post.likes.count }}</span>
+                            </button>
+                            <button class="btn btn-sm me-2 {% if user_bookmarked %}btn-warning{% else %}btn-outline-warning{% endif %}" id="bookmark-btn" 
+                                    data-post-id="{{ post.pk }}" 
+                                    data-bookmarked="{% if user_bookmarked %}true{% else %}false{% endif %}">
+                                <i class="fas fa-bookmark"></i>
+                                <span id="bookmark-count">{{ post.bookmarks.count }}</span>
                             </button>
                             {% else %}
                             <span class="text-muted me-2">
                                 <i class="fas fa-heart"></i> {{ post.likes.count }}
                             </span>
+                            <span class="text-muted me-2">
+                                <i class="fas fa-bookmark"></i> {{ post.bookmarks.count }}
+                            </span>
                             {% endif %}
                             
                             <small class="text-muted">
-                                <i class="fas fa-eye me-1"></i>{{ post.view_count }}
+                                <i class="fas fa-eye me-1"></i>{{ post.views }}
                             </small>
                         </div>
                         
@@ -373,6 +382,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         this.classList.remove('btn-danger');
                         this.classList.add('btn-outline-danger');
+                    }
+                }
+            });
+        });
+    }
+    
+    // 북마크 버튼 이벤트
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            
+            fetch(`/community/posts/${postId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('bookmark-count').textContent = data.bookmark_count;
+                    if (data.bookmarked) {
+                        this.classList.remove('btn-outline-warning');
+                        this.classList.add('btn-warning');
+                    } else {
+                        this.classList.remove('btn-warning');
+                        this.classList.add('btn-outline-warning');
                     }
                 }
             });

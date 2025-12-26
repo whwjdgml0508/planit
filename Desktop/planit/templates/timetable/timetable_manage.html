@@ -96,10 +96,10 @@
                 </div>
                 <div class="card-body">
                     <div id="subject-details"></div>
-                    <div class="mt-2">
-                        <label for="location-input" class="form-label">강의실</label>
-                        <input type="text" class="form-control form-control-sm" id="location-input" placeholder="강의실 입력">
-                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        교수님, 강의실 정보는 <a href="{% url 'timetable:subject_list' %}">과목 관리</a>에서 수정하세요
+                    </small>
                 </div>
             </div>
         </div>
@@ -138,8 +138,10 @@
                                             <div class="subject-slot"
                                                  style="background-color: {{ slot_data.subject.color }};">
                                                 <div class="subject-name">{{ slot_data.subject.name }}</div>
-                                                {% if slot_data.time_slot.location %}
-                                                <div class="subject-location">{{ slot_data.time_slot.location }}</div>
+                                                {% if slot_data.subject.professor or slot_data.subject.classroom %}
+                                                <div class="subject-location">
+                                                    {{ slot_data.subject.professor }}{% if slot_data.subject.professor and slot_data.subject.classroom %} · {% endif %}{{ slot_data.subject.classroom }}
+                                                </div>
                                                 {% endif %}
                                                 <button class="btn btn-sm remove-btn" 
                                                         data-day="{{ day }}" 
@@ -178,8 +180,8 @@
                 <h6 class="text-primary">📚 하나의 과목을 여러 시간에 배치하기</h6>
                 <ol>
                     <li>왼쪽에서 시간표에 추가할 과목을 선택하세요</li>
-                    <li>필요시 강의실을 입력하세요</li>
                     <li>시간표에서 원하는 시간을 클릭하여 과목을 배치하세요</li>
+                    <li>교수님, 강의실 정보는 과목 수정에서 입력하세요</li>
                     <li><strong>같은 과목을 여러 요일/시간에 배치할 수 있습니다</strong></li>
                     <li>이미 배치된 과목은 X 버튼을 클릭하여 제거할 수 있습니다</li>
                 </ol>
@@ -344,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('selected-subject-info').style.display = 'block';
             document.getElementById('subject-details').innerHTML = `
                 <strong style="color: ${selectedSubject.color};">${selectedSubject.name}</strong>
+                <br><small class="text-muted">${this.querySelector('small.text-muted')?.textContent || ''}</small>
             `;
             
             // 시간표 셀 상태 업데이트
@@ -368,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const day = this.dataset.day;
             const period = this.dataset.period;
-            const location = document.getElementById('location-input').value;
+            const location = '';  // 강의실 정보는 과목 정보에서 가져옴
             
             console.log('선택된 정보:', {
                 subject: selectedSubject,

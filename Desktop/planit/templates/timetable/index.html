@@ -140,6 +140,25 @@
             {% endif %}
         </div>
         <div class="btn-group">
+            <div class="dropdown me-1">
+                <button class="btn btn-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-camera me-2"></i>이미지 저장
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="downloadTimetableImage('standard'); return false;">
+                            <i class="fas fa-desktop me-2"></i>기본 저장
+                            <small class="text-muted d-block">현재 화면 그대로</small>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="downloadTimetableImage('wallpaper'); return false;">
+                            <i class="fas fa-mobile-alt me-2"></i>스마트폰 배경화면
+                            <small class="text-muted d-block">세로로 길게 (9:16)</small>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             <a href="{% url 'timetable:subject_list' %}" class="btn btn-primary">
                 <i class="fas fa-book me-2"></i>과목 관리
             </a>
@@ -241,8 +260,10 @@
                                          data-bs-toggle="tooltip"
                                          title="{{ slot_data.subject.name }} - {{ slot_data.subject.professor }}">
                                         <div class="subject-name">{{ slot_data.subject.name }}</div>
-                                        {% if slot_data.time_slot.location %}
-                                        <div class="subject-location">{{ slot_data.time_slot.location }}</div>
+                                        {% if slot_data.subject.professor or slot_data.subject.classroom %}
+                                        <div class="subject-location">
+                                            {{ slot_data.subject.professor }}{% if slot_data.subject.professor and slot_data.subject.classroom %} · {% endif %}{{ slot_data.subject.classroom }}
+                                        </div>
                                         {% endif %}
                                     </div>
                                 {% else %}
@@ -341,7 +362,9 @@
 {% endblock %}
 
 {% block extra_js %}
-{{ ... }}
+<!-- html2canvas 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
 // 템플릿 필터 대신 사용할 JavaScript 함수
 function lookup(obj, key) {
     return obj[key];
@@ -358,7 +381,278 @@ function goToTimetableManage() {
     window.location.href = '/timetable/manage/';
 }
 
+// 시간표 이미지 저장 기능
+function downloadTimetableImage(mode = 'standard') {
+    if (mode === 'wallpaper') {
+        downloadWallpaperImage();
+        return;
+    }
+    
+    const timetableCard = document.querySelector('.timetable-grid').closest('.card');
+    const btn = document.querySelector('.dropdown-toggle.btn-info');
+    const originalText = btn.innerHTML;
+    
+    // 버튼 로딩 상태
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>생성 중...';
+    btn.disabled = true;
+    
+    // 빈 슬롯 숨기기 (이미지에서 + 아이콘 안 보이게)
+    const emptySlots = document.querySelectorAll('.empty-slot');
+    emptySlots.forEach(slot => {
+        slot.style.visibility = 'hidden';
+    });
+    
+    html2canvas(timetableCard, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+        onclone: function(clonedDoc) {
+            // 클론된 문서에서 스타일 조정
+            const clonedCard = clonedDoc.querySelector('.card');
+            if (clonedCard) {
+                clonedCard.style.boxShadow = 'none';
+            }
+        }
+    }).then(canvas => {
+        // 이미지 다운로드
+        const link = document.createElement('a');
+        const semester = '{{ current_semester|default:"시간표" }}';
+        const date = new Date().toISOString().slice(0, 10);
+        link.download = `PlanIt_${semester}_${date}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // 버튼 원래대로
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // 빈 슬롯 다시 표시
+        emptySlots.forEach(slot => {
+            slot.style.visibility = 'visible';
+        });
+        
+        // 성공 메시지
+        alert('시간표 이미지가 저장되었습니다!');
+    }).catch(error => {
+        console.error('이미지 생성 오류:', error);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        emptySlots.forEach(slot => {
+            slot.style.visibility = 'visible';
+        });
+        alert('이미지 생성 중 오류가 발생했습니다.');
+    });
+}
 
+// 스마트폰 배경화면용 세로 이미지 생성
+function downloadWallpaperImage() {
+    const btn = document.querySelector('.dropdown-toggle.btn-info');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>생성 중...';
+    btn.disabled = true;
+    
+    // 시간표 데이터 수집
+    const subjects = [];
+    document.querySelectorAll('.subject-block').forEach(block => {
+        const name = block.querySelector('.subject-name')?.textContent || '';
+        const location = block.querySelector('.subject-location')?.textContent || '';
+        const color = block.style.backgroundColor;
+        const cell = block.closest('td');
+        const row = cell.closest('tr');
+        const rowIndex = row.rowIndex; // 1부터 시작 (헤더 제외)
+        const cellIndex = cell.cellIndex; // 0은 교시, 1부터 요일
+        
+        subjects.push({
+            name: name.trim(),
+            location: location.trim(),
+            color: color,
+            period: rowIndex,
+            day: cellIndex
+        });
+    });
+    
+    // 캔버스 생성 (9:16 비율, 스마트폰 배경화면용)
+    const canvas = document.createElement('canvas');
+    const width = 1080;
+    const height = 1920;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    // 배경 그라데이션
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, '#667eea');
+    gradient.addColorStop(0.5, '#764ba2');
+    gradient.addColorStop(1, '#f093fb');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+    
+    // 상단 여백 (시계 영역)
+    const topMargin = 280;
+    
+    // 타이틀
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('📚 내 시간표', width / 2, topMargin);
+    
+    // 학기 정보
+    const semester = '{{ current_semester|default:"" }}';
+    if (semester) {
+        ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillText(semester, width / 2, topMargin + 50);
+    }
+    
+    // 시간표 테이블 영역
+    const tableTop = topMargin + 100;
+    const tableLeft = 40;
+    const tableWidth = width - 80;
+    const dayWidth = (tableWidth - 80) / 5; // 5일
+    const periodHeight = 150; // 각 교시 높이
+    const headerHeight = 50;
+    const timeColWidth = 80;
+    
+    // 테이블 배경
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    roundRect(ctx, tableLeft, tableTop, tableWidth, headerHeight + periodHeight * 8 + 20, 20);
+    ctx.fill();
+    
+    // 요일 헤더
+    const days = ['월', '화', '수', '목', '금'];
+    ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.textAlign = 'center';
+    days.forEach((day, i) => {
+        const x = tableLeft + timeColWidth + dayWidth * i + dayWidth / 2;
+        ctx.fillText(day, x, tableTop + 35);
+    });
+    
+    // 교시 및 시간표 그리기
+    const periods = [
+        { p: 1, t: '08:10' },
+        { p: 2, t: '09:10' },
+        { p: 3, t: '10:10' },
+        { p: 4, t: '11:10' },
+        { p: 5, t: '13:00' },
+        { p: 6, t: '14:00' },
+        { p: 7, t: '15:10' },
+        { p: 8, t: '16:10' }
+    ];
+    
+    periods.forEach((period, i) => {
+        const y = tableTop + headerHeight + periodHeight * i;
+        
+        // 교시 번호
+        ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.textAlign = 'center';
+        ctx.fillText(period.p + '교시', tableLeft + timeColWidth / 2, y + 50);
+        
+        // 시간
+        ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.fillText(period.t, tableLeft + timeColWidth / 2, y + 75);
+        
+        // 구분선
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(tableLeft + 20, y + periodHeight);
+        ctx.lineTo(tableLeft + tableWidth - 20, y + periodHeight);
+        ctx.stroke();
+    });
+    
+    // 과목 블록 그리기
+    subjects.forEach(subject => {
+        const dayIndex = subject.day - 1; // 0-indexed
+        const periodIndex = subject.period - 1; // 0-indexed
+        
+        if (dayIndex >= 0 && dayIndex < 5 && periodIndex >= 0 && periodIndex < 8) {
+            const x = tableLeft + timeColWidth + dayWidth * dayIndex + 5;
+            const y = tableTop + headerHeight + periodHeight * periodIndex + 10;
+            const blockWidth = dayWidth - 10;
+            const blockHeight = periodHeight - 20;
+            
+            // 과목 블록 배경
+            ctx.fillStyle = subject.color || '#007bff';
+            roundRect(ctx, x, y, blockWidth, blockHeight, 12);
+            ctx.fill();
+            
+            // 과목명
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            
+            // 텍스트 줄바꿈 처리
+            const maxWidth = blockWidth - 16;
+            const words = subject.name.split('');
+            let line = '';
+            let lineY = y + 45;
+            
+            if (ctx.measureText(subject.name).width > maxWidth) {
+                // 긴 이름은 줄바꿈
+                for (let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n];
+                    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                        ctx.fillText(line, x + blockWidth / 2, lineY);
+                        line = words[n];
+                        lineY += 24;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                ctx.fillText(line, x + blockWidth / 2, lineY);
+            } else {
+                ctx.fillText(subject.name, x + blockWidth / 2, lineY);
+            }
+            
+            // 장소
+            if (subject.location) {
+                ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fillText(subject.location, x + blockWidth / 2, y + blockHeight - 20);
+            }
+        }
+    });
+    
+    // 하단 브랜딩
+    ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.textAlign = 'center';
+    ctx.fillText('PlanIt', width / 2, height - 80);
+    
+    // 이미지 다운로드
+    const link = document.createElement('a');
+    const semesterName = '{{ current_semester|default:"시간표" }}';
+    const date = new Date().toISOString().slice(0, 10);
+    link.download = `PlanIt_${semesterName}_배경화면_${date}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    // 버튼 복원
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    alert('스마트폰 배경화면용 이미지가 저장되었습니다!\n\n💡 팁: 잠금화면 배경으로 설정하면 언제든 시간표를 확인할 수 있어요!');
+}
+
+// 둥근 사각형 그리기 헬퍼
+function roundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     // 툴팁 초기화
