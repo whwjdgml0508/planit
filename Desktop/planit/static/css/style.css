@@ -50,33 +50,33 @@
     --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
 }
 
-/* Dark Mode */
+/* Dark Mode - 부드러운 회색 톤 */
 [data-theme="dark"] {
-    --apple-gray-1: #1C1C1E;
-    --apple-gray-2: #2C2C2E;
-    --apple-gray-3: #3A3A3C;
-    --apple-gray-4: #48484A;
-    --apple-gray-5: #636366;
-    --apple-gray-6: #AEAEB2;
-    --apple-black: #FFFFFF;
-    --apple-white: #000000;
+    --apple-gray-1: #2D2D2D;
+    --apple-gray-2: #3A3A3A;
+    --apple-gray-3: #4A4A4A;
+    --apple-gray-4: #5A5A5A;
+    --apple-gray-5: #707070;
+    --apple-gray-6: #B0B0B0;
+    --apple-black: #E8E8E8;
+    --apple-white: #1A1A1A;
     
-    --bg-primary: #000000;
-    --bg-secondary: #1C1C1E;
-    --bg-tertiary: #2C2C2E;
-    --text-primary: #FFFFFF;
-    --text-secondary: #AEAEB2;
-    --text-tertiary: #8E8E93;
-    --border-color: #3A3A3C;
-    --card-bg: #1C1C1E;
-    --navbar-bg: rgba(28, 28, 30, 0.9);
-    --dropdown-bg: #2C2C2E;
-    --input-bg: #2C2C2E;
+    --bg-primary: #1A1A1A;
+    --bg-secondary: #2D2D2D;
+    --bg-tertiary: #3A3A3A;
+    --text-primary: #E8E8E8;
+    --text-secondary: #B0B0B0;
+    --text-tertiary: #909090;
+    --border-color: #4A4A4A;
+    --card-bg: #252525;
+    --navbar-bg: rgba(42, 42, 42, 0.95);
+    --dropdown-bg: #2D2D2D;
+    --input-bg: #2D2D2D;
     
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Global Styles - SF Pro Font Family */
@@ -618,4 +618,52 @@ footer h5 {
 
 [data-theme="dark"] .navbar-toggler-icon {
     filter: invert(1);
+}
+
+/* 다크 모드에서 텍스트 색상 오버라이드 */
+[data-theme="dark"] .text-dark {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-black {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] p {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-body {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card-title {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .card-text {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] a {
+    color: var(--apple-blue);
+}
+
+[data-theme="dark"] a:hover {
+    color: #5AC8FA;
 }
