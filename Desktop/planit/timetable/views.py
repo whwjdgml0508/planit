@@ -92,6 +92,17 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
     template_name = 'timetable/subject_create.html'
     success_url = reverse_lazy('timetable:index')
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # 현재 학기 가져오기
+        current_semester = Semester.objects.filter(
+            user=self.request.user, 
+            is_current=True
+        ).first()
+        kwargs['user'] = self.request.user
+        kwargs['current_semester'] = current_semester
+        return kwargs
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # 현재 학기 정보 전달

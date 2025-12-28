@@ -230,6 +230,8 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        self.current_semester = kwargs.pop('current_semester', None)
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'
@@ -290,6 +292,41 @@ class SubjectWithTimeSlotsForm(forms.ModelForm):
             
             Submit('submit', '✓ 과목 및 시간표 저장', css_class='btn btn-submit w-100 mt-4')
         )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        days = cleaned_data.get('days')
+        periods = cleaned_data.get('periods')
+        
+        if not days or not periods:
+            return cleaned_data
+        
+        # 현재 학기에서 시간표 충돌 체크
+        if self.user and self.current_semester:
+            conflicts = []
+            for day in days:
+                for period in periods:
+                    # 현재 학기에서 해당 시간에 이미 다른 과목이 있는지 체크
+                    existing_slot = TimeSlot.objects.filter(
+                        subject__user=self.user,
+                        semester=self.current_semester,
+                        day=day,
+                        period=int(period)
+                    ).select_related('subject').first()
+                    
+                    if existing_slot:
+                        day_name = dict(TimeSlot.DAY_CHOICES).get(day, day)
+                        period_name = dict(TimeSlot.PERIOD_CHOICES).get(int(period), period)
+                        conflicts.append(
+                            f"{day_name} {period_name}: '{existing_slot.subject.name}' 과목이 이미 배치되어 있습니다."
+                        )
+            
+            if conflicts:
+                raise forms.ValidationError(
+                    "선택한 시간에 이미 다른 과목이 있습니다:\n" + "\n".join(conflicts)
+                )
+        
+        return cleaned_data
 
 class SemesterForm(forms.ModelForm):
     """학기 폼"""
