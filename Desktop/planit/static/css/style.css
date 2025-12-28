@@ -391,6 +391,10 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--apple-gray-5);
 }
 
+[data-theme="dark"] .post-meta {
+    color: var(--text-secondary) !important;
+}
+
 .post-category {
     background-color: var(--apple-blue);
     color: white;
@@ -398,6 +402,10 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 16px;
     font-size: 0.8125rem;
     font-weight: 500;
+}
+
+[data-theme="dark"] .post-category {
+    color: white !important;
 }
 
 /* Alert Messages - Apple Style */
@@ -640,6 +648,22 @@ footer h5 {
     color: var(--text-primary) !important;
 }
 
+[data-theme="dark"] .text-muted {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-body {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-body-secondary {
+    color: var(--text-secondary) !important;
+}
+
 [data-theme="dark"] h1,
 [data-theme="dark"] h2,
 [data-theme="dark"] h3,
@@ -672,11 +696,27 @@ footer h5 {
 }
 
 [data-theme="dark"] a {
-    color: var(--apple-blue);
+    color: #60a5fa;
 }
 
 [data-theme="dark"] a:hover {
-    color: #5AC8FA;
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .card a {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .card a:hover {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .card .text-decoration-none {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .card .text-decoration-none:hover {
+    color: var(--text-primary);
 }
 
 /* 다크 모드에서 모든 흰색 배경 제거 */
@@ -708,6 +748,14 @@ footer h5 {
     background-color: transparent !important;
     color: var(--text-primary) !important;
     border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] thead th {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] tbody td {
+    color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .modal-content {
@@ -752,6 +800,30 @@ footer h5 {
     color: var(--text-primary) !important;
 }
 
+[data-theme="dark"] .btn {
+    color: inherit;
+}
+
+[data-theme="dark"] .btn-primary {
+    color: white !important;
+}
+
+[data-theme="dark"] .btn-success {
+    color: white !important;
+}
+
+[data-theme="dark"] .btn-danger {
+    color: white !important;
+}
+
+[data-theme="dark"] .btn-warning {
+    color: white !important;
+}
+
+[data-theme="dark"] .btn-info {
+    color: white !important;
+}
+
 /* 다크 모드에서 모든 요소 강제 적용 */
 [data-theme="dark"] div,
 [data-theme="dark"] section,
@@ -773,8 +845,26 @@ footer h5 {
 [data-theme="dark"] small,
 [data-theme="dark"] strong,
 [data-theme="dark"] b,
-[data-theme="dark"] em,
-[data-theme="dark"] i {
+[data-theme="dark"] em {
+    color: inherit;
+}
+
+[data-theme="dark"] i.fas,
+[data-theme="dark"] i.far,
+[data-theme="dark"] i.fab,
+[data-theme="dark"] i.bi {
+    color: inherit;
+}
+
+[data-theme="dark"] small.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-center {
+    color: inherit;
+}
+
+[data-theme="dark"] .text-end {
     color: inherit;
 }
 
@@ -806,6 +896,35 @@ footer h5 {
 [data-theme="dark"] .badge {
     background-color: var(--bg-tertiary) !important;
     color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .badge.bg-light {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .badge.text-dark {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-success {
+    color: #4ade80 !important;
+}
+
+[data-theme="dark"] .text-warning {
+    color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .text-danger {
+    color: #f87171 !important;
+}
+
+[data-theme="dark"] .text-info {
+    color: #60a5fa !important;
+}
+
+[data-theme="dark"] .text-primary {
+    color: #60a5fa !important;
 }
 
 [data-theme="dark"] .alert {
