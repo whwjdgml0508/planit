@@ -178,8 +178,12 @@
                                 <span class="badge bg-danger"><i class="fas fa-bullhorn"></i> 공지</span>
                                 {% elif notice.post_type == 'TIP' %}
                                 <span class="badge bg-info"><i class="fas fa-lightbulb"></i> 팁</span>
-                                {% else %}
-                                <span class="badge bg-secondary">{{ notice.get_post_type_display }}</span>
+                                {% elif notice.post_type == 'NORMAL' %}
+                                <span class="badge bg-secondary"><i class="fas fa-file-alt"></i> 일반</span>
+                                {% endif %}
+                                <span class="badge bg-primary">{{ notice.category.name }}</span>
+                                {% if notice.is_pinned %}
+                                <span class="badge bg-warning"><i class="fas fa-thumbtack"></i> 고정</span>
                                 {% endif %}
                                 <span class="ms-2">{{ notice.author.get_full_name }}</span>
                                 <span class="mx-2">|</span>
@@ -225,13 +229,18 @@
                                         </a>
                                     </h6>
                                     <div class="post-meta mb-2">
-                                        <span class="badge bg-secondary">{{ post.category.name }}</span>
                                         {% if post.post_type == 'QUESTION' %}
                                         <span class="badge bg-success"><i class="fas fa-question-circle"></i> 질문</span>
                                         {% elif post.post_type == 'NOTICE' %}
                                         <span class="badge bg-danger"><i class="fas fa-bullhorn"></i> 공지</span>
                                         {% elif post.post_type == 'TIP' %}
                                         <span class="badge bg-info"><i class="fas fa-lightbulb"></i> 팁</span>
+                                        {% elif post.post_type == 'NORMAL' %}
+                                        <span class="badge bg-secondary"><i class="fas fa-file-alt"></i> 일반</span>
+                                        {% endif %}
+                                        <span class="badge bg-primary">{{ post.category.name }}</span>
+                                        {% if post.is_pinned %}
+                                        <span class="badge bg-warning"><i class="fas fa-thumbtack"></i> 고정</span>
                                         {% endif %}
                                         {% if post.subject %}
                                         <span class="badge bg-success">{{ post.subject.name }}</span>
