@@ -115,7 +115,8 @@ class TimeSlot(models.Model):
     class Meta:
         verbose_name = '시간표 슬롯'
         verbose_name_plural = '시간표 슬롯들'
-        unique_together = ['semester', 'day', 'period']  # 같은 학기 내에서만 중복 체크
+        # unique_together 제약 제거 - 애플리케이션 레벨에서 현재 학기만 검증
+        # 서로 다른 학기에는 같은 시간대에 과목이 있을 수 있음
         ordering = ['day', 'period']
         
     def __str__(self):
