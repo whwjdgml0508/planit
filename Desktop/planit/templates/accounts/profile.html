@@ -157,8 +157,9 @@
                                         </div>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <div class="fw-bold text-danger fs-4">{{ received_likes_count }}</div>
+                                        <div class="fw-bold text-danger fs-4">{{ received_likes_count|default:"0" }}</div>
                                         <div class="text-muted small">받은 좋아요</div>
+                                        <!-- DEBUG: received_likes_count = {{ received_likes_count }} -->
                                     </div>
                                 </div>
                             </div>
