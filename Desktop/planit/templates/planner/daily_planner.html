@@ -7,9 +7,13 @@
 {% block extra_css %}
 <style>
 .study-planner {
-    background-color: var(--bg-primary);
+    background-color: var(--bg-primary) !important;
     min-height: 100vh;
     padding: 20px 0;
+}
+
+[data-theme="dark"] .study-planner {
+    background-color: #0f1419 !important;
 }
 
 .planner-header {
