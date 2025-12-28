@@ -124,6 +124,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
             total_likes += post.likes.count()
         context['received_likes_count'] = total_likes
         
+        # 디버깅 로그
+        logger.info(f"Profile view - User: {user.username}, Posts: {user_posts.count()}, Total likes: {total_likes}")
+        
         # 플래너 활동 통계
         context['tasks_count'] = user.tasks.count()
         context['completed_tasks_count'] = user.tasks.filter(status='COMPLETED').count()
