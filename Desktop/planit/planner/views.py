@@ -459,14 +459,18 @@ class DailyPlannerView(LoginRequiredMixin, TemplateView):
         # 통계 데이터
         actual_hours = float(total_study_minutes) / 60.0
         target_hours = float(daily_planner.target_study_hours)
-        achievement_rate = min(100, int((actual_hours / target_hours * 100) if target_hours > 0 else 0))
+        # 학습시간 기반 달성률
+        study_achievement_rate = min(100, int((actual_hours / target_hours * 100) if target_hours > 0 else 0))
+        # 오늘의 할일 기반 달성률 (오늘의 과제 달성률로 사용)
+        todo_achievement_rate = int((completed_todos / total_todos * 100) if total_todos > 0 else 0)
         
         stats = {
             'completed_todos': completed_todos,
             'total_todos': total_todos,
             'study_hours': actual_hours,
             'target_hours': target_hours,
-            'achievement_rate': achievement_rate,
+            'achievement_rate': todo_achievement_rate,  # 오늘의 할일 달성률로 변경
+            'study_achievement_rate': study_achievement_rate,  # 학습시간 달성률 별도 저장
             'overdue_tasks': overdue_tasks,
         }
         

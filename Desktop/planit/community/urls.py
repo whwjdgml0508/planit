@@ -18,6 +18,9 @@ urlpatterns = [
     # 북마크 관련 URL
     path('bookmarks/', views.BookmarkListView.as_view(), name='bookmark_list'),
     
+    # 내 활동 관련 URL
+    path('my-comments/', views.MyCommentsView.as_view(), name='my_comments'),
+    
     # 카테고리 관련 URL
     path('category/<slug:slug>/', views.CategoryPostListView.as_view(), name='category_posts'),
     
