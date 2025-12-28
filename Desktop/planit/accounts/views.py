@@ -116,6 +116,14 @@ class ProfileView(LoginRequiredMixin, DetailView):
             created_at__gte=thirty_days_ago
         ).count()
         
+        # 받은 좋아요 수 계산 (내가 작성한 게시글에 받은 좋아요)
+        from django.db.models import Count
+        user_posts = user.posts.filter(is_active=True)
+        total_likes = 0
+        for post in user_posts:
+            total_likes += post.likes.count()
+        context['received_likes_count'] = total_likes
+        
         # 플래너 활동 통계
         context['tasks_count'] = user.tasks.count()
         context['completed_tasks_count'] = user.tasks.filter(status='COMPLETED').count()
