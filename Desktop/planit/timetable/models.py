@@ -174,13 +174,13 @@ class Semester(models.Model):
     
     @property
     def subject_count(self):
-        """해당 학기의 과목 수 반환"""
-        return self.subjects.count()
+        """해당 학기의 과목 수 반환 (학점이 있는 과목만)"""
+        return self.subjects.filter(credits__isnull=False).count()
     
     @property
     def total_credits(self):
         """해당 학기의 총 학점 반환"""
-        total = self.subjects.aggregate(total=Sum('credits'))['total']
+        total = self.subjects.filter(credits__isnull=False).aggregate(total=Sum('credits'))['total']
         if total is None:
             return 0
         # 소수점이 .0이면 정수로 표시

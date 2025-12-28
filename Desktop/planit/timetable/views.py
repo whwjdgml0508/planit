@@ -618,10 +618,15 @@ class SemesterUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         semester = self.object
         from django.db.models import Sum
-        # 해당 학기의 과목 수 및 총 학점
-        subjects = Subject.objects.filter(user=self.request.user, semester=semester)
+        # 해당 학기의 과목 수 및 총 학점 (학점이 있는 과목만)
+        subjects = Subject.objects.filter(user=self.request.user, semester=semester, credits__isnull=False)
         context['subject_count'] = subjects.count()
-        context['total_credits'] = subjects.aggregate(total=Sum('credits'))['total'] or 0
+        total = subjects.aggregate(total=Sum('credits'))['total']
+        if total is None:
+            context['total_credits'] = 0
+        else:
+            # 소수점이 .0이면 정수로 표시
+            context['total_credits'] = int(total) if total == int(total) else total
         return context
     
     def form_valid(self, form):
