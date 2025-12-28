@@ -172,7 +172,15 @@
                                 </a>
                             </h6>
                             <div class="post-meta">
-                                <span class="badge post-type-badge bg-warning text-dark">{{ notice.get_post_type_display }}</span>
+                                {% if notice.post_type == 'QUESTION' %}
+                                <span class="badge bg-success"><i class="fas fa-question-circle"></i> 질문</span>
+                                {% elif notice.post_type == 'NOTICE' %}
+                                <span class="badge bg-danger"><i class="fas fa-bullhorn"></i> 공지</span>
+                                {% elif notice.post_type == 'TIP' %}
+                                <span class="badge bg-info"><i class="fas fa-lightbulb"></i> 팁</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ notice.get_post_type_display }}</span>
+                                {% endif %}
                                 <span class="ms-2">{{ notice.author.get_full_name }}</span>
                                 <span class="mx-2">|</span>
                                 <span>{{ notice.created_at|date:"m월 d일" }}</span>
@@ -218,8 +226,12 @@
                                     </h6>
                                     <div class="post-meta mb-2">
                                         <span class="badge bg-secondary">{{ post.category.name }}</span>
-                                        {% if post.post_type != 'NORMAL' %}
-                                        <span class="badge post-type-badge bg-info">{{ post.get_post_type_display }}</span>
+                                        {% if post.post_type == 'QUESTION' %}
+                                        <span class="badge bg-success"><i class="fas fa-question-circle"></i> 질문</span>
+                                        {% elif post.post_type == 'NOTICE' %}
+                                        <span class="badge bg-danger"><i class="fas fa-bullhorn"></i> 공지</span>
+                                        {% elif post.post_type == 'TIP' %}
+                                        <span class="badge bg-info"><i class="fas fa-lightbulb"></i> 팁</span>
                                         {% endif %}
                                         {% if post.subject %}
                                         <span class="badge bg-success">{{ post.subject.name }}</span>
@@ -283,7 +295,52 @@
             </div>
             {% endif %}
 
+            <!-- 활동 통계 -->
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>나의 활동
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'community:post_list' %}?author={{ user.id }}" class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom text-decoration-none p-2 rounded hover-bg" style="transition: background-color 0.2s; color: inherit;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-pen text-primary me-2"></i>
+                            <span>작성한 글</span>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ user.post_set.count }}</span>
+                    </a>
+                    <a href="{% url 'community:my_comments' %}" class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom text-decoration-none p-2 rounded hover-bg" style="transition: background-color 0.2s; color: inherit;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-comment text-success me-2"></i>
+                            <span>작성한 댓글</span>
+                        </div>
+                        <span class="badge bg-success rounded-pill">{{ user.comment_set.count }}</span>
+                    </a>
+                    <div class="d-flex justify-content-between align-items-center p-2">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-heart text-danger me-2"></i>
+                            <span>받은 좋아요</span>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">
+                            {% with total_likes=0 %}
+                                {% for post in user.post_set.all %}
+                                    {% with total_likes=total_likes|add:post.get_like_count %}{% endwith %}
+                                {% endfor %}
+                                {{ total_likes }}
+                            {% endwith %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
+<style>
+.hover-bg:hover {
+    background-color: #F2F2F7 !important;
+}
+</style>
 {% endblock %}

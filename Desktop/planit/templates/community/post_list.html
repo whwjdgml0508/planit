@@ -25,6 +25,53 @@
                 </div>
             </div>
 
+            <!-- 검색 폼 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" action="{% url 'community:post_list' %}" class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" name="query" class="form-control" placeholder="검색어를 입력하세요" value="{{ search_form.query.value|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="search_type" class="form-select">
+                                <option value="all" {% if search_form.search_type.value == 'all' or not search_form.search_type.value %}selected{% endif %}>전체</option>
+                                <option value="title" {% if search_form.search_type.value == 'title' %}selected{% endif %}>제목</option>
+                                <option value="content" {% if search_form.search_type.value == 'content' %}selected{% endif %}>내용</option>
+                                <option value="author" {% if search_form.search_type.value == 'author' %}selected{% endif %}>작성자</option>
+                                <option value="tags" {% if search_form.search_type.value == 'tags' %}selected{% endif %}>태그</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="category" class="form-select">
+                                <option value="">전체 카테고리</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if search_form.category.value|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="post_type" class="form-select">
+                                <option value="">전체 유형</option>
+                                <option value="NORMAL" {% if search_form.post_type.value == 'NORMAL' %}selected{% endif %}>일반</option>
+                                <option value="QUESTION" {% if search_form.post_type.value == 'QUESTION' %}selected{% endif %}>질문</option>
+                                <option value="NOTICE" {% if search_form.post_type.value == 'NOTICE' %}selected{% endif %}>공지</option>
+                                <option value="TIP" {% if search_form.post_type.value == 'TIP' %}selected{% endif %}>팁</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- 카테고리 필터 -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -50,9 +97,22 @@
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
                                     <span class="badge bg-primary me-2">{{ post.category.get_name_display }}</span>
+                                    {% if post.post_type == 'QUESTION' %}
+                                    <span class="badge bg-success me-2">
+                                        <i class="fas fa-question-circle"></i> 질문
+                                    </span>
+                                    {% elif post.post_type == 'NOTICE' %}
+                                    <span class="badge bg-danger me-2">
+                                        <i class="fas fa-bullhorn"></i> 공지
+                                    </span>
+                                    {% elif post.post_type == 'TIP' %}
+                                    <span class="badge bg-info me-2">
+                                        <i class="fas fa-lightbulb"></i> 팁
+                                    </span>
+                                    {% endif %}
                                     {% if post.is_pinned %}
                                     <span class="badge bg-warning me-2">
-                                        <i class="fas fa-thumbtack"></i> 공지
+                                        <i class="fas fa-thumbtack"></i> 고정
                                     </span>
                                     {% endif %}
                                 </div>

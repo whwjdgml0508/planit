@@ -62,10 +62,9 @@ class Post(models.Model):
     
     POST_TYPES = [
         ('NORMAL', '일반'),
-        ('NOTICE', '공지'),
-        ('URGENT', '긴급'),
         ('QUESTION', '질문'),
-        ('RESOURCE', '자료'),
+        ('NOTICE', '공지'),
+        ('TIP', '팁'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
