@@ -428,10 +428,23 @@ def add_to_timetable(request):
                     period=period,
                     location=location
                 )
-            except IntegrityError:
+            except IntegrityError as e:
+                # 디버깅: 어떤 학기의 데이터와 충돌하는지 확인
+                conflicting_slots = TimeSlot.objects.filter(
+                    day=day,
+                    period=period
+                ).select_related('subject', 'semester')
+                
+                conflict_info = []
+                for slot in conflicting_slots:
+                    semester_name = str(slot.semester) if slot.semester else "학기 미지정"
+                    conflict_info.append(f"{semester_name}: {slot.subject.name}")
+                
+                error_detail = " / ".join(conflict_info) if conflict_info else "알 수 없는 충돌"
+                
                 return JsonResponse({
                     'success': False,
-                    'error': f'해당 시간에 이미 수업이 배치되어 있습니다. 다른 시간을 선택해주세요.'
+                    'error': f'데이터베이스 충돌이 발생했습니다. 충돌 정보: {error_detail}'
                 })
             
             return JsonResponse({
