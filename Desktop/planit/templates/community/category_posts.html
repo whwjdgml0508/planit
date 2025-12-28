@@ -29,9 +29,27 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ category.name }}</span>
+                                    {% if post.post_type == 'QUESTION' %}
+                                    <span class="badge bg-success me-2">
+                                        <i class="fas fa-question-circle"></i> 질문
+                                    </span>
+                                    {% elif post.post_type == 'NOTICE' %}
+                                    <span class="badge bg-danger me-2">
+                                        <i class="fas fa-bullhorn"></i> 공지
+                                    </span>
+                                    {% elif post.post_type == 'TIP' %}
+                                    <span class="badge bg-info me-2">
+                                        <i class="fas fa-lightbulb"></i> 팁
+                                    </span>
+                                    {% elif post.post_type == 'NORMAL' %}
+                                    <span class="badge bg-secondary me-2">
+                                        <i class="fas fa-file-alt"></i> 일반
+                                    </span>
+                                    {% endif %}
                                     {% if post.is_pinned %}
                                     <span class="badge bg-warning me-2">
-                                        <i class="fas fa-thumbtack"></i> 공지
+                                        <i class="fas fa-thumbtack"></i> 고정
                                     </span>
                                     {% endif %}
                                 </div>
