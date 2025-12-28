@@ -7,7 +7,7 @@
 {% block extra_css %}
 <style>
 .study-planner {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     min-height: 100vh;
     padding: 20px 0;
 }
@@ -18,7 +18,7 @@
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow-lg);
 }
 
 .stats-cards {
@@ -29,11 +29,11 @@
 }
 
 .stat-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
     transition: transform 0.2s;
 }
 
@@ -73,10 +73,10 @@
 }
 
 .todo-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
     height: fit-content;
 }
 
@@ -84,7 +84,7 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 15px;
-    color: #333;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -99,9 +99,11 @@
 .todo-input input {
     flex: 1;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 14px;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .todo-input button {
@@ -123,25 +125,25 @@
     display: flex;
     align-items: center;
     padding: 12px;
-    background: white;
+    background: var(--bg-tertiary);
     border-radius: 8px;
     margin-bottom: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
     transition: all 0.2s;
 }
 
 .todo-item:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow-md);
 }
 
 .todo-item.completed {
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     opacity: 0.7;
 }
 
 .todo-item.completed .todo-text {
     text-decoration: line-through;
-    color: #6c757d;
+    color: var(--text-tertiary);
 }
 
 .todo-checkbox {
@@ -154,6 +156,7 @@
 .todo-text {
     flex: 1;
     font-size: 14px;
+    color: var(--text-primary);
 }
 
 .todo-delete {
@@ -166,14 +169,14 @@
 }
 
 .todo-delete:hover {
-    background: #f8d7da;
+    background: rgba(220, 53, 69, 0.1);
 }
 
 .timer-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .timer-display {
@@ -217,10 +220,11 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background: #f8f9fa;
+    background: var(--bg-tertiary);
     border-radius: 6px;
     margin-bottom: 8px;
     font-size: 14px;
+    color: var(--text-primary);
 }
 
 .goal-section {
@@ -231,13 +235,26 @@
     color: #2d3436;
 }
 
+[data-theme="dark"] .goal-section {
+    background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+    color: #e0e0e0;
+}
+
 .goal-input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     resize: vertical;
     min-height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #2d3436;
+}
+
+[data-theme="dark"] .goal-input {
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .target-hours-section {
@@ -296,7 +313,7 @@
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #6c757d;
+    color: var(--text-secondary);
 }
 
 .empty-state i {
@@ -310,7 +327,7 @@
     display: grid;
     grid-template-columns: 60px repeat(6, 1fr);
     gap: 1px;
-    background: #495057;
+    background: var(--text-secondary);
     border-radius: 8px 8px 0 0;
     padding: 8px;
 }
@@ -324,7 +341,7 @@
 }
 
 .timetable-grid {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--border-color);
     border-radius: 0 0 8px 8px;
     overflow: hidden;
 }
@@ -333,11 +350,11 @@
     display: grid;
     grid-template-columns: 60px repeat(6, 1fr);
     gap: 1px;
-    background: #dee2e6;
+    background: var(--border-color);
 }
 
 .hour-label {
-    background: #6c757d;
+    background: var(--text-secondary);
     color: white;
     padding: 8px 4px;
     text-align: center;
@@ -349,7 +366,7 @@
 }
 
 .time-cell {
-    background: white;
+    background: var(--card-bg);
     height: 25px;
     cursor: pointer;
     transition: all 0.2s;
@@ -361,8 +378,8 @@
 }
 
 .time-cell:hover {
-    background: #e9ecef;
-    border-color: #007bff;
+    background: var(--bg-tertiary);
+    border-color: var(--apple-blue);
     transform: scale(1.05);
 }
 
@@ -383,7 +400,7 @@
     justify-content: space-between;
     margin-top: 15px;
     padding: 10px;
-    background: #f8f9fa;
+    background: var(--bg-tertiary);
     border-radius: 6px;
 }
 
@@ -393,12 +410,12 @@
 
 .stat-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
 }
 
 .stat-value {
     font-weight: bold;
-    color: #495057;
+    color: var(--text-primary);
 }
 
 /* 저장 버튼 스타일 */
@@ -521,10 +538,10 @@
         <div class="stats-cards">
             <div class="stat-card blue">
                 <div class="stat-number">{{ stats.completed_todos }}/{{ stats.total_todos }}</div>
-                <div class="stat-label">완료한 할 일</div>
+                <div class="stat-label">📋 오늘의 과제</div>
                 <div class="stat-progress">
                     {% if stats.total_todos > 0 %}
-                        {{ stats.completed_todos|percentage:stats.total_todos }}% 완료
+                        {{ stats.achievement_rate }}% 달성
                     {% else %}
                         할 일을 추가해보세요
                     {% endif %}
@@ -534,22 +551,24 @@
                 <div class="stat-number" id="study-hours-display">{{ stats.study_hours|floatformat:1 }}h</div>
                 <div class="stat-label">오늘 학습 시간</div>
                 <div class="stat-progress" id="target-hours-display">
-                    목표: <span id="target-hours-text">{{ stats.target_hours }}</span>h ({{ stats.achievement_rate }}%)
+                    목표: <span id="target-hours-text">{{ stats.target_hours }}</span>h ({{ stats.study_achievement_rate }}%)
                 </div>
                 <div class="stat-edit-hint" style="font-size: 0.7rem; margin-top: 5px; opacity: 0.7;">✏️ 클릭하여 목표 수정</div>
             </div>
             <div class="stat-card cyan">
-                <div class="stat-number">{{ stats.achievement_rate }}%</div>
-                <div class="stat-label">목표 달성률</div>
-                <div class="stat-progress">
+                <div class="stat-number" id="todo-achievement-display">{{ stats.achievement_rate }}%</div>
+                <div class="stat-label">과제 달성률</div>
+                <div class="stat-progress" id="todo-achievement-message">
                     {% if stats.achievement_rate >= 100 %}
-                        🎉 목표 달성!
+                        🎉 모든 과제 완료!
                     {% elif stats.achievement_rate >= 80 %}
-                        💪 거의 다 왔어요!
+                        💪 거의 다 했어요!
                     {% elif stats.achievement_rate >= 50 %}
-                        📚 열심히 하고 있어요
-                    {% else %}
+                        📚 절반 이상 완료
+                    {% elif stats.total_todos > 0 %}
                         🚀 시작해봅시다!
+                    {% else %}
+                        ✏️ 과제를 추가하세요
                     {% endif %}
                 </div>
             </div>
@@ -1065,32 +1084,111 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function handleTodoToggle() {
         const todoItem = this.closest('.todo-item');
-        if (this.checked) {
-            todoItem.classList.add('completed');
-        } else {
-            todoItem.classList.remove('completed');
+        const todoId = todoItem.dataset.todoId;
+        
+        if (!todoId) {
+            // ID가 없으면 로컬 전용 (이전 데이터)
+            if (this.checked) {
+                todoItem.classList.add('completed');
+            } else {
+                todoItem.classList.remove('completed');
+            }
+            updateTodoStats();
+            saveData();
+            return;
         }
-        updateTodoStats(); // 통계 업데이트
-        saveData(); // 변경사항 저장
+        
+        // 데이터베이스에 저장
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/planner/ajax/toggle-todo/${todoId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_completed) {
+                    todoItem.classList.add('completed');
+                    this.checked = true;
+                } else {
+                    todoItem.classList.remove('completed');
+                    this.checked = false;
+                }
+                updateTodoStats();
+                saveData();
+            } else {
+                console.error('❌ 할 일 토글 실패:', data.error);
+                this.checked = !this.checked; // 원래 상태로 되돌림
+            }
+        })
+        .catch(error => {
+            console.error('❌ 네트워크 오류:', error);
+            this.checked = !this.checked; // 원래 상태로 되돌림
+        });
     }
     
     function handleTodoDelete() {
         if (!confirm('이 할 일을 삭제하시겠습니까?')) return;
         const todoItem = this.closest('.todo-item');
-        todoItem.remove();
+        const todoId = todoItem.dataset.todoId;
         
-        // 할 일이 모두 삭제되면 빈 상태 메시지 표시
-        const todoList = document.querySelector('.todo-list');
-        if (todoList.children.length === 0) {
-            todoList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
-                    <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
-                </div>
-            `;
+        if (!todoId) {
+            // ID가 없으면 로컬 전용 (이전 데이터)
+            todoItem.remove();
+            const todoList = document.querySelector('.todo-list');
+            if (todoList.children.length === 0) {
+                todoList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                    </div>
+                `;
+            }
+            updateTodoStats();
+            saveData();
+            return;
         }
-        updateTodoStats(); // 통계 업데이트
-        saveData(); // 변경사항 저장
+        
+        // 데이터베이스에서 삭제
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/planner/ajax/delete-todo/${todoId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                todoItem.remove();
+                
+                // 할 일이 모두 삭제되면 빈 상태 메시지 표시
+                const todoList = document.querySelector('.todo-list');
+                if (todoList.children.length === 0) {
+                    todoList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>아직 할 일이 없습니다.<br>위에서 할 일을 추가해보세요!</p>
+                        </div>
+                    `;
+                }
+                updateTodoStats();
+                saveData();
+            } else {
+                console.error('❌ 할 일 삭제 실패:', data.error);
+                alert('할 일 삭제에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('❌ 네트워크 오류:', error);
+            alert('할 일 삭제 중 오류가 발생했습니다.');
+        });
     }
     
     // 할 일 추가
@@ -1106,37 +1204,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const todoList = document.querySelector('.todo-list');
-            const newTodo = document.createElement('div');
-            newTodo.className = 'todo-item';
-            newTodo.innerHTML = `
-                <input type="checkbox" class="todo-checkbox">
-                <span class="todo-text">${title}</span>
-                <button class="todo-delete delete-todo-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+            // CSRF 토큰 가져오기
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const dateKey = formatDate(currentDate);
             
-            // 빈 상태 메시지 제거
-            const emptyState = todoList.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-            
-            todoList.appendChild(newTodo);
-            const todoInput = document.getElementById('new-todo-title');
-            if (todoInput) {
-                todoInput.value = '';
-            }
-            
-            // 이벤트 리스너 재등록
-            attachTodoEventListeners();
-            
-            // 통계 업데이트
-            updateTodoStats();
-            
-            // 데이터 저장
-            saveData();
+            // 데이터베이스에 저장
+            fetch("{% url 'planner:add_todo_item' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: new URLSearchParams({
+                    'date': dateKey,
+                    'title': title,
+                    'priority': 'MEDIUM'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ 데이터베이스에 할 일 저장 완료');
+                    
+                    const todoList = document.querySelector('.todo-list');
+                    const newTodo = document.createElement('div');
+                    newTodo.className = 'todo-item';
+                    newTodo.dataset.todoId = data.todo_id;
+                    newTodo.innerHTML = `
+                        <input type="checkbox" class="todo-checkbox">
+                        <span class="todo-text">${title}</span>
+                        <button class="todo-delete delete-todo-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    // 빈 상태 메시지 제거
+                    const emptyState = todoList.querySelector('.empty-state');
+                    if (emptyState) {
+                        emptyState.remove();
+                    }
+                    
+                    todoList.appendChild(newTodo);
+                    titleInput.value = '';
+                    
+                    // 이벤트 리스너 재등록
+                    attachTodoEventListeners();
+                    
+                    // 통계 업데이트
+                    updateTodoStats();
+                    
+                    // localStorage에도 저장
+                    saveData();
+                } else {
+                    console.error('❌ 할 일 저장 실패:', data.error);
+                    alert('할 일 추가에 실패했습니다: ' + (data.error || '알 수 없는 오류'));
+                }
+            })
+            .catch(error => {
+                console.error('❌ 네트워크 오류:', error);
+                alert('할 일 추가 중 오류가 발생했습니다.');
+            });
         });
     }
     
@@ -1427,54 +1554,36 @@ function saveLocalStorage() {
     localStorage.setItem(`planner-${dateKey}`, JSON.stringify(existingData));
 }
 
-// 학습 통계 업데이트 (10분 단위)
+// 학습 통계 업데이트 (10분 단위) - 학습 시간 카드만 업데이트
 function updateStudyStats() {
     const filledCells = document.querySelectorAll('.time-cell.filled');
     const studyMinutes = filledCells.length * 10;
     const studyHours = (studyMinutes / 60).toFixed(1);
     
     // 학습 시간 카드 업데이트
-    const studyHoursCard = document.querySelector('.stat-card.green .stat-number');
+    const studyHoursCard = document.getElementById('study-hours-display');
     if (studyHoursCard) {
         studyHoursCard.textContent = `${studyHours}h`;
     }
     
-    // 목표 달성률 계산 및 업데이트
-    const targetHours = parseFloat(document.querySelector('.stat-progress')?.textContent.match(/목표: ([\d.]+)h/)?.[1] || 8);
-    const achievementRate = Math.min(100, (studyHours / targetHours * 100)).toFixed(1);
+    // 학습시간 목표 달성률 계산 (학습 시간 카드에만 표시)
+    const targetHours = parseFloat(document.getElementById('target-hours')?.value || 8);
+    const studyAchievementRate = Math.min(100, (studyHours / targetHours * 100)).toFixed(0);
     
-    const achievementCard = document.querySelector('.stat-card.cyan .stat-number');
-    const achievementProgress = document.querySelector('.stat-card.cyan .stat-progress');
-    
-    if (achievementCard) {
-        achievementCard.textContent = `${achievementRate}%`;
-    }
-    
-    if (achievementProgress) {
-        let message = '🚀 시작해봅시다!';
-        if (achievementRate >= 100) {
-            message = '🎉 목표 달성!';
-        } else if (achievementRate >= 80) {
-            message = '💪 거의 다 왔어요!';
-        } else if (achievementRate >= 50) {
-            message = '📚 열심히 하고 있어요';
-        }
-        achievementProgress.textContent = message;
-    }
-    
-    // 학습 시간 카드의 목표 달성률도 업데이트
-    const studyProgress = document.querySelector('.stat-card.green .stat-progress');
-    if (studyProgress) {
-        studyProgress.innerHTML = `목표: <span id="target-hours-text">${targetHours}</span>h (${achievementRate}%)`;
+    // 학습 시간 카드의 목표 달성률 업데이트
+    const targetDisplay = document.getElementById('target-hours-display');
+    if (targetDisplay) {
+        targetDisplay.innerHTML = `목표: <span id="target-hours-text">${targetHours}</span>h (${studyAchievementRate}%)`;
     }
 }
 
-// 할 일 통계 업데이트
+// 할 일 통계 업데이트 (오늘의 과제 + 과제 달성률 연동)
 function updateTodoStats() {
     const totalTodos = document.querySelectorAll('.todo-item').length;
     const completedTodos = document.querySelectorAll('.todo-item.completed').length;
-    const percentage = totalTodos > 0 ? ((completedTodos / totalTodos) * 100).toFixed(1) : 0;
+    const percentage = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
     
+    // 오늘의 과제 카드 (Blue) 업데이트
     const todoCard = document.querySelector('.stat-card.blue .stat-number');
     const todoProgress = document.querySelector('.stat-card.blue .stat-progress');
     
@@ -1484,10 +1593,34 @@ function updateTodoStats() {
     
     if (todoProgress) {
         if (totalTodos > 0) {
-            todoProgress.textContent = `${percentage}% 완료`;
+            todoProgress.textContent = `${percentage}% 달성`;
         } else {
             todoProgress.textContent = '할 일을 추가해보세요';
         }
+    }
+    
+    // 과제 달성률 카드 (Cyan) 업데이트 - 오늘의 할일 완료율과 연동
+    const achievementCard = document.getElementById('todo-achievement-display');
+    const achievementProgress = document.getElementById('todo-achievement-message');
+    
+    if (achievementCard) {
+        achievementCard.textContent = `${percentage}%`;
+    }
+    
+    if (achievementProgress) {
+        let message = '✏️ 과제를 추가하세요';
+        if (totalTodos > 0) {
+            if (percentage >= 100) {
+                message = '🎉 모든 과제 완료!';
+            } else if (percentage >= 80) {
+                message = '💪 거의 다 했어요!';
+            } else if (percentage >= 50) {
+                message = '📚 절반 이상 완료';
+            } else {
+                message = '🚀 시작해봅시다!';
+            }
+        }
+        achievementProgress.textContent = message;
     }
 }
 
@@ -1609,7 +1742,7 @@ function saveTargetHoursFromModal() {
     });
 }
 
-// 목표 시간을 파라미터로 받아 통계 업데이트
+// 목표 시간을 파라미터로 받아 학습 통계 업데이트 (학습 시간 카드만)
 function updateStudyStatsWithTarget(targetHours) {
     const filledCells = document.querySelectorAll('.time-cell.filled');
     const studyMinutes = filledCells.length * 10;
@@ -1621,33 +1754,13 @@ function updateStudyStatsWithTarget(targetHours) {
         studyHoursCard.textContent = `${studyHours}h`;
     }
     
-    // 목표 달성률 계산
-    const achievementRate = Math.min(100, (studyHours / targetHours * 100)).toFixed(1);
+    // 학습시간 목표 달성률 계산
+    const studyAchievementRate = Math.min(100, (studyHours / targetHours * 100)).toFixed(0);
     
-    // 달성률 카드 업데이트
-    const achievementCard = document.querySelector('.stat-card.cyan .stat-number');
-    const achievementProgress = document.querySelector('.stat-card.cyan .stat-progress');
-    
-    if (achievementCard) {
-        achievementCard.textContent = `${achievementRate}%`;
-    }
-    
-    if (achievementProgress) {
-        let message = '🚀 시작해봅시다!';
-        if (achievementRate >= 100) {
-            message = '🎉 목표 달성!';
-        } else if (achievementRate >= 80) {
-            message = '💪 거의 다 왔어요!';
-        } else if (achievementRate >= 50) {
-            message = '📚 열심히 하고 있어요';
-        }
-        achievementProgress.textContent = message;
-    }
-    
-    // 학습 시간 카드의 목표 달성률도 업데이트
+    // 학습 시간 카드의 목표 달성률 업데이트
     const targetDisplay = document.getElementById('target-hours-display');
     if (targetDisplay) {
-        targetDisplay.innerHTML = `목표: <span id="target-hours-text">${targetHours}</span>h (${achievementRate}%)`;
+        targetDisplay.innerHTML = `목표: <span id="target-hours-text">${targetHours}</span>h (${studyAchievementRate}%)`;
     }
 }
 
