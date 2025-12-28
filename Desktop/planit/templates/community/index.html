@@ -331,14 +331,7 @@
                             <i class="fas fa-heart text-danger me-2"></i>
                             <span>받은 좋아요</span>
                         </div>
-                        <span class="badge bg-danger rounded-pill">
-                            {% with total_likes=0 %}
-                                {% for post in user.post_set.all %}
-                                    {% with total_likes=total_likes|add:post.get_like_count %}{% endwith %}
-                                {% endfor %}
-                                {{ total_likes }}
-                            {% endwith %}
-                        </span>
+                        <span class="badge bg-danger rounded-pill">{{ received_likes_count|default:"0" }}</span>
                     </div>
                 </div>
             </div>

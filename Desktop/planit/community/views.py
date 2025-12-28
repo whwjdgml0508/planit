@@ -53,11 +53,18 @@ class CommunityView(LoginRequiredMixin, TemplateView):
             category__in=categories
         ).order_by('-is_pinned', '-created_at')[:5]
         
+        # 받은 좋아요 수 계산
+        user_posts = user.posts.filter(is_active=True)
+        total_likes = 0
+        for post in user_posts:
+            total_likes += post.likes.count()
+        
         context.update({
             'categories': categories,
             'recent_posts': recent_posts,
             'popular_posts': popular_posts,
             'notices': notices,
+            'received_likes_count': total_likes,
         })
         return context
 
@@ -457,6 +464,19 @@ class BookmarkListView(LoginRequiredMixin, ListView):
             bookmarks=self.request.user,
             is_active=True
         ).select_related('author', 'category').order_by('-created_at')
+
+class MyCommentsView(LoginRequiredMixin, ListView):
+    """내가 작성한 댓글 목록 뷰"""
+    model = Comment
+    template_name = 'community/my_comments.html'
+    context_object_name = 'comments'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        return Comment.objects.filter(
+            author=self.request.user,
+            is_active=True
+        ).select_related('post', 'post__category', 'parent').order_by('-created_at')
 
 class AttachmentDownloadView(LoginRequiredMixin, TemplateView):
     """첨부파일 다운로드 뷰"""
