@@ -523,7 +523,7 @@
                 </div>
                 <div class="col-8 text-center">
                     <h2 class="mb-1">📚 학습 플래너</h2>
-                    <p class="mb-0" id="current-date">{{ selected_date|date:"Y년 m월 d일 l요일" }}</p>
+                    <p class="mb-0" id="current-date">{{ selected_date|date:"Y년 m월 d일 l" }}</p>
                     <input type="date" class="form-control d-inline-block w-auto mt-2" id="date-picker" value="{{ selected_date|date:'Y-m-d' }}">
                     <div class="mt-2 d-flex align-items-center justify-content-center gap-3">
                         <button class="btn btn-success btn-sm" id="manual-save-btn">
