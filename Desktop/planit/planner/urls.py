@@ -28,8 +28,8 @@ urlpatterns = [
     
     # AJAX 뷰들
     path('ajax/add-todo/', views.add_todo_item, name='add_todo_item'),
-    path('ajax/toggle-todo/<uuid:todo_id>/', views.toggle_todo_item, name='toggle_todo_item'),
-    path('ajax/delete-todo/<uuid:todo_id>/', views.delete_todo_item, name='delete_todo_item'),
+    path('ajax/toggle-todo/<int:todo_id>/', views.toggle_todo_item, name='toggle_todo_item'),
+    path('ajax/delete-todo/<int:todo_id>/', views.delete_todo_item, name='delete_todo_item'),
     path('ajax/add-time-block/', views.add_time_block, name='add_time_block'),
     path('ajax/remove-time-block/', views.remove_time_block, name='remove_time_block'),
     path('ajax/update-daily-goal/', views.update_daily_goal, name='update_daily_goal'),
