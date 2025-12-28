@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 증가 버튼 이벤트
     document.querySelectorAll('.btn-increase').forEach(btn => {
         btn.addEventListener('click', function() {
+            if (this.disabled) return; // disabled 버튼은 이벤트 무시
             const goalId = this.closest('.progress-control').dataset.goalId;
             updateProgress(goalId, 10);
         });
@@ -315,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 감소 버튼 이벤트
     document.querySelectorAll('.btn-decrease').forEach(btn => {
         btn.addEventListener('click', function() {
+            if (this.disabled) return; // disabled 버튼은 이벤트 무시
             const goalId = this.closest('.progress-control').dataset.goalId;
             updateProgress(goalId, -10);
         });
