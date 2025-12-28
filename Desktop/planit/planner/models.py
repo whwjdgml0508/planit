@@ -287,11 +287,10 @@ class Goal(models.Model):
         if self.progress >= 100 and not self.is_achieved:
             self.is_achieved = True
             self.achievement_date = timezone.now()
-        # 달성 상태로 변경되면 진행률을 100%로 설정
-        elif self.is_achieved and self.progress < 100:
-            self.progress = 100
-            if not self.achievement_date:
-                self.achievement_date = timezone.now()
+        # 진행률이 100% 미만이면 달성 상태 해제
+        elif self.progress < 100 and self.is_achieved:
+            self.is_achieved = False
+            self.achievement_date = None
         # 달성 상태가 아니면 달성일시 초기화
         elif not self.is_achieved:
             self.achievement_date = None
