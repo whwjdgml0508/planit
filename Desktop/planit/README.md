@@ -52,7 +52,7 @@
 ---
 
 ## 🚀 주요 기능
-
+<img width="1243" height="934" alt="image" src="https://github.com/user-attachments/assets/c349653a-8660-4c74-b1ec-b045c6d7fea6" />
 ### 1️⃣ 시간표 & 학기 관리
 
 #### 📅 시간표 관리
@@ -61,11 +61,15 @@
 - **과목 커스터마이징**: 색상, 교수님, 강의실, 평가방식 설정
 - **자동 학점 계산**: 학기별 총 학점 자동 집계
 - **학기 진행률**: 시작일~종료일 기준 학기 진행률 표시
+<img width="1837" height="774" alt="image" src="https://github.com/user-attachments/assets/702453c5-6b2a-4efb-9991-684d232aaf60" />
+<img width="1244" height="546" alt="image" src="https://github.com/user-attachments/assets/c65dbe9d-4dcf-4114-85c5-508caa68bf70" />
+<img width="1109" height="904" alt="image" src="https://github.com/user-attachments/assets/9eb4f6a8-c408-4fe8-96c1-b1635c5a1422" />
 
 #### 📚 과목 자료 관리
 - **강의계획서 업로드**: 과목별 강의계획서 저장
 - **수업자료 관리**: 강의자료, 과제, 시험자료 등 분류별 관리
 - **파일 형식 지원**: PDF, DOC, PPT, 이미지 등 다양한 형식
+<img width="569" height="918" alt="image" src="https://github.com/user-attachments/assets/f576c36b-6273-43db-ba0c-8af52c97321e" />
 
 #### 🗓️ 학기 관리
 - **다중 학기 지원**: 1학기, 2학기, 동계학기 관리
@@ -79,18 +83,21 @@
 - **할 일 관리**: 과목별 할 일 추가 및 우선순위 설정
 - **일일 목표**: 오늘의 학습 목표 및 목표 학습시간 설정
 - **진행률 시각화**: 할 일 완료율 실시간 표시
+<img width="1101" height="935" alt="image" src="https://github.com/user-attachments/assets/82ae2d61-3f23-4e61-b450-342750277ffe" />
 
 #### 🎯 목표 관리
 - **다양한 목표 유형**: 일일/주간/월간/학기/사용자정의 목표
 - **하위 목표**: 큰 목표를 작은 단위로 분할하여 체크리스트 관리
 - **자동 진행률 계산**: 하위 목표 완료에 따른 자동 진행률 업데이트
 - **달성 현황**: 목표 달성 여부 및 달성일시 기록
+<img width="1113" height="591" alt="image" src="https://github.com/user-attachments/assets/d24f54e9-3676-490b-869d-be1e932b8736" />
 
 #### 📊 과제 관리
 - **카테고리 분류**: 과제/시험/프로젝트/학습/개인/기타
 - **우선순위 설정**: 낮음/보통/높음/긴급 4단계
 - **마감일 관리**: D-Day 및 지연 일수 표시
 - **진행률 추적**: 0-100% 진행률 관리
+<img width="1134" height="786" alt="image" src="https://github.com/user-attachments/assets/425ec098-7536-4ef5-b550-cf956c619fc8" />
 
 ### 3️⃣ 커뮤니티 기능
 
@@ -104,6 +111,8 @@
 - **드래그 앤 드롭**: 파일을 끌어다 놓기만 하면 업로드
 - **지원 형식**: 이미지(jpg, png, gif), 문서(pdf, doc, ppt, txt), 압축(zip)
 - **파일 크기 표시**: 자동 단위 변환 (B/KB/MB/GB)
+<img width="1843" height="862" alt="image" src="https://github.com/user-attachments/assets/fa2c8381-225c-4a9b-a0ff-b343e0e77b67" />
+<img width="603" height="918" alt="image" src="https://github.com/user-attachments/assets/17714bf5-0d24-4db2-a1a2-9f15c8f94d86" />
 
 #### 👥 사용자 상호작용
 - **계층형 댓글**: 댓글과 대댓글(답글) 지원
@@ -111,6 +120,7 @@
 - **북마크 기능**: 나중에 볼 게시글 저장
 - **조회수 추적**: 게시글별 조회수 자동 증가
 - **신고 기능**: 부적절한 게시글/댓글 신고 (스팸, 부적절, 괴롭힘, 저작권 등)
+<img width="1076" height="861" alt="image" src="https://github.com/user-attachments/assets/2c3f6a78-6074-49e0-a583-29dc36949cb6" />
 
 ### 4️⃣ 사용자 & 인증 시스템
 
@@ -120,6 +130,9 @@
 - **프로필 이미지**: 사용자 프로필 사진 업로드
 - **자기소개**: 500자 이내 자기소개 작성
 - **주간 학습 목표**: 개인별 주간 학습 목표 시간 설정
+<img width="501" height="830" alt="image" src="https://github.com/user-attachments/assets/e9d44065-218e-4a61-a49c-b4e47396d932" />
+<img width="1113" height="505" alt="image" src="https://github.com/user-attachments/assets/f8d5e2e6-ebbe-4447-92cb-41f6d35437c2" />
+
 
 #### 🔐 유연한 로그인
 - **이중 인증 방식**: 학번(7자리) 또는 사용자 ID로 로그인
